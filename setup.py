@@ -16,6 +16,7 @@ setup(
     url="https://github.com/beir-nlp/beir",
     download_url="https://github.com/beir-nlp/beir/archive/v0.0.1.zip",
     packages=find_packages(),
+    python_requires='>=3.6',
     install_requires=[
         'sentence-transformers',
         'pytrec_eval'

@@ -2,20 +2,21 @@
 A heterogeneous benchmark for Information Retrieval
 
 ## Installation
-We recommend **Python 3.6** or higher, **[PyTorch 1.6.0](https://pytorch.org/get-started/locally/)** or higher and **[transformers v3.1.0](https://github.com/huggingface/transformers)** or higher. The code does **not** work with Python 2.7.
 
-**Install with pip**
+Install via pip:
 
 ```
-pip install -U beir
+pip install beir
 ```
 
-**Install from sources**
+If you want to build from source, use:
 
-Alternatively, you can also clone the latest version from the [repository](https://github.com/beir-nlp/beir) and install it directly from the source code:
-````
-pip install -e .
-```` 
+```
+$ git clone https://github.com/beir-nlp/beir
+$ pip install -e .
+```
+
+Tested with python versions 3.6 and 3.7
 ## Steps To Follow
 
 1. Download datasets using ``datasets/download_data.py``

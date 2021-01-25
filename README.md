@@ -12,7 +12,7 @@ pip install beir
 If you want to build from source, use:
 
 ```
-$ git clone https://github.com/beir-nlp/beir
+$ git clone https://github.com/beir-nlp/beir.git
 $ pip install -e .
 ```
 

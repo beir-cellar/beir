@@ -21,13 +21,13 @@ class EvaluateRetrieval:
     def rank(qrels, results, k_values):
     
         ndcg = {}
-        map_ = {}
+        _map = {}
         recall = {}
         
         for k in k_values:
-            ndcg[k] = 0.0
-            map_[k] = 0.0
-            recall[k] = 0.0
+            ndcg[f"ndcg@{k}"] = 0.0
+            _map[f"map@{k}"] = 0.0
+            recall[f"recall@{k}"] = 0.0
         
         map_string = "map_cut." + ",".join([str(k) for k in k_values])
         ndcg_string = "ndcg_cut." + ",".join([str(k) for k in k_values])
@@ -37,14 +37,14 @@ class EvaluateRetrieval:
         
         for query_id in scores.keys():
             for k in k_values:
-                ndcg[k] += scores[query_id]["ndcg_cut_" + str(k)]
-                map_[k] += scores[query_id]["map_cut_" + str(k)]
-                recall[k] += scores[query_id]["recall_" + str(k)]
+                ndcg[f"ndcg@{k}"] += scores[query_id]["ndcg_cut_" + str(k)]
+                _map[f"map@{k}"] += scores[query_id]["map_cut_" + str(k)]
+                recall[f"recall@{k}"] += scores[query_id]["recall_" + str(k)]
         
         for k in k_values:
-            ndcg[k] = round(ndcg[k]/len(scores), 5)
-            map_[k] = round(map_[k]/len(scores), 5)
-            recall[k] = round(recall[k]/len(scores), 5)
+            ndcg[f"ndcg@{k}"] = round(ndcg[f"ndcg@{k}"]/len(scores), 5)
+            _map[f"map@{k}"] = round(_map[f"map@{k}"]/len(scores), 5)
+            recall[f"recall@{k}"] = round(recall[f"recall@{k}"]/len(scores), 5)
         
-        return {"ndcg@k": ndcg, "map@k": map_, "recall@k": recall}
+        return ndcg, _map, recall
     

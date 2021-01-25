@@ -5,10 +5,15 @@ import util
 
 def main():
     
-    dataset_files = ["nfcorpus.zip"]
     out_dir = pathlib.Path(__file__).parent.absolute()
     
+    dataset_files = ["nfcorpus.zip", "fiqa.zip", "dbpedia-entity.zip", 
+                     "hotpotqa.zip", "newsqa.zip", "trec-covid.zip", 
+                     "webis-touche2020.zip", "climate-fever.zip", 
+                     "fever.zip", "cqadupstack.zip"]
+    
     for dataset in dataset_files:
+        
         zip_file = os.path.join(out_dir, dataset)
         url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}".format(dataset)
         

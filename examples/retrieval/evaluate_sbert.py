@@ -1,5 +1,5 @@
-from beir.datasets.data_loader import GenericDataLoader
-from beir.retrieval.evaluation import EvaluateRetrieval
+from datasets.data_loader import GenericDataLoader
+from retrieval.evaluation import EvaluateRetrieval
 
 
 data_path = "../datasets/nfcorpus"

@@ -2,7 +2,7 @@ from sentence_transformers.util import pytorch_cos_sim
 import torch
 
 #Parent class for any dense model
-class DenseRetrieval():
+class DenseRetrieval:
     
     def __init__(self, embedder, **kwargs):
         #embedder is class that provides encode_corpus() and encode_queries()

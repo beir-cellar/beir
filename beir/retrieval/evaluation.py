@@ -1,7 +1,7 @@
 import pytrec_eval
 
-from search import *
-from models import *
+from .search import DenseRetrieval
+from .models import SentenceBERT
 
 
 class EvaluateRetrieval:

@@ -3,7 +3,6 @@ from setuptools import setup, find_packages
 with open("README.md", mode="r", encoding="utf-8") as readme_file:
     readme = readme_file.read()
 
-
 setup(
     name="beir",
     version="0.0.1",

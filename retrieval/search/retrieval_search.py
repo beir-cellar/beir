@@ -1,18 +1,3 @@
-# from abc import ABC, abstractmethod
-
-# class RetrievalModel(ABC):
-#     @abstractmethod
-#     def encode_corpus(self, documents):
-#         #Gets a list of documents to store
-#         #Does not need to return anything
-#         pass
-    
-#     @abstractmethod
-#     def encode_queries(self, queries):
-#         #Gets a list with queries
-#         #Returns for each query a ranked list with the corpus id
-#         pass
-
 from sentence_transformers.util import pytorch_cos_sim
 import torch
 

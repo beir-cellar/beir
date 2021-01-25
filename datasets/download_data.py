@@ -1,7 +1,7 @@
 import os
 import pathlib
 
-import util
+import beir.util
 
 def main():
     
@@ -18,10 +18,10 @@ def main():
         url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}".format(dataset)
         
         print("Downloading {} ...".format(dataset))
-        util.download_url(url, zip_file)
+        beir.util.download_url(url, zip_file)
         
         print("Unzipping {} ...".format(dataset))
-        util.unzip(zip_file, out_dir)
+        beir.util.unzip(zip_file, out_dir)
 
 if __name__ == '__main__':
     main()

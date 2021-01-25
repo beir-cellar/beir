@@ -3,6 +3,7 @@ datasets/*
 !download_data.py
 !md5.csv
 !util.py
+!data_loader.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

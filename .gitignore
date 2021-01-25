@@ -1,5 +1,6 @@
 # Custom added
 datasets/*
+!__init__.py
 !download_data.py
 !md5.csv
 !util.py

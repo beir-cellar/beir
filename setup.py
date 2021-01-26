@@ -5,7 +5,7 @@ with open("README.md", mode="r", encoding="utf-8") as readme_file:
 
 setup(
     name="beir",
-    version="0.0.4",
+    version="0.0.5",
     author="Nandan Thakur",
     author_email="nandant@gmail.com",
     description="A Heterogeneous Benchmark for Information Retrieval",
@@ -13,12 +13,15 @@ setup(
     long_description_content_type="text/markdown",
     license="Apache License 2.0",
     url="https://github.com/beir-nlp/beir",
-    download_url="https://github.com/beir-nlp/beir/archive/v0.0.1.zip",
+    download_url="https://github.com/beir-nlp/beir/archive/v0.0.5.zip",
     packages=find_packages(),
     python_requires='>=3.6',
     install_requires=[
         'sentence-transformers',
-        'pytrec_eval'
+        'pytrec_eval',
+        'tensorflow>=2.2.0',
+        'tensorflow-text',
+        'tensorflow-hub'
     ],
     classifiers=[
         "Development Status :: 4 - Beta",

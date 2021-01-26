@@ -74,7 +74,7 @@ for query_id, metadata in qrels.items():
     for doc_id, score in metadata.items():
         print(query_id, doc_id, score)
 # 1     005b2j4b    2
-# 1	    00fmeepz	1
+# 1     00fmeepz	1
 # ...
 ```
 

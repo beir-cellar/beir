@@ -1,10 +1,5 @@
 # Custom added
-datasets/*
-!__init__.py
-!download_data.py
-!md5.csv
-!util.py
-!data_loader.py
+examples/retrieval/datasets/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

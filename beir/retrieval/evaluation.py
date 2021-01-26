@@ -1,7 +1,7 @@
 import pytrec_eval
 
 from .search.dense import DenseRetrievalExactSearch
-from .models import SentenceBERT, DPR
+from .models import SentenceBERT, DPR, UseQA
 
 
 class EvaluateRetrieval:
@@ -14,7 +14,9 @@ class EvaluateRetrieval:
             self.retrieval = DenseRetrievalExactSearch(SentenceBERT(model_name))
         elif model.lower() in ["dpr", "dense-passage-retriever"]:
             self.retrieval = DenseRetrievalExactSearch(DPR())
-    
+        elif model.lower() in ["use-qa", "useqa", "use_qa", "universal_sentence_encoder_qa"]:
+            self.retrieval = DenseRetrievalExactSearch(UseQA())
+            
     def retrieve(self, corpus, queries, qrels):
         return self.retrieval.search(corpus, queries, self.top_k)
     

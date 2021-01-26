@@ -72,7 +72,12 @@ Tested with python versions 3.6 and 3.7
 
 ## Examples
 
-For all examples see [examples](https://github.com/beir-nlp/beir/tree/main/examples/retrieval)
+For all examples, see below:
+
+### Retrieval
+- [Exact Search Retrieval using SBERT](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_sbert.py)
+- [Exact Search Retrieval using DPR](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_dpr.py)
+- [Exact Search Retrieval using USE-QA](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_useqa.py)
 
 
 ## Getting Started
@@ -90,7 +95,58 @@ util.download_url(url, out_path)
 util.unzip(out_path, out_dir)
 ```
 
-Then load the dataset using our Generic Data Loader.
+Then load the dataset using our Generic Data Loader and you can use either Sentence-transformers, DPR or USE-QA as your dense retriever model.
+Format of ``results`` is identical to that of ``qrels``.
+
+```python
+from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval.evaluation import EvaluateRetrieval
+
+data_path = "datasets/trec-covid/"
+corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
+
+retriever = EvaluateRetrieval(model="sbert", model_name="distilroberta-base-msmarco-v2") 
+# retriever = EvaluateRetrieval(model="dpr")
+# retriever = EvaluateRetrieval(model="use-qa")
+
+results = retriever.retrieve(corpus, queries, qrels)
+```
+
+Finally after retrieving, you can evaluate your IR performance using ``qrels`` and ``results``.
+We find ``NDCG@10`` score for all datasets, for more details on why check our upcoming paper.
+
+```python
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+
+for key, value in ndcg.items():
+    print(key, value) 
+# ndcg@1    0.3456
+# ndcg@3    0.4567
+# ...
+```
+
+## Datasets
+
+Available datasets include:
+
+- TREC-COVID    [[homepage](https://ir.nist.gov/covidSubmit/index.html)]
+- NFCorpus      [[homepage](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/)]
+- NQ            [[homepage](https://ai.google.com/research/NaturalQuestions)]
+- HotpotQA      [[homepage](https://hotpotqa.github.io/)]
+- NewsQA        [[homepage](https://www.microsoft.com/en-us/research/project/newsqa-dataset/)]
+- FiQA          [[homepage](https://sites.google.com/view/fiqa/home)]
+- ArguAna       [[homepage](http://argumentation.bplaced.net/arguana/data)]
+- Touche-2020   [[homepage](https://webis.de/events/touche-20/)]
+- CQaDupstack   [[homepage](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/)]
+- Quora         [[homepage](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs)]
+- DBPedia-v2    [[homepage](https://iai-group.github.io/DBpedia-Entity/)]
+- SCIDOCS       [[homepage](https://allenai.org/data/scidocs)]
+- FEVER         [[homepage](https://fever.ai/)]
+- Climate-FEVER [[homepage](https://www.sustainablefinance.uzh.ch/en/research/climate-fever.html)]
+- Signal-1M (Optional) [[homepage](https://research.signal-ai.com/datasets/signal1m-tweetir.html)]
+- BioASQ (Optional) [[homepage](http://bioasq.org/)]
+
+## Data Formats
 
 ```python
 from beir.datasets.data_loader import GenericDataLoader
@@ -120,54 +176,6 @@ for query_id, metadata in qrels.items():
 # 1     00fmeepz    1
 # ...
 ```
-
-Now you can use either Sentence-transformers, DPR or USE-QA as your dense retriever model.
-Format of ``results`` is identical to that of ``qrels``.
-
-```python
-from beir.retrieval.evaluation import EvaluateRetrieval
-
-retriever = EvaluateRetrieval(model="sbert", model_name="distilroberta-base-msmarco-v2")
-# EvaluateRetrieval(model="dpr") or EvaluateRetrieval(model="use-qa")
-
-results = retriever.retrieve(corpus, queries, qrels)
-```
-
-Finally after retrieving, you can evaluate your IR performance using ``qrels`` and ``results``.
-
-We evaluate ``NDCG@k``, ``MAP@k``, ``Recall@k`` and ``Precision@k``.
-We find ``NDCG@10`` score for all datasets, for more details on why check our upcoming paper.
-
-```python
-ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
-
-for key, value in ndcg.items():
-    print(key, value) 
-# ndcg@1    0.3456
-# ndcg@3    0.4567
-# ...
-```
-
-## Datasets
-
-Available datasets include, download from here:
-
-- TREC-COVID    [[homepage](https://ir.nist.gov/covidSubmit/index.html)]
-- NFCorpus      [[homepage](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/)]
-- NQ            [[homepage](https://ai.google.com/research/NaturalQuestions)]
-- HotpotQA      [[homepage](https://hotpotqa.github.io/)]
-- NewsQA        [[homepage](https://www.microsoft.com/en-us/research/project/newsqa-dataset/)]
-- FiQA          [[homepage](https://sites.google.com/view/fiqa/home)]
-- ArguAna       [[homepage](http://argumentation.bplaced.net/arguana/data)]
-- Touche-2020   [[homepage](https://webis.de/events/touche-20/)]
-- CQaDupstack   [[homepage](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/)]
-- Quora         [[homepage](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs)]
-- DBPedia-v2    [[homepage](https://iai-group.github.io/DBpedia-Entity/)]
-- SCIDOCS       [[homepage](https://allenai.org/data/scidocs)]
-- FEVER         [[homepage](https://fever.ai/)]
-- Climate-FEVER [[homepage](https://www.sustainablefinance.uzh.ch/en/research/climate-fever.html)]
-- Signal-1M (Optional) [[homepage](https://research.signal-ai.com/datasets/signal1m-tweetir.html)]
-- BioASQ (Optional) [[homepage](http://bioasq.org/)]
 
 ## Citing & Authors
 

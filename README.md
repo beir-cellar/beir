@@ -43,7 +43,36 @@ Tested with python versions 3.6 and 3.7
 
 ## Benchmarking
 
+| Domain     |Dataset       | BM25    | SBERT   | USE-QA  | DPR     |
+| :---------:|------------: |:------: |:------: |:------: |:------: |
+|            | TREC-COVID   |         |         |         |         |
+| Bio-Medical| BioASQ       |         |         |         |         |
+|            | NFCorpus     |         |         |         |         |
+|            |              |         |         |         |         |
+| Question   | NQ           |         |         |         |         |
+| Answering  | HotpotQA     |         |         |         |         |
+|            |              |         |         |         |         |
+| News       | NewsQA       |         |         |         |         |
+|            |              |         |         |         |         |
+| Twitter    | Signal-1M    |         |         |         |         |
+|            |              |         |         |         |         |
+| Finance    | FiQA-2018    |         |         |         |         |
+| Argument   | ArguAna      |         |         |         |         |
+|            | Touche-2020  |         |         |         |         |
+|            |              |         |         |         |         |
+| Duplicate  | CQaDupstack  |         |         |         |         |
+| Question   | Quora        |         |         |         |         |
+|            |              |         |         |         |         |
+|  Entity    | DBPedia-v2   |         |         |         |         |
+|            |              |         |         |         |         |
+| Scientific | SCIDOCS      |         |         |         |         |
+|            |              |         |         |         |         |
+| Claim      | FEVER        |         |         |         |         |
+|Verification|Climate-FEVER |         |         |         |         |
 
+## Examples
+
+For all examples see [examples](https://github.com/beir-nlp/beir/tree/main/examples/retrieval)
 
 
 ## Getting Started
@@ -119,11 +148,37 @@ for key, value in ndcg.items():
 # ...
 ```
 
+## Datasets
+
+Available datasets include:
+
+- TREC-COVID
+- NFCorpus 
+- NQ
+- HotpotQA
+- NewsQA
+- FiQA
+- ArguAna
+- Touche-2020
+- CQaDupstack
+- Quora
+- DBPedia-v2
+- SCIDOCS
+- FEVER
+- Climate-FEVER
+- Signal-1M (Optional)
+- BioASQ (Optional)
 
 ## Citing & Authors
-
 
 The main contributors of this repository are:
 - [Nandan Thakur](https://github.com/Nthakur20) 
 
 Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)
+
+[https://www.ukp.tu-darmstadt.de/](https://www.ukp.tu-darmstadt.de/)
+
+Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
+
+> This repository contains experimental software and is published for the sole purpose of giving additional background details on the respective publication.
+

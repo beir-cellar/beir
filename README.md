@@ -41,45 +41,6 @@ $ pip install -e .
 
 Tested with python versions 3.6 and 3.7
 
-## Benchmarking
-
-| Domain     |Dataset       | BM25    | SBERT   | USE-QA  | DPR     |
-| :---------:|------------: |:------: |:------: |:------: |:------: |
-|            | TREC-COVID   |         |         |         |         |
-| Bio-Medical| BioASQ       |         |         |         |         |
-|            | NFCorpus     |         |         |         |         |
-|            |              |         |         |         |         |
-| Question   | NQ           |         |         |         |         |
-| Answering  | HotpotQA     |         |         |         |         |
-|            |              |         |         |         |         |
-| News       | NewsQA       |         |         |         |         |
-|            |              |         |         |         |         |
-| Twitter    | Signal-1M    |         |         |         |         |
-|            |              |         |         |         |         |
-| Finance    | FiQA-2018    |         |         |         |         |
-| Argument   | ArguAna      |         |         |         |         |
-|            | Touche-2020  |         |         |         |         |
-|            |              |         |         |         |         |
-| Duplicate  | CQaDupstack  |         |         |         |         |
-| Question   | Quora        |         |         |         |         |
-|            |              |         |         |         |         |
-|  Entity    | DBPedia-v2   |         |         |         |         |
-|            |              |         |         |         |         |
-| Scientific | SCIDOCS      |         |         |         |         |
-|            |              |         |         |         |         |
-| Claim      | FEVER        |         |         |         |         |
-|Verification|Climate-FEVER |         |         |         |         |
-
-## Examples
-
-For all examples, see below:
-
-### Retrieval
-- [Exact Search Retrieval using SBERT](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_sbert.py)
-- [Exact Search Retrieval using DPR](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_dpr.py)
-- [Exact Search Retrieval using USE-QA](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_useqa.py)
-
-
 ## Getting Started
 
 First download and unzip a dataset.
@@ -124,6 +85,15 @@ for key, value in ndcg.items():
 # ndcg@3    0.4567
 # ...
 ```
+
+## Examples
+
+For all examples, see below:
+
+### Retrieval
+- [Exact Search Retrieval using SBERT](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_sbert.py)
+- [Exact Search Retrieval using DPR](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_dpr.py)
+- [Exact Search Retrieval using USE-QA](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_useqa.py)
 
 ## Datasets
 
@@ -176,6 +146,36 @@ for query_id, metadata in qrels.items():
 # 1     00fmeepz    1
 # ...
 ```
+
+## Benchmarking
+
+| Domain     |Dataset       | BM25    | SBERT   | USE-QA  | DPR     |
+| :---------:|------------: |:------: |:------: |:------: |:------: |
+|            | TREC-COVID   |         |         |         |         |
+| Bio-Medical| BioASQ       |         |         |         |         |
+|            | NFCorpus     |         |         |         |         |
+|            |              |         |         |         |         |
+| Question   | NQ           |         |         |         |         |
+| Answering  | HotpotQA     |         |         |         |         |
+|            |              |         |         |         |         |
+| News       | NewsQA       |         |         |         |         |
+|            |              |         |         |         |         |
+| Twitter    | Signal-1M    |         |         |         |         |
+|            |              |         |         |         |         |
+| Finance    | FiQA-2018    |         |         |         |         |
+| Argument   | ArguAna      |         |         |         |         |
+|            | Touche-2020  |         |         |         |         |
+|            |              |         |         |         |         |
+| Duplicate  | CQaDupstack  |         |         |         |         |
+| Question   | Quora        |         |         |         |         |
+|            |              |         |         |         |         |
+|  Entity    | DBPedia-v2   |         |         |         |         |
+|            |              |         |         |         |         |
+| Scientific | SCIDOCS      |         |         |         |         |
+|            |              |         |         |         |         |
+| Claim      | FEVER        |         |         |         |         |
+|Verification|Climate-FEVER |         |         |         |         |
+
 
 ## Citing & Authors
 

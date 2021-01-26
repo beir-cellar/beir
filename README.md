@@ -73,15 +73,48 @@ for query_id, query_text in query.items():
 
 # Query Relevance Judgements (Qrels)
 for query_id, metadata in qrels.items():
-    for doc_id, score in metadata.items():
-        print(query_id, doc_id, score)
+    for doc_id, gold_score in metadata.items():
+        print(query_id, doc_id, gold_score)
 # 1     005b2j4b    2
 # 1     00fmeepz    1
 # ...
 ```
 
+Now you can use either Sentence-transformers, DPR or USE-QA as your dense retriever model.
+The format of results is identical to that of qrels.
 
-## Steps To Follow
+```python
+from beir.retrieval.evaluation import EvaluateRetrieval
+
+retriever = EvaluateRetrieval(model="sbert", model_name="distilroberta-base-msmarco-v2")
+# retriever = EvaluateRetrieval(model="dpr")
+# retriever = EvaluateRetrieval(model="use-qa")
+
+results = retriever.retrieve(corpus, queries, qrels)
+
+for query_id, metadata in results.items():
+    for doc_id, retrieval_score in metadata.items():
+        print(query_id, doc_id, retrieval_score)
+# 1     005b2j4b    0.77
+# 1     00fmeepz    0.6
+# ...
+```
+
+Finally, after retrieving the scores, you can evaluate them using qrels and results files.
+We evaluate using NDCG, MAP, Recall and Precision scores @ K.
+We advise to chose NDCG@10, explanation mentioned in our upcoming paper.
+
+```python
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+
+for key, value in ndcg.items():
+    print(key, value) 
+# ndcg@1    0.3456
+# ndcg@3    0.4567
+# ...
+```
+
+## Datasets available in the benchmark
 
 1. Download datasets using ``datasets/download_data.py``
 2. Evaluate using ``evaluate_model.py`` wherein set line 4 => ``data_path = "../datasets/{dataset-name}"``

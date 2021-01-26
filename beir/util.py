@@ -19,7 +19,7 @@ def unzip(zip_file, out_dir):
 def download_and_unzip(url, out_dir):
     
     os.makedirs(out_dir, exist_ok=True)
-    dataset = url.strip("/")[-1]
+    dataset = url.split("/")[-1]
     zip_file = os.path.join(out_dir, dataset)
     
     print("Downloading {} ...".format(dataset))

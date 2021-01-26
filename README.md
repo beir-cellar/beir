@@ -52,6 +52,8 @@ util.unzip(out_path, out_dir)
 Then load the dataset using our Generic Data Loader.
 
 ```python
+from beir.datasets.data_loader import GenericDataLoader
+
 data_path = "datasets/trec-covid/"
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 
@@ -74,7 +76,7 @@ for query_id, metadata in qrels.items():
     for doc_id, score in metadata.items():
         print(query_id, doc_id, score)
 # 1     005b2j4b    2
-# 1     00fmeepz	1
+# 1     00fmeepz    1
 # ...
 ```
 

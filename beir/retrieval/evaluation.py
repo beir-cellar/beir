@@ -1,24 +1,25 @@
 import pytrec_eval
 
-from .search import DenseRetrieval
-from .models import SentenceBERT
+from .search.dense import DenseRetrievalExactSearch
+from .models import SentenceBERT, DPR
 
 
 class EvaluateRetrieval:
     
-    def __init__(self, model, model_name, k_values=[1,3,5,10,100,1000]):
+    def __init__(self, model=None, model_name=None, k_values=[1,3,5,10,100,1000]):
         self.k_values = k_values
         self.top_k = max(k_values)
-        if model not in ["bm25"]:
-            self.retrieval = DenseRetrieval(SentenceBERT(model_name))
-    
-    def evaluate(self, corpus, queries, qrels):
         
-        results = self.retrieval.exact_search(corpus, queries, self.top_k)
-        return self.rank(qrels, results, self.k_values)
+        if model.lower() in ["sbert", "sentence-bert", "sentence-transformer"]:
+            self.retrieval = DenseRetrievalExactSearch(SentenceBERT(model_name))
+        elif model.lower() in ["dpr", "dense-passage-retriever"]:
+            self.retrieval = DenseRetrievalExactSearch(DPR())
+    
+    def retrieve(self, corpus, queries, qrels):
+        return self.retrieval.search(corpus, queries, self.top_k)
     
     @staticmethod
-    def rank(qrels, results, k_values):
+    def evaluate(qrels, results, k_values):
     
         ndcg = {}
         _map = {}

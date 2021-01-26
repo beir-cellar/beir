@@ -1,5 +1,12 @@
 # BeIR: A Heterogeneous Benchmark for Information Retrieval
 
+
+![PyPI](https://img.shields.io/pypi/v/beir)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=blue)](https://www.python.org/)
+[![PyPI download month](https://img.shields.io/pypi/dm/ansicolortags.svg?color=purple)](https://pypi.python.org/pypi/beir/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Nthakur20/StrapDown.js/graphs/commit-activity)
+[![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/beir-nlp/beir/)
+
 BeIR provides a benchmark for various diverse IR tasks and a common and easy framework for evaluation of your IR models across a diverse choice of datasets.
 
 The package takes care of the downloading, hosting, preprocessing datasets and providing you in a single easy to understand dataset zip folders. We take care of transforming the dataset and provide 15 diverse datasets used for IR in the both academia and industry, with more to add. Further the package provides an easy framework to evalaute your models against some competitive benchmarks including Sentence-Transformers (SBERT), Dense Passage Retrieval (DPR), Universal Sentence Encoder (USE-QA) and Elastic Search.
@@ -33,6 +40,11 @@ $ pip install -e .
 ```
 
 Tested with python versions 3.6 and 3.7
+
+## Benchmarking
+
+
+
 
 ## Getting Started
 
@@ -81,7 +93,6 @@ for query_id, metadata in qrels.items():
 ```
 
 Now you can use either Sentence-transformers, DPR or USE-QA as your dense retriever model.
-
 Format of ``results`` is identical to that of ``qrels``.
 
 ```python
@@ -108,5 +119,11 @@ for key, value in ndcg.items():
 # ...
 ```
 
-## Benchmarking
 
+## Citing & Authors
+
+
+The main contributors of this repository are:
+- [Nandan Thakur](https://github.com/Nthakur20) 
+
+Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)

@@ -38,11 +38,11 @@ class DPR:
         with torch.no_grad():
             for start_idx in tqdm.trange(0, len(corpus), batch_size, desc='pas'):
                 titles = [row['title'] for row in corpus[start_idx:start_idx+batch_size]]
-                bodies = [row['text']  for row in corpus[start_idx:start_idx+batch_size]]
-                encoded = self.context_tokenizer(titles, bodies, truncation='longest_first', padding=True, return_tensors='pt')
+                texts = [row['text']  for row in corpus[start_idx:start_idx+batch_size]]
+                encoded = self.context_tokenizer(titles, texts, truncation='longest_first', padding=True, return_tensors='pt')
                 model_out = self.context_model(encoded['input_ids'].cuda(), attention_mask=encoded['attention_mask'].cuda())
-                embeddings_q = model_out.pooler_output.detach()
-                for emb in embeddings_q:
+                embeddings_c = model_out.pooler_output.detach()
+                for emb in embeddings_c:
                     output.append(emb)
 
         out_tensor = torch.stack(output)

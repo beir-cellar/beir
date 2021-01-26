@@ -13,5 +13,5 @@ corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 retriever = EvaluateRetrieval(model="sbert", model_name="distilroberta-base-msmarco-v2")
 results = retriever.retrieve(corpus, queries, qrels)
 
-ndcg, _map, recall = retriever.evaluate(qrels, results, retriever.k_values)
-print(ndcg, _map, recall)
+ndcg, _map, precision, recall = retriever.evaluate(qrels, results, retriever.k_values)
+print(ndcg, _map, precision, recall)

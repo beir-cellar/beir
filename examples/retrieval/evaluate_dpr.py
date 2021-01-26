@@ -13,5 +13,5 @@ corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 retriever = EvaluateRetrieval(model="dpr")
 results = retriever.retrieve(corpus, queries, qrels)
 
-ndcg, _map, recall = retriever.evaluate(qrels, results, retriever.k_values)
-print(ndcg, _map, recall)
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+print(ndcg, _map, recall, precision)

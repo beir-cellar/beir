@@ -81,7 +81,8 @@ for query_id, metadata in qrels.items():
 ```
 
 Now you can use either Sentence-transformers, DPR or USE-QA as your dense retriever model.
-The format of results is identical to that of qrels.
+
+Format of ``results`` is identical to that of ``qrels``.
 
 ```python
 from beir.retrieval.evaluation import EvaluateRetrieval
@@ -92,9 +93,10 @@ retriever = EvaluateRetrieval(model="sbert", model_name="distilroberta-base-msma
 results = retriever.retrieve(corpus, queries, qrels)
 ```
 
-Finally, after retrieving the scores, you can evaluate them using qrels and results files.
-We evaluate using NDCG, MAP, Recall and Precision scores @ K.
-We advise to evaluate using NDCG@10 with an explanation mentioned in our upcoming paper.
+Finally after retrieving, you can evaluate your IR performance using ``qrels`` and ``results``.
+
+We evaluate ``NDCG@k``, ``MAP@k``, ``Recall@k`` and ``Precision@k``.
+We find ``NDCG@10`` score for all datasets, for more details on why check our upcoming paper.
 
 ```python
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)

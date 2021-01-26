@@ -1,20 +1,13 @@
 import pathlib, os
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
-from beir.util import download_url, unzip
+from beir import util
 
 dataset = "nfcorpus.zip"
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}".format(dataset)
-
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
-os.makedirs(out_dir, exist_ok=True)
 
-print("Downloading {} ...".format(dataset))
-zip_file = os.path.join(out_dir, dataset)
-download_url(url, zip_file)
-unzip(zip_file, out_dir)
-
-data_path = os.path.join(out_dir, dataset.replace(".zip", ""))
+data_path = util.download_and_unzip(url, out_dir)
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 
 retriever = EvaluateRetrieval(model="sbert", model_name="distilroberta-base-msmarco-v2")

@@ -1,5 +1,6 @@
 from elastic_search import ElasticSearch
 
+
 class BM25:
     def __init__(self, hostname, index_name, text_key, title_key, timeout=100):
         print(hostname)

@@ -1,8 +1,16 @@
 
-<h1>
+<!-- <h1>
 <img style="vertical-align:middle" width="120" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo.png" />
 BeIR: A Heterogeneous Benchmark for IR
-</h1>
+</h1> -->
+
+<table>
+    <tr>
+        <td valign="top"><img style="vertical-align:middle" width="120" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo.png" /></td>
+        <td valign="middle"><h1>BeIR: A Heterogeneous Benchmark for Information Retrieval</h1></td>
+    </tr>
+</table>
+
 
 ![PyPI](https://img.shields.io/pypi/v/beir)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=purple)](https://www.python.org/)

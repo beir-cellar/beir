@@ -1,15 +1,15 @@
 
 <!-- <h1>
-<img style="vertical-align:middle" width="120" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo.png" />
+<img style="vertical-align:middle" width="120" height="120" src="https://raw.githubusercontent.com/benchmarkir/beir/main/images/color_logo.png" />
 BeIR: A Heterogeneous Benchmark for IR
 </h1> -->
 
 <!-- <h1 text-align= "center">
-    <img width="300" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo_transparent_cropped.png" style="vertical-align: middle;"/>
+    <img width="300" height="120" src="https://raw.githubusercontent.com/benchmarkir/beir/main/images/color_logo_transparent_cropped.png" style="vertical-align: middle;"/>
 </h1> -->
 
 <p>
-<img style="vertical-align:middle" width="300" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo_transparent_cropped.png" />
+<img style="vertical-align:middle" width="300" height="120" src="https://raw.githubusercontent.com/benchmarkir/beir/main/images/color_logo_transparent_cropped.png" />
 </p>
 
 <!-- <h3 align="center">
@@ -20,8 +20,8 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 ![PyPI](https://img.shields.io/pypi/v/beir)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=purple)](https://www.python.org/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Nthakur20/StrapDown.js/graphs/commit-activity)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/beir-nlp/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
-[![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/beir-nlp/beir/)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
+[![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/benchmarkir/beir/)
 
 #
 
@@ -46,7 +46,7 @@ pip install beir
 If you want to build from source, use:
 
 ```
-$ git clone https://github.com/beir-nlp/beir.git
+$ git clone https://github.com/benchmarkir/beir.git
 $ pip install -e .
 ```
 
@@ -54,7 +54,7 @@ Tested with python versions 3.6 and 3.7
 
 ## Getting Started
 
-Try it out live with our [Google Collab Demo](https://colab.research.google.com/github/beir-nlp/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
+Try it out live with our [Google Collab Demo](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
 
 First download and unzip a dataset.
 
@@ -104,10 +104,10 @@ for key, value in ndcg.items():
 For all examples, see below:
 
 ### Retrieval
-- [Google Collab Demo](https://colab.research.google.com/github/beir-nlp/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
-- [Exact Search Retrieval using SBERT](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_sbert.py)
-- [Exact Search Retrieval using DPR](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_dpr.py)
-- [Exact Search Retrieval using USE-QA](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_useqa.py)
+- [Google Collab Demo](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
+- [Exact Search Retrieval using SBERT](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_sbert.py)
+- [Exact Search Retrieval using DPR](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_dpr.py)
+- [Exact Search Retrieval using USE-QA](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_useqa.py)
 
 ## Datasets
 

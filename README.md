@@ -7,7 +7,7 @@
 ![PyPI](https://img.shields.io/pypi/v/beir)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=purple)](https://www.python.org/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Nthakur20/StrapDown.js/graphs/commit-activity)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/beir-nlp/beir/blob/main/Retrieval_Example.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/beir-nlp/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/beir-nlp/beir/)
 
 BeIR provides a benchmark for various diverse IR tasks and a common and easy framework for evaluation of your IR models across a diverse choice of datasets.
@@ -39,7 +39,7 @@ Tested with python versions 3.6 and 3.7
 
 ## Getting Started
 
-Try it out live with our [Google Collab Example](https://colab.research.google.com/github/beir-nlp/beir/blob/main/Retrieval_Example.ipynb).
+Try it out live with our [Google Collab Demo](https://colab.research.google.com/github/beir-nlp/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
 
 First download and unzip a dataset.
 
@@ -89,7 +89,7 @@ for key, value in ndcg.items():
 For all examples, see below:
 
 ### Retrieval
-- [Example on Google Collab](https://colab.research.google.com/github/beir-nlp/beir/blob/main/Retrieval_Example.ipynb)
+- [Google Collab Demo](https://colab.research.google.com/github/beir-nlp/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
 - [Exact Search Retrieval using SBERT](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_sbert.py)
 - [Exact Search Retrieval using DPR](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_dpr.py)
 - [Exact Search Retrieval using USE-QA](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_useqa.py)

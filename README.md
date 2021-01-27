@@ -4,12 +4,17 @@
 BeIR: A Heterogeneous Benchmark for IR
 </h1> -->
 
+<div>
+    <img src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo.png" style="vertical-align: middle;" width="100px"/>
+    <span style="vertical-align: middle; font-size: 200%;">BeIR: A Heterogeneous Benchmark for Information Retrieval</span>
+</div>
+<!-- 
 <table>
     <tr>
         <td valign="top"><img style="vertical-align:middle" width="120" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo.png" /></td>
         <td valign="middle"><h1>BeIR: A Heterogeneous Benchmark for Information Retrieval</h1></td>
     </tr>
-</table>
+</table> -->
 
 
 ![PyPI](https://img.shields.io/pypi/v/beir)

@@ -6,7 +6,6 @@
 
 ![PyPI](https://img.shields.io/pypi/v/beir)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=blue)](https://www.python.org/)
-[![Downloads](https://static.pepy.tech/personalized-badge/beir?period=month&units=international_system&left_color=grey&right_color=purple&left_text=Downloads)](https://pepy.tech/project/beir)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Nthakur20/StrapDown.js/graphs/commit-activity)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/beir-nlp/beir/)
 

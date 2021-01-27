@@ -8,7 +8,7 @@ BeIR: A Heterogeneous Benchmark for IR
     <img width="300" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo_transparent_cropped.png" style="vertical-align: middle;"/>
 </h1> -->
 
-<p align="center">
+<p>
 <img style="vertical-align:middle" width="300" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo_transparent_cropped.png" />
 </p>
 
@@ -24,7 +24,7 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/beir-nlp/beir/)
 
 
-Beir consists a **heterogeneous benchmark** for diverse sentence or passage IR level tasks. It also provides a **common and easy framework** for evaluation of your NLP models on them.
+BEIR consists a **heterogeneous benchmark** for diverse sentence or passage IR level tasks. It also provides a **common and easy framework** for evaluation of your NLP models on them.
 
 The package takes care of the downloading, hosting, preprocessing datasets and providing you in a single easy to understand dataset zip folders. We take care of transforming the dataset and provide 15 diverse datasets used for IR in the both academia and industry, with more to add. Further the package provides an easy framework to evalaute your models against some competitive benchmarks including Sentence-Transformers (SBERT), Dense Passage Retrieval (DPR), Universal Sentence Encoder (USE-QA) and Elastic Search.
 

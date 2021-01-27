@@ -5,8 +5,7 @@ BeIR: A Heterogeneous Benchmark for IR
 </h1> -->
 
 <div>
-    <img src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo.png" style="vertical-align: middle;" width="100px"/>
-    <span style="vertical-align: middle; font-size: 300%;"><b>BeIR: A Heterogeneous Benchmark for Information Retrieval</b></span>
+    <img width="300" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo_transparent_cropped.png" style="vertical-align: middle;"/>
 </div>
 <!-- 
 <table>
@@ -22,6 +21,9 @@ BeIR: A Heterogeneous Benchmark for IR
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Nthakur20/StrapDown.js/graphs/commit-activity)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/beir-nlp/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/beir-nlp/beir/)
+
+
+# BEIR: A heterogeneous benchmark for Information Retrieval 
 
 BeIR provides a benchmark for various diverse IR tasks and a common and easy framework for evaluation of your IR models across a diverse choice of datasets.
 

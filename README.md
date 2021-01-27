@@ -1,5 +1,8 @@
-# BeIR: A Heterogeneous Benchmark for Information Retrieval
 
+<h1>
+<img style="vertical-align:middle" width="150" height="60" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo_transparent_cropped.png" />
+BEIR: A Heterogeneous Benchmark for Information Retrieval
+</h1>
 
 ![PyPI](https://img.shields.io/pypi/v/beir)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=blue)](https://www.python.org/)

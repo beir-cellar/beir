@@ -39,6 +39,8 @@ Tested with python versions 3.6 and 3.7
 
 ## Getting Started
 
+Try it out live with our [Google Collab Example](https://colab.research.google.com/github/beir-nlp/beir/blob/main/Retrieval_Example.ipynb).
+
 First download and unzip a dataset.
 
 ```python
@@ -87,6 +89,7 @@ for key, value in ndcg.items():
 For all examples, see below:
 
 ### Retrieval
+- [Example on Google Collab](https://colab.research.google.com/github/beir-nlp/beir/blob/main/Retrieval_Example.ipynb)
 - [Exact Search Retrieval using SBERT](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_sbert.py)
 - [Exact Search Retrieval using DPR](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_dpr.py)
 - [Exact Search Retrieval using USE-QA](https://github.com/beir-nlp/beir/blob/main/examples/retrieval/evaluate_useqa.py)

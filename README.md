@@ -6,7 +6,7 @@ BeIR: A Heterogeneous Benchmark for IR
 
 <div>
     <img src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo.png" style="vertical-align: middle;" width="100px"/>
-    <span style="vertical-align: middle; font-size: 200%;">BeIR: A Heterogeneous Benchmark for Information Retrieval</span>
+    <span style="vertical-align: middle; font-size: 200%;"><b>BeIR: A Heterogeneous Benchmark for Information Retrieval</b></span>
 </div>
 <!-- 
 <table>

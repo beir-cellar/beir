@@ -23,6 +23,7 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/beir-nlp/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/beir-nlp/beir/)
 
+#
 
 BEIR consists a **heterogeneous benchmark** for diverse sentence or passage IR level tasks. It also provides a **common and easy framework** for evaluation of your NLP models on them.
 

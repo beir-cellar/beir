@@ -1,7 +1,7 @@
 
-<h1>
-<img style="vertical-align:middle" width="120" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo.png" />
-BEIR: A Heterogeneous Benchmark for Information Retrieval
+<h1 align="center">
+<img style="vertical-align:middle" width="300" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo_transparent_cropped.png" />
+<br> BEIR: A Heterogeneous Benchmark for Information Retrieval
 </h1>
 
 ![PyPI](https://img.shields.io/pypi/v/beir)

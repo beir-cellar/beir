@@ -1,7 +1,7 @@
 
 <h1 align="center">
 <img style="vertical-align:middle" width="300" height="120" src="https://raw.githubusercontent.com/beir-nlp/beir/main/images/color_logo_transparent_cropped.png" />
-<br> BEIR: A Heterogeneous Benchmark for Information Retrieval
+<br> BeIR: A Heterogeneous Benchmark for Information Retrieval
 </h1>
 
 ![PyPI](https://img.shields.io/pypi/v/beir)
@@ -13,18 +13,11 @@ BeIR provides a benchmark for various diverse IR tasks and a common and easy fra
 
 The package takes care of the downloading, hosting, preprocessing datasets and providing you in a single easy to understand dataset zip folders. We take care of transforming the dataset and provide 15 diverse datasets used for IR in the both academia and industry, with more to add. Further the package provides an easy framework to evalaute your models against some competitive benchmarks including Sentence-Transformers (SBERT), Dense Passage Retrieval (DPR), Universal Sentence Encoder (USE-QA) and Elastic Search.
 
-### Worried about your dataset not present in the benchmark?
+### Worried about your dataset or model not present in the benchmark?
 
-Worry not! You can easily add your dataset into the benchmark by following this data format (here) and you will be able evaluate our models over your dataset.
+Worry not! You can easily add your dataset into the benchmark by following this data format (here) and also you are free to evaluate your own model and required to return a dictionary with mappings (here) and you can evaluate your IR model using our easy plugin code.
 
-Want a new dataset? feel free to post an issue here or make a pull request!
-
-### Worried about your model not present in the benchmark?
-
-Worry not! You can also evaluate your own private models using the benchmark, and only required to return a dictionary with mappings (check it out here!) and you can evaluate your model using our code. 
-
-Want us to add a new model? feel free to post an issue here or make a pull request!
-
+Want us to add a new dataset or a new model? feel free to post an issue here or make a pull request!
 
 ## Installation
 

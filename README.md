@@ -23,9 +23,9 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/benchmarkir/beir/)
 
-#
+## What is it?
 
-BEIR consists a **heterogeneous benchmark** for diverse sentence or passage IR level tasks. It also provides a **common and easy framework** for evaluation of your NLP models on them.
+**BEIR** consists a **heterogeneous benchmark** for diverse sentence or passage IR level tasks. It also provides a **common and easy framework** for evaluation of your NLP models on them.
 
 The package takes care of the downloading, hosting, preprocessing datasets and providing you in a single easy to understand dataset zip folders. We take care of transforming the dataset and provide 15 diverse datasets used for IR in the both academia and industry, with more to add. Further the package provides an easy framework to evalaute your models against some competitive benchmarks including Sentence-Transformers (SBERT), Dense Passage Retrieval (DPR), Universal Sentence Encoder (USE-QA) and Elastic Search.
 
@@ -45,7 +45,7 @@ pip install beir
 
 If you want to build from source, use:
 
-```
+```python
 $ git clone https://github.com/benchmarkir/beir.git
 $ pip install -e .
 ```
@@ -54,9 +54,9 @@ Tested with python versions 3.6 and 3.7
 
 ## Getting Started
 
-Try it out live with our [Google Collab Demo](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
+Try it out live with our [Google Colab Example](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
 
-First download and unzip a dataset.
+First download and unzip a dataset. Click here to [**view**](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/) all datasets available.
 
 ```python
 from beir import util
@@ -69,8 +69,7 @@ util.download_url(url, out_path)
 util.unzip(out_path, out_dir)
 ```
 
-Then load the dataset using our Generic Data Loader and you can use either Sentence-transformers, DPR or USE-QA as your dense retriever model.
-Format of ``results`` is identical to that of ``qrels``.
+Then load the dataset using our Generic Data Loader, (Wonderful right)
 
 ```python
 from beir.datasets.data_loader import GenericDataLoader
@@ -78,6 +77,13 @@ from beir.retrieval.evaluation import EvaluateRetrieval
 
 data_path = "datasets/trec-covid/"
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
+```
+
+Now, you can use either Sentence-transformers, DPR or USE-QA as your dense retriever model.
+Format of ``results`` is identical to that of ``qrels``.
+
+```python
+from beir.retrieval.evaluation import EvaluateRetrieval
 
 retriever = EvaluateRetrieval(model="sbert", model_name="distilroberta-base-msmarco-v2") 
 # retriever = EvaluateRetrieval(model="dpr")
@@ -104,7 +110,7 @@ for key, value in ndcg.items():
 For all examples, see below:
 
 ### Retrieval
-- [Google Collab Demo](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
+- [Google Colab Example](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
 - [Exact Search Retrieval using SBERT](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_sbert.py)
 - [Exact Search Retrieval using DPR](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_dpr.py)
 - [Exact Search Retrieval using USE-QA](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_useqa.py)

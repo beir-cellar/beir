@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import numpy as np
 import tensorflow_text
-import tqdm
+from tqdm.autonotebook import trange
 
 
 class UseQA:
@@ -23,7 +23,7 @@ class UseQA:
         
     def encode_queries(self, queries, batch_size=16, **kwargs):
         output = []
-        for start_idx in tqdm.trange(0, len(queries), batch_size, desc='que'):
+        for start_idx in trange(0, len(queries), batch_size, desc='que'):
             embeddings_q = self.model.signatures['question_encoder'](
                 tf.constant(queries[start_idx:start_idx+batch_size]))
             for emb in embeddings_q["outputs"]:
@@ -33,7 +33,7 @@ class UseQA:
     
     def encode_corpus(self, corpus, batch_size=8, **kwargs):
         output = []
-        for start_idx in tqdm.trange(0, len(corpus), batch_size, desc='pas'):
+        for start_idx in trange(0, len(corpus), batch_size, desc='pas'):
             titles = [row['title'] for row in corpus[start_idx:start_idx+batch_size]]
             texts = [row['text']  for row in corpus[start_idx:start_idx+batch_size]]
             embeddings_c = self.model.signatures['response_encoder'](

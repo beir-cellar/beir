@@ -2,7 +2,7 @@ from transformers import DPRContextEncoder, DPRContextEncoderTokenizer
 from transformers import DPRQuestionEncoder, DPRQuestionEncoderTokenizer
 import numpy as np
 import torch
-import tqdm
+from tqdm.autonotebook import trange
 
 class DPR:
     def __init__(self, **kwargs):
@@ -21,7 +21,7 @@ class DPR:
     def encode_queries(self, queries, batch_size=16, **kwargs):
         output = []
         with torch.no_grad():
-            for start_idx in tqdm.trange(0, len(queries), batch_size, desc='que'):
+            for start_idx in trange(0, len(queries), batch_size, desc='que'):
                 encoded = self.query_tokenizer(queries[start_idx:start_idx+batch_size], truncation=True, padding=True, return_tensors='pt')
                 model_out = self.query_model(encoded['input_ids'].cuda(), attention_mask=encoded['attention_mask'].cuda())
                 embeddings_q = model_out.pooler_output
@@ -36,7 +36,7 @@ class DPR:
         
         output = []
         with torch.no_grad():
-            for start_idx in tqdm.trange(0, len(corpus), batch_size, desc='pas'):
+            for start_idx in trange(0, len(corpus), batch_size, desc='pas'):
                 titles = [row['title'] for row in corpus[start_idx:start_idx+batch_size]]
                 texts = [row['text']  for row in corpus[start_idx:start_idx+batch_size]]
                 encoded = self.context_tokenizer(titles, texts, truncation='longest_first', padding=True, return_tensors='pt')

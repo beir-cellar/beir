@@ -119,22 +119,22 @@ For all examples, see below:
 
 Available datasets include:
 
-- TREC-COVID    [[homepage](https://ir.nist.gov/covidSubmit/index.html)]
-- NFCorpus      [[homepage](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/)]
-- NQ            [[homepage](https://ai.google.com/research/NaturalQuestions)]
-- HotpotQA      [[homepage](https://hotpotqa.github.io/)]
-- NewsQA        [[homepage](https://www.microsoft.com/en-us/research/project/newsqa-dataset/)]
-- FiQA          [[homepage](https://sites.google.com/view/fiqa/home)]
-- ArguAna       [[homepage](http://argumentation.bplaced.net/arguana/data)]
-- Touche-2020   [[homepage](https://webis.de/events/touche-20/)]
-- CQaDupstack   [[homepage](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/)]
-- Quora         [[homepage](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs)]
-- DBPedia-v2    [[homepage](https://iai-group.github.io/DBpedia-Entity/)]
-- SCIDOCS       [[homepage](https://allenai.org/data/scidocs)]
-- FEVER         [[homepage](https://fever.ai/)]
-- Climate-FEVER [[homepage](https://www.sustainablefinance.uzh.ch/en/research/climate-fever.html)]
-- Signal-1M (Optional) [[homepage](https://research.signal-ai.com/datasets/signal1m-tweetir.html)]
-- BioASQ (Optional) [[homepage](http://bioasq.org/)]
+- [TREC-COVID](https://ir.nist.gov/covidSubmit/index.html)
+- [NFCorpus](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/)
+- [NQ](https://ai.google.com/research/NaturalQuestions)
+- [HotpotQA](https://hotpotqa.github.io/)
+- [NewsQA](https://www.microsoft.com/en-us/research/project/newsqa-dataset/)
+- [FiQA](https://sites.google.com/view/fiqa/home)
+- [ArguAna](http://argumentation.bplaced.net/arguana/data)
+- [Touche-2020](https://webis.de/events/touche-20/)
+- [CQaDupstack](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/)
+- [Quora](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs)
+- [DBPedia-v2](https://iai-group.github.io/DBpedia-Entity/)
+- [SCIDOCS](https://allenai.org/data/scidocs)
+- [FEVER](https://fever.ai/)
+- [Climate-FEVER](https://www.sustainablefinance.uzh.ch/en/research/climate-fever.html)
+- [Signal-1M](https://research.signal-ai.com/datasets/signal1m-tweetir.html) (Optional)
+- [BioASQ](http://bioasq.org/) (Optional)
 
 ## Data Formats
 

@@ -1,27 +1,16 @@
 import logging
-import sys
-from logging import Logger
+import tqdm
 
-
-class LoggingHandler(Logger):
-    def __init__(
-        self,
-        level=logging.INFO, 
-        log_format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        *args,
-        **kwargs
-    ):
-        self.formatter = logging.Formatter(log_format)
-        self.level = level
-
-        Logger.__init__(self, *args, **kwargs)
-
-        self.addHandler(self.get_console_handler())
-        # with this pattern, it's rarely necessary to propagate the| error up to parent
-        self.propagate = False
-
-    def get_console_handler(self):
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(self.level)
-        console_handler.setFormatter(self.formatter)
-        return console_handler
+class LoggingHandler(logging.Handler):
+    def __init__(self, level=logging.NOTSET):
+        super().__init__(level)
+    
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            tqdm.tqdm.write(msg)
+            self.flush()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)

@@ -1,7 +1,9 @@
 import os
 import requests
+import logging
 import zipfile
 
+logger = logging.getLogger(__name__)
 
 def download_url(url, save_path, chunk_size=128):
     if not os.path.isfile(save_path):
@@ -22,10 +24,10 @@ def download_and_unzip(url, out_dir):
     dataset = url.split("/")[-1]
     zip_file = os.path.join(out_dir, dataset)
     
-    print("Downloading {} ...".format(dataset))
+    logger.info("Downloading {} ...".format(dataset))
     download_url(url, zip_file)
     
-    print("Unzipping {} ...".format(dataset))
+    logger.info("Unzipping {} ...".format(dataset))
     unzip(zip_file, out_dir)
     
     return os.path.join(out_dir, dataset.replace(".zip", ""))

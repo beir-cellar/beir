@@ -1,5 +1,8 @@
 import pytrec_eval
+import logging
 from .search.dense import DenseRetrievalExactSearch as DRES
+
+logger = logging.getLogger(__name__)
 class EvaluateRetrieval:
     
     def __init__(self, model=None, k_values=[1,3,5,10,100,1000]):

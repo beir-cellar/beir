@@ -6,9 +6,9 @@ from tqdm.autonotebook import trange
 
 
 class UseQA:
-    def __init__(self, **kwargs):
+    def __init__(self, hub_url=None, **kwargs):
         self.initialisation()
-        self.model = hub.load("https://tfhub.dev/google/universal-sentence-encoder-qa/3")
+        self.model = hub.load(hub_url)
         
     @staticmethod
     def initialisation():

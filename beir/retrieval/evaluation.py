@@ -1,24 +1,20 @@
 import pytrec_eval
-
-from .search.dense import DenseRetrievalExactSearch
-from .models import SentenceBERT, DPR, UseQA
-
-
+from .search.dense import DenseRetrievalExactSearch as DRES
 class EvaluateRetrieval:
     
-    def __init__(self, model=None, model_name=None, k_values=[1,3,5,10,100,1000]):
+    def __init__(self, model=None, k_values=[1,3,5,10,100,1000]):
         self.k_values = k_values
         self.top_k = max(k_values)
-        
-        if model.lower() in ["sbert", "sentence-bert", "sentence-transformer"]:
-            self.retrieval = DenseRetrievalExactSearch(SentenceBERT(model_name))
-        elif model.lower() in ["dpr", "dense-passage-retriever"]:
-            self.retrieval = DenseRetrievalExactSearch(DPR())
-        elif model.lower() in ["use-qa", "useqa", "use_qa", "universal_sentence_encoder_qa"]:
-            self.retrieval = DenseRetrievalExactSearch(UseQA())
+        self.model = DRES(model) if model else model
             
     def retrieve(self, corpus, queries, qrels):
-        return self.retrieval.search(corpus, queries, self.top_k)
+        if not self.model:
+            raise ValueError("Model has not been provided!")
+        return self.model.search(corpus, queries, self.top_k)
+    
+    def retrieve_and_evaluate(self, corpus, queries, qrels):
+        results = self.retrieve(corpus, queries, qrels)
+        return evaluate(qrels, results, self.k_values)
     
     @staticmethod
     def evaluate(qrels, results, k_values):

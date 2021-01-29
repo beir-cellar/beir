@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 
 class SentenceBERT:
-    def __init__(self, model_path):
+    def __init__(self, model_path=None, **kwargs):
         self.model = SentenceTransformer(model_path)
     
     def encode_queries(self, queries, **kwargs):

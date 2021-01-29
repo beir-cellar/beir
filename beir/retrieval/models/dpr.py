@@ -5,16 +5,16 @@ import torch
 from tqdm.autonotebook import trange
 
 class DPR:
-    def __init__(self, **kwargs):
+    def __init__(self, q_model=None, ctx_model=None, **kwargs):
         # Query tokenizer and model
-        self.query_tokenizer = DPRQuestionEncoderTokenizer.from_pretrained('facebook/dpr-question_encoder-single-nq-base')
-        self.query_model = DPRQuestionEncoder.from_pretrained('facebook/dpr-question_encoder-single-nq-base')
+        self.query_tokenizer = DPRQuestionEncoderTokenizer.from_pretrained(q_model)
+        self.query_model = DPRQuestionEncoder.from_pretrained(q_model)
         self.query_model.cuda()
         self.query_model.eval()
         
         # Context tokenizer and model
-        self.context_tokenizer = DPRContextEncoderTokenizer.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base')
-        self.context_model = DPRContextEncoder.from_pretrained('facebook/dpr-ctx_encoder-single-nq-base')
+        self.context_tokenizer = DPRContextEncoderTokenizer.from_pretrained(ctx_model)
+        self.context_model = DPRContextEncoder.from_pretrained(ctx_model)
         self.context_model.cuda()
         self.context_model.eval()
     

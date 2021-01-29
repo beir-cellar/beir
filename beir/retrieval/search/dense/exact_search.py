@@ -1,4 +1,4 @@
-from sentence_transformers.util import pytorch_cos_sim
+from .util import pytorch_cos_sim
 import logging
 import sys
 import torch
@@ -28,7 +28,7 @@ class DenseRetrievalExactSearch:
         query_embeddings = self.model.encode_queries(
             queries, show_progress_bar=self.show_progress_bar, batch_size=self.batch_size)
           
-        logger.info("Encoding Corpus...")
+        logger.info("Encoding Corpus... Warning: This might take a while!")
         corpus_ids = list(corpus.keys())
         corpus = [corpus[cid] for cid in corpus_ids]
             

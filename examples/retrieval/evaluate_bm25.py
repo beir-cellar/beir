@@ -23,7 +23,7 @@ data_path = util.download_and_unzip(url, out_dir)
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 
 #### Provide parameters for elastic-search
-hostname = "desktop-158.ukp.informatik.tu-darmstadt.de:9200"
+hostname = "localhost"
 index_name = "nfcorpus"
 model = BM25(index_name=index_name, hostname=hostname)
 retriever = EvaluateRetrieval(model)

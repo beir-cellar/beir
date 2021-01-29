@@ -1,6 +1,9 @@
 import json
 import os
+import logging
 import csv
+
+logger = logging.getLogger(__name__)
 
 class GenericDataLoader:
     
@@ -19,15 +22,20 @@ class GenericDataLoader:
         
         self.qrels_file = os.path.join(self.qrels_folder, split + ".tsv")
         
-        if not len(self.corpus):
-            self._load_corpus()
-        
         if not len(self.queries):
             self._load_queries()
+        
+        if not len(self.corpus):
+            self._load_corpus()
+            logger.info("Loaded %d Documents.", len(self.corpus))
+            logger.info("Doc Example: %s", list(self.corpus.values())[0])
+        
         
         if os.path.exists(self.qrels_file):
             self._load_qrels()
             self.queries = {qid: self.queries[qid] for qid in self.qrels}
+            logger.info("Loaded %d Queries.", len(self.queries))
+            logger.info("Query Example: %s", list(self.queries.values())[0])
         
         return self.corpus, self.queries, self.qrels
     

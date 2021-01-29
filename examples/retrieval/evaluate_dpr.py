@@ -2,6 +2,7 @@ from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
 import pathlib, os
 import logging
@@ -24,13 +25,14 @@ corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 
 #### We use the DPR NQ trained question and context encoder
 #### For more details - https://huggingface.co/transformers/model_doc/dpr.html
-retriever = EvaluateRetrieval(models.DPR(
+model = DRES(EvaluateRetrieval(models.DPR(
     'facebook/dpr-question_encoder-single-nq-base',
     'facebook/dpr-ctx_encoder-single-nq-base'
-    ))
+    )))
+retriever = EvaluateRetrieval(model)
 
 #### Retrieve dense results (format of results is identical to qrels)
-results = retriever.retrieve(corpus, queries, qrels)
+results = retriever.retrieve(corpus, queries)
 
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)

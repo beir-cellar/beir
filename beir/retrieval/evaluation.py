@@ -3,17 +3,18 @@ import logging
 from .search.dense import DenseRetrievalExactSearch as DRES
 
 logger = logging.getLogger(__name__)
+
 class EvaluateRetrieval:
     
-    def __init__(self, model=None, k_values=[1,3,5,10,100,1000]):
+    def __init__(self, retriever=None, k_values=[1,3,5,10,100,1000]):
         self.k_values = k_values
         self.top_k = max(k_values)
-        self.model = DRES(model) if model else model
+        self.retriever = retriever
             
-    def retrieve(self, corpus, queries, qrels):
-        if not self.model:
-            raise ValueError("Model has not been provided!")
-        return self.model.search(corpus, queries, self.top_k)
+    def retrieve(self, corpus, queries):
+        if not self.retriever:
+            raise ValueError("Model/Technique has not been provided!")
+        return self.retriever.search(corpus, queries, self.top_k)
     
     def retrieve_and_evaluate(self, corpus, queries, qrels):
         results = self.retrieve(corpus, queries, qrels)
@@ -28,10 +29,10 @@ class EvaluateRetrieval:
         precision = {}
         
         for k in k_values:
-            ndcg[f"ndcg@{k}"] = 0.0
-            _map[f"map@{k}"] = 0.0
-            recall[f"recall@{k}"] = 0.0
-            precision[f"precision@{k}"] = 0.0
+            ndcg[f"NDCG@{k}"] = 0.0
+            _map[f"MAP@{k}"] = 0.0
+            recall[f"Recall@{k}"] = 0.0
+            precision[f"P@{k}"] = 0.0
         
         map_string = "map_cut." + ",".join([str(k) for k in k_values])
         ndcg_string = "ndcg_cut." + ",".join([str(k) for k in k_values])
@@ -42,16 +43,21 @@ class EvaluateRetrieval:
         
         for query_id in scores.keys():
             for k in k_values:
-                ndcg[f"ndcg@{k}"] += scores[query_id]["ndcg_cut_" + str(k)]
-                _map[f"map@{k}"] += scores[query_id]["map_cut_" + str(k)]
-                recall[f"recall@{k}"] += scores[query_id]["recall_" + str(k)]
-                precision[f"precision@{k}"] += scores[query_id]["P_"+ str(k)]
+                ndcg[f"NDCG@{k}"] += scores[query_id]["ndcg_cut_" + str(k)]
+                _map[f"MAP@{k}"] += scores[query_id]["map_cut_" + str(k)]
+                recall[f"Recall@{k}"] += scores[query_id]["recall_" + str(k)]
+                precision[f"P@{k}"] += scores[query_id]["P_"+ str(k)]
         
         for k in k_values:
-            ndcg[f"ndcg@{k}"] = round(ndcg[f"ndcg@{k}"]/len(scores), 5)
-            _map[f"map@{k}"] = round(_map[f"map@{k}"]/len(scores), 5)
-            recall[f"recall@{k}"] = round(recall[f"recall@{k}"]/len(scores), 5)
-            precision[f"precision@{k}"] = round(precision[f"precision@{k}"]/len(scores), 5)
+            ndcg[f"NDCG@{k}"] = round(ndcg[f"NDCG@{k}"]/len(scores), 5)
+            _map[f"MAP@{k}"] = round(_map[f"MAP@{k}"]/len(scores), 5)
+            recall[f"Recall@{k}"] = round(recall[f"Recall@{k}"]/len(scores), 5)
+            precision[f"P@{k}"] = round(precision[f"P@{k}"]/len(scores), 5)
         
+        for eval in [ndcg, _map, recall, precision]:
+            logging.info("\n")
+            for k in eval.keys():
+                logging.info("{}: {:.4f}".format(k, eval[k]))
+
         return ndcg, _map, recall, precision
     

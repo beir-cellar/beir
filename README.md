@@ -8,9 +8,9 @@ BeIR: A Heterogeneous Benchmark for IR
     <img width="300" height="120" src="https://raw.githubusercontent.com/benchmarkir/beir/main/images/color_logo_transparent_cropped.png" style="vertical-align: middle;"/>
 </h1> -->
 
-<p>
-<img style="vertical-align:middle" width="300" height="120" src="https://raw.githubusercontent.com/benchmarkir/beir/main/images/color_logo_transparent_cropped.png" />
-</p>
+<h1 style="text-align:center">
+<img style="vertical-align:middle" width="450" height="180" src="https://raw.githubusercontent.com/benchmarkir/beir/main/images/color_logo_transparent_cropped.png" />
+</h1>
 
 <!-- <h3 align="center">
 BEIR: A heterogeneous benchmark for Information Retrieval

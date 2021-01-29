@@ -114,6 +114,7 @@ For all examples, see below:
 - [Exact Search Retrieval using SBERT](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_sbert.py)
 - [Exact Search Retrieval using DPR](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_dpr.py)
 - [Exact Search Retrieval using USE-QA](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_useqa.py)
+- [Faiss Search Retrieval using SBERT](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_faiss_sbert.py)
 
 ## Datasets
 

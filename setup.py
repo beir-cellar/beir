@@ -19,6 +19,7 @@ setup(
     install_requires=[
         'sentence-transformers',
         'pytrec_eval',
+        'elasticsearch',
         'tensorflow>=2.2.0',
         'tensorflow-text',
         'tensorflow-hub'

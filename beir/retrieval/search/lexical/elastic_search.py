@@ -9,12 +9,42 @@ tracer.setLevel(logging.CRITICAL) # supressing INFO messages for elastic-search
 
 class ElasticSearch(object):
     
-    def __init__(self, hostname, index_name, text_key, title_key, timeout=5000):
-        logging.info("Activating Elastic Search....")
-        self.index_name = index_name
-        self.text_key = text_key
-        self.title_key = title_key
-        self.es = Elasticsearch([hostname], timeout=timeout, retry_on_timeout=True, maxsize=24)
+    def __init__(self, es_credentials):
+        
+        logging.info("Activating Elasticsearch....")
+        logging.info("Elastic Search Credentials: %s", es_credentials)
+        self.index_name = es_credentials["index_name"]
+        self.check_index_name()
+
+        self.text_key = es_credentials["keys"]["body"]
+        self.title_key = es_credentials["keys"]["title"]
+        
+        self.es = Elasticsearch(
+            [es_credentials["hostname"]], 
+            timeout=es_credentials["timeout"], 
+            retry_on_timeout=es_credentials["retry_on_timeout"], 
+            maxsize=es_credentials["maxsize"])
+        
+    
+    def check_index_name(self, valid=True):
+        """Check Elasticsearch Index Name"""
+        # https://stackoverflow.com/questions/41585392/what-are-the-rules-for-index-names-in-elastic-search
+        # Check 1: Must not contain the characters ===> #:\/*?"<>|,
+        for char in '#:\/*?"<>|,':
+            if char in self.index_name:
+                raise ValueError('Invalid Elasticsearch Index, must not contain the characters ===> #:\/*?"<>|,')
+        
+        # Check 2: Must not start with characters ===> _-+
+        if self.index_name.startswith(("_", "-", "+")):
+            raise ValueError('Invalid Elasticsearch Index, must not start with characters ===> _ or - or +')
+        
+        # Check 3: must not be . or ..
+        if self.index_name in [".", ".."]:
+            raise ValueError('Invalid Elasticsearch Index, must not be . or ..')
+        
+        # Check 4: must be lowercase
+        if not self.index_name.islower():
+            raise ValueError('Invalid Elasticsearch Index, must be lowercase')
         
     
     def create_index(self):

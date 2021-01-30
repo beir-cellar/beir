@@ -7,14 +7,14 @@ logger = logging.getLogger(__name__)
 
 class GenericDataLoader:
     
-    def __init__(self, data_folder):
+    def __init__(self, data_folder, corpus_file="corpus.jsonl", query_file="queries.jsonl", qrels_folder="qrels"):
         self.corpus = {}
         self.queries = {}
         self.qrels = {}
         self.data_folder = data_folder
-        self.corpus_file = os.path.join(self.data_folder, "corpus.jsonl")
-        self.query_file = os.path.join(self.data_folder, "queries.jsonl")
-        self.qrels_folder = os.path.join(self.data_folder, "qrels")
+        self.corpus_file = os.path.join(self.data_folder, corpus_file)
+        self.query_file = os.path.join(self.data_folder, query_file)
+        self.qrels_folder = os.path.join(self.data_folder, qrels_folder)
         self.qrels_file = ""
         
     

@@ -58,6 +58,8 @@ Click here to view [**15+ Datasets**](https://public.ukp.informatik.tu-darmstadt
 
 Try it out live with our [Google Colab Example](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
 
+### 1. Data Downloading and Loading
+
 First download and unzip a dataset. Load the dataset with our data loader.
 
 ```python
@@ -71,6 +73,8 @@ data_path = util.download_and_unzip(url, out_dir)
 #### Provide the data_path where trec-covid has been downloaded and unzipped
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 ```
+
+### 2. Model Loading
 
 Now, you can use either Sentence-transformers, DPR or USE-QA as your dense retriever model.
 
@@ -96,6 +100,7 @@ hostname = "your-es-hostname-here" # localhost for default
 index_name = "your-index-name-here"
 model = BM25(index_name=index_name, hostname=hostname)
 ```
+### 3. Retriever Search and Evaluation
 
 Format of ``results`` is identical to that of ``qrels``. You can evaluate your IR performance using ``qrels`` and ``results``.
 We find ``NDCG@10`` score for all datasets, for more details on why check our upcoming paper.

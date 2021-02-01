@@ -57,25 +57,17 @@ Tested with python versions 3.6 and 3.7
 Try it out live with our [Google Colab Example](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
 
 First download and unzip a dataset. Click here to [**view**](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/) all datasets available.
+Load the dataset and get the corpus, queries and qrels dictionaries.
 
 ```python
 from beir import util
+from beir.datasets.data_loader import GenericDataLoader
 
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/trec-covid.zip"
-out_path = "datasets/trec-covid.zip"
 out_dir = "datasets"
+data_path = util.download_and_unzip(url, out_dir)
 
-util.download_url(url, out_path)
-util.unzip(out_path, out_dir)
-```
-
-Then load the dataset using our Generic Data Loader, (Wonderful right)
-
-```python
-from beir.datasets.data_loader import GenericDataLoader
-from beir.retrieval.evaluation import EvaluateRetrieval
-
-data_path = "datasets/trec-covid/"
+#### Provide the data_path where trec-covid has been downloaded and unzipped
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 ```
 

@@ -83,38 +83,46 @@ Now, you can use either Sentence-transformers, DPR or USE-QA as your dense retri
 Format of ``results`` is identical to that of ``qrels``.
 
 ```python
-from beir.retrieval.evaluation import EvaluateRetrieval
+from beir.retrieval import models
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
-retriever = EvaluateRetrieval(model="sbert", model_name="distilroberta-base-msmarco-v2") 
-# retriever = EvaluateRetrieval(model="dpr")
-# retriever = EvaluateRetrieval(model="use-qa")
+model = DRES(models.SentenceBERT("distilroberta-base-msmarco-v2"))
 
-results = retriever.retrieve(corpus, queries, qrels)
+# model = DRES(EvaluateRetrieval(models.DPR(
+#     'facebook/dpr-question_encoder-single-nq-base',
+#     'facebook/dpr-ctx_encoder-single-nq-base' )))
+
+# model = DRES(models.UseQA("https://tfhub.dev/google/universal-sentence-encoder-qa/3"))
 ```
 
-Finally after retrieving, you can evaluate your IR performance using ``qrels`` and ``results``.
+Format of ``results`` is identical to that of ``qrels``. You can evaluate your IR performance using ``qrels`` and ``results``.
 We find ``NDCG@10`` score for all datasets, for more details on why check our upcoming paper.
 
 ```python
-ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+from beir.retrieval.evaluation import EvaluateRetrieval
 
-for key, value in ndcg.items():
-    print(key, value) 
-# ndcg@1    0.3456
-# ndcg@3    0.4567
-# ...
+retriever = EvaluateRetrieval(model)
+results = retriever.retrieve(corpus, queries)
+
+#### Evaluate your retrieval using NDCG@k, MAP@K ...
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
 ```
 
 ## Examples
 
 For all examples, see below:
 
-### Retrieval
+### All in One
 - [Google Colab Example](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
-- [Exact Search Retrieval using SBERT](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_sbert.py)
-- [Exact Search Retrieval using DPR](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_dpr.py)
-- [Exact Search Retrieval using USE-QA](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_useqa.py)
-- [Faiss Search Retrieval using SBERT](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_faiss_sbert.py)
+
+### Retrieval
+- [BM25 Retrieval using Elasticsearch](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_bm25.py)
+- [Exact Search Retrieval using Dense Model](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_dense.py)
+- [Faiss Search Retrieval using Dense Model](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_faiss_dense.py)
+- [Training Dense Retrieval Model](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/train_dense.py)
+
+### Generation
+- [Query Generation using T5/BART](https://github.com/benchmarkir/beir/blob/main/examples/generation/query_generator.py)
 
 ## Datasets
 

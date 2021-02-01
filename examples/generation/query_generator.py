@@ -1,7 +1,7 @@
 from beir import util, LoggingHandler
 from beir.datasets.data_loader import GenericDataLoader
 from beir.generation import QueryGenerator as QGen
-from beir.generation.models import BART
+from beir.generation.models import QGenModel
 
 import pathlib, os
 import logging
@@ -20,14 +20,14 @@ out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
 #### Provide the data_path where nfcorpus has been downloaded and unzipped
-corpus, _, _ = GenericDataLoader(data_path).load(split="test")
+corpus = GenericDataLoader(data_path).load_corpus()
 
 #### Model Loading 
 model_path = "/home/ukp/srivastava/projects/generation-train/output/msmarco/t5-small-1-epoch/checkpoint-66500"
-generator = QGen(model=BART(model_path))
+generator = QGen(model=QGenModel(model_path))
 
-#### Generation
-ques_per_passage = 5
-batch_size = 2
+#### Query-Generation
 
-generator.generate(corpus, data_path, ques_per_passage, "test")
+#### Generating 3 questions per passage
+ques_per_passage = 3
+generator.generate(corpus, data_path, ques_per_passage)

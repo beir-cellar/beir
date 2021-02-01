@@ -1,2 +1,1 @@
-from .t5 import T5
-from .bart import BART
+from .auto_model import QGenModel

@@ -23,12 +23,24 @@ data_path = util.download_and_unzip(url, out_dir)
 #### Provide the data_path where nfcorpus has been downloaded and unzipped
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 
-#### We use the DPR NQ trained question and context encoder
+#### Sentence-Transformer ####
+#### Provide any pretrained sentence-transformers model path
+#### Complete list - https://www.sbert.net/docs/pretrained_models.html
+model = DRES(models.SentenceBERT("distilroberta-base-msmarco-v2"))
+
+#### DPR ####
+#### Use the DPR NQ trained question and context encoder
 #### For more details - https://huggingface.co/transformers/model_doc/dpr.html
-model = DRES(EvaluateRetrieval(models.DPR(
-    'facebook/dpr-question_encoder-single-nq-base',
-    'facebook/dpr-ctx_encoder-single-nq-base'
-    )))
+# model = DRES(EvaluateRetrieval(models.DPR(
+#     'facebook/dpr-question_encoder-single-nq-base',
+#     'facebook/dpr-ctx_encoder-single-nq-base'
+#     )))
+
+#### USE-QA ####
+#### We use the English USE-QA v3 and provide the tf hub url
+#### Link: https://tfhub.dev/google/universal-sentence-encoder-qa/3
+# model = DRES(models.UseQA("https://tfhub.dev/google/universal-sentence-encoder-qa/3"))
+
 retriever = EvaluateRetrieval(model)
 
 #### Retrieve dense results (format of results is identical to qrels)

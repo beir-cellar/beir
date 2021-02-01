@@ -54,10 +54,11 @@ Tested with python versions 3.6 and 3.7
 
 ## Getting Started
 
+Click here to [**view**](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/) 15+ datasets for IR evaluation available.
+
 Try it out live with our [Google Colab Example](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
 
-First download and unzip a dataset. Click here to [**view**](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/) all datasets available.
-Load the dataset and get the corpus, queries and qrels dictionaries.
+First download and unzip a dataset. Load the dataset with our data loader.
 
 ```python
 from beir import util

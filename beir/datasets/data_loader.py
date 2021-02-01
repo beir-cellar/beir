@@ -39,6 +39,15 @@ class GenericDataLoader:
         
         return self.corpus, self.queries, self.qrels
     
+    def load_corpus(self):
+        
+        if not len(self.corpus):
+            self._load_corpus()
+            logger.info("Loaded %d Documents.", len(self.corpus))
+            logger.info("Doc Example: %s", list(self.corpus.values())[0])
+
+        return self.corpus
+    
     def _load_corpus(self):
         
         with open(self.corpus_file, encoding='utf8') as fIn:
@@ -61,7 +70,7 @@ class GenericDataLoader:
     def _load_qrels(self):
         
         reader = csv.reader(open(self.qrels_file, encoding="utf-8"), 
-                            delimiter="\t", quoting=csv.QUOTE_NONE)
+                            delimiter="\t", quoting=csv.QUOTE_MINIMAL)
         next(reader)
         
         for id, row in enumerate(reader):

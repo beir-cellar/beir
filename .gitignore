@@ -2,6 +2,7 @@
 examples/datasets/*
 examples/retrieval/datasets/*
 examples/generation/datasets/*
+examples/retrieval/output/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

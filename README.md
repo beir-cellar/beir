@@ -54,7 +54,7 @@ Tested with python versions 3.6 and 3.7
 
 ## Getting Started
 
-Click here to [**view**](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/) 15+ datasets for IR evaluation available.
+Click here to view [**15+ Datasets**](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/) available in BEIR.
 
 Try it out live with our [Google Colab Example](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
 

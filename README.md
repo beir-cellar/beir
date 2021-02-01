@@ -80,7 +80,6 @@ corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 ```
 
 Now, you can use either Sentence-transformers, DPR or USE-QA as your dense retriever model.
-Format of ``results`` is identical to that of ``qrels``.
 
 ```python
 from beir.retrieval import models
@@ -93,6 +92,16 @@ model = DRES(models.SentenceBERT("distilroberta-base-msmarco-v2"))
 #     'facebook/dpr-ctx_encoder-single-nq-base' )))
 
 # model = DRES(models.UseQA("https://tfhub.dev/google/universal-sentence-encoder-qa/3"))
+```
+
+Or if you wish to use lexical retrieval, we provide support with Elasticsearch.
+```python
+from beir.retrieval.search.lexical import BM25Search as BM25
+
+#### Provide parameters for elastic-search
+hostname = "your-es-hostname-here" # localhost for default
+index_name = "your-index-name-here"
+model = BM25(index_name=index_name, hostname=hostname)
 ```
 
 Format of ``results`` is identical to that of ``qrels``. You can evaluate your IR performance using ``qrels`` and ``results``.

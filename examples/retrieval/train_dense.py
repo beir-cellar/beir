@@ -32,4 +32,6 @@ train_samples = retriever.load_train(corpus, queries, qrels)
 ir_evaluator = retriever.load_dev(dev_corpus, dev_queries, dev_qrels)
 
 #### Train the model
-results = retriever.train(train_samples, evaluator=ir_evaluator, num_epochs=1, evaluation_steps=50)
+num_epochs = 1
+evaluation_steps = 5000
+results = retriever.train(train_samples, evaluator=ir_evaluator, num_epochs=num_epochs, evaluation_steps=evaluation_steps)

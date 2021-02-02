@@ -39,6 +39,10 @@ class TrainRetriever:
     
     def load_dev(self, dev_corpus, dev_queries, dev_qrels, name="eval"):
 
+        # If no dev set is present, return the dummy evaluator
+        if len(self.dev_queries) <= 0:
+            return SequentialEvaluator([], main_score_function=lambda x: time.time())
+        
         dev_rel_docs = {}
         # need to convert dev_qrels to qid => Set[cid]        
         for query_id, metadata in dev_qrels.items():
@@ -46,7 +50,7 @@ class TrainRetriever:
             for corpus_id, score in metadata.items():
                 if score >= 1:
                     dev_rel_docs[query_id].add(corpus_id)
-        
+
         return InformationRetrievalEvaluator(dev_queries, dev_corpus, dev_rel_docs, name=name)
 
 
@@ -55,16 +59,13 @@ class TrainRetriever:
         train_data = SentencesDataset(train_samples, model=self.model)
         train_dataloader = DataLoader(train_data, shuffle=True, batch_size=self.batch_size)
         train_loss = losses.MultipleNegativesRankingLoss(model=self.model)
-        dev_set_present = True if evaluator else False
-
-        if not evaluator:
-            # dummy evaluator
+        if not evaluator: # dummy evaluator
             evaluator = SequentialEvaluator([], main_score_function=lambda x: time.time())
             
         warmup_steps = int(len(train_samples) * num_epochs / self.batch_size * 0.1)
         
         # Train the model
-        logger.info("Starting to train, Dev set present: {}...".format(dev_set_present))
+        logger.info("Starting to Train...")
         self.model.fit(train_objectives=[(train_dataloader, train_loss)],
                 evaluator=evaluator,
                 epochs=num_epochs,

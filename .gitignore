@@ -1,8 +1,6 @@
 # Custom added
-examples/datasets/*
-examples/retrieval/datasets/*
-examples/generation/datasets/*
-examples/retrieval/output/*
+examples/*/datasets/
+examples/*/output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -26,8 +26,13 @@ corpus = GenericDataLoader(data_path).load_corpus()
 model_path = "/home/ukp/srivastava/projects/generation-train/output/msmarco/t5-small-1-epoch/checkpoint-66500"
 generator = QGen(model=QGenModel(model_path))
 
-#### Query-Generation
+#### Query-Generation ####
+#### Prefix is required to seperate out synthetic queries and qrels from original
+prefix = "gen-3"
 
-#### Generating 3 questions per passage
+#### Generating 3 questions per passage. 
+#### Reminder the higher value might produce lots of duplicates
 ques_per_passage = 3
-generator.generate(corpus, data_path, ques_per_passage)
+
+#### Generate queries per passage from docs in corpus and save them in data_path
+generator.generate(corpus, data_path, ques_per_passage, prefix="gen")

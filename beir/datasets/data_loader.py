@@ -7,11 +7,16 @@ logger = logging.getLogger(__name__)
 
 class GenericDataLoader:
     
-    def __init__(self, data_folder, corpus_file="corpus.jsonl", query_file="queries.jsonl", qrels_folder="qrels"):
+    def __init__(self, data_folder, prefix=None, corpus_file="corpus.jsonl", query_file="queries.jsonl", qrels_folder="qrels"):
         self.corpus = {}
         self.queries = {}
         self.qrels = {}
         self.data_folder = data_folder
+        
+        if prefix:
+            query_file = prefix + "-" + query_file
+            qrels_folder = prefix + "-" + qrels_folder
+
         self.corpus_file = os.path.join(self.data_folder, corpus_file)
         self.query_file = os.path.join(self.data_folder, query_file)
         self.qrels_folder = os.path.join(self.data_folder, qrels_folder)
@@ -27,14 +32,14 @@ class GenericDataLoader:
         
         if not len(self.corpus):
             self._load_corpus()
-            logger.info("Loaded %d Documents.", len(self.corpus))
+            logger.info("Loaded %d %s Documents.", len(self.corpus), split.upper())
             logger.info("Doc Example: %s", list(self.corpus.values())[0])
         
         
         if os.path.exists(self.qrels_file):
             self._load_qrels()
             self.queries = {qid: self.queries[qid] for qid in self.qrels}
-            logger.info("Loaded %d Queries.", len(self.queries))
+            logger.info("Loaded %d %s Queries.", len(self.queries), split.upper())
             logger.info("Query Example: %s", list(self.queries.values())[0])
         
         return self.corpus, self.queries, self.qrels

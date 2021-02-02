@@ -20,6 +20,7 @@ data_path = util.download_and_unzip(url, out_dir)
 
 #### Provide the data_path where nfcorpus has been downloaded and unzipped
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="train")
+dev_corpus, dev_queries, dev_qrels = GenericDataLoader(data_path).load(split="dev")
 
 #### Provide any sentence-transformers model path
 model_name = "distilroberta-base"
@@ -28,6 +29,7 @@ os.makedirs(model_save_path, exist_ok=True)
 
 retriever = TrainRetriever(model_name=model_name, model_save_path=model_save_path)
 train_samples = retriever.load_train(corpus, queries, qrels)
+ir_evaluator = retriever.load_dev(dev_corpus, dev_queries, dev_qrels)
 
 #### Train the model
-results = retriever.train(train_samples, num_epochs=1)
+results = retriever.train(train_samples, evaluator=ir_evaluator, num_epochs=1, evaluation_steps=50)

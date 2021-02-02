@@ -1,5 +1,5 @@
 from sentence_transformers import SentenceTransformer, SentencesDataset, models, losses
-from sentence_transformers.evaluation import SequentialEvaluator
+from sentence_transformers.evaluation import SequentialEvaluator, InformationRetrievalEvaluator
 from sentence_transformers.readers import InputExample
 from torch.utils.data import DataLoader
 from tqdm.autonotebook import trange
@@ -14,7 +14,6 @@ class TrainRetriever:
         self.model_name = model_name
         self.batch_size = batch_size
         self.model_save_path = model_save_path
-        self.eval = False
 
         word_embedding_model = models.Transformer(model_name, max_seq_length=max_seq_length)
         pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension())
@@ -38,23 +37,34 @@ class TrainRetriever:
         logger.info("Loaded {} training pairs.".format(len(train_samples)))
         return train_samples
     
-    def load_eval(self, corpus, queries, qrels):
-        pass
+    def load_dev(self, dev_corpus, dev_queries, dev_qrels, name="eval"):
+
+        dev_rel_docs = {}
+        # need to convert dev_qrels to qid => Set[cid]        
+        for query_id, metadata in dev_qrels.items():
+            dev_rel_docs[query_id] = set()
+            for corpus_id, score in metadata.items():
+                if score >= 1:
+                    dev_rel_docs[query_id].add(corpus_id)
+        
+        return InformationRetrievalEvaluator(dev_queries, dev_corpus, dev_rel_docs, name=name)
 
 
-    def train(self, train_samples, eval_samples=None, num_epochs=1, lr=2e-5, evaluation_steps=5000):
+    def train(self, train_samples, evaluator=None, num_epochs=1, lr=2e-5, evaluation_steps=5000):
 
         train_data = SentencesDataset(train_samples, model=self.model)
         train_dataloader = DataLoader(train_data, shuffle=True, batch_size=self.batch_size)
         train_loss = losses.MultipleNegativesRankingLoss(model=self.model)
-        evaluator = SequentialEvaluator([], main_score_function=lambda x: time.time()) # dummy evaluator
-        warmup_steps = int(len(train_samples) * num_epochs / self.batch_size * 0.1)
+        dev_set_present = True if evaluator else False
 
-        if self.eval:
-            evaluator = None
+        if not evaluator:
+            # dummy evaluator
+            evaluator = SequentialEvaluator([], main_score_function=lambda x: time.time())
+            
+        warmup_steps = int(len(train_samples) * num_epochs / self.batch_size * 0.1)
         
         # Train the model
-        logger.info("Starting to train, Eval set present: {}...".format(self.eval))
+        logger.info("Starting to train, Dev set present: {}...".format(dev_set_present))
         self.model.fit(train_objectives=[(train_dataloader, train_loss)],
                 evaluator=evaluator,
                 epochs=num_epochs,

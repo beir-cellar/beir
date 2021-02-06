@@ -24,17 +24,18 @@ class DenseRetrievalExactSearch:
         logger.info("Encoding Queries...")
         query_ids = list(queries.keys())
         self.results = {qid: {} for qid in query_ids}
-        queries = [queries[qid]["text"] for qid in queries]
+        queries = [queries[qid] for qid in queries]
         query_embeddings = self.model.encode_queries(
             queries, show_progress_bar=self.show_progress_bar, batch_size=self.batch_size)
           
-        logger.info("Encoding Corpus... Warning: This might take a while!")
+        logger.info("Encoding Corpus in batches... Warning: This might take a while!")
         corpus_ids = list(corpus.keys())
         corpus = [corpus[cid] for cid in corpus_ids]
-            
+
         itr = range(0, len(corpus), self.corpus_chunk_size)
-                
-        for corpus_start_idx in itr:
+
+        for batch_num, corpus_start_idx in enumerate(itr):
+            logger.info("Encoding Batch {}/{}...".format(batch_num+1, len(itr)))
             corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))
 
             #Encode chunk of corpus    
@@ -60,4 +61,4 @@ class DenseRetrievalExactSearch:
                     if corpus_id != query_id:
                         self.results[query_id][corpus_id] = score
         
-            return self.results 
+        return self.results 

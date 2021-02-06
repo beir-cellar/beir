@@ -68,9 +68,7 @@ class GenericDataLoader:
         with open(self.query_file, encoding='utf8') as fIn:
             for line in fIn:
                 line = json.loads(line)
-                self.queries[line.get("_id")] = {
-                    "text": line.get("text")
-                }
+                self.queries[line.get("_id")] = line.get("text")
         
     def _load_qrels(self):
         

@@ -28,7 +28,7 @@ class BM25Search:
         
         #retrieve results from BM25 
         query_ids = list(queries.keys())
-        queries = [queries[qid]["text"] for qid in query_ids]
+        queries = [queries[qid] for qid in query_ids]
         
         for start_idx in trange(0, len(queries), self.batch_size, desc='que'):
             query_ids_batch = query_ids[start_idx:start_idx+self.batch_size]

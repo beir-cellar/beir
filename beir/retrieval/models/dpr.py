@@ -1,5 +1,5 @@
-from transformers import DPRContextEncoder, DPRContextEncoderTokenizer
-from transformers import DPRQuestionEncoder, DPRQuestionEncoderTokenizer
+from transformers import DPRContextEncoder, DPRContextEncoderTokenizerFast
+from transformers import DPRQuestionEncoder, DPRQuestionEncoderTokenizerFast
 import numpy as np
 import torch
 from tqdm.autonotebook import trange
@@ -7,13 +7,13 @@ from tqdm.autonotebook import trange
 class DPR:
     def __init__(self, q_model=None, ctx_model=None, **kwargs):
         # Query tokenizer and model
-        self.query_tokenizer = DPRQuestionEncoderTokenizer.from_pretrained(q_model)
+        self.query_tokenizer = DPRQuestionEncoderTokenizerFast.from_pretrained(q_model)
         self.query_model = DPRQuestionEncoder.from_pretrained(q_model)
         self.query_model.cuda()
         self.query_model.eval()
         
         # Context tokenizer and model
-        self.context_tokenizer = DPRContextEncoderTokenizer.from_pretrained(ctx_model)
+        self.context_tokenizer = DPRContextEncoderTokenizerFast.from_pretrained(ctx_model)
         self.context_model = DPRContextEncoder.from_pretrained(ctx_model)
         self.context_model.cuda()
         self.context_model.eval()

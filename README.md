@@ -185,32 +185,34 @@ for query_id, metadata in qrels.items():
 
 ## Benchmarking
 
+The Table shows the NDCG@10 scores.
+
 | Domain     |Dataset       | BM25    | SBERT   | USE-QA  | DPR     |
 | :---------:|------------: |:------: |:------: |:------: |:------: |
-|            | TREC-COVID   |         |         |         |         |
+|            | TREC-COVID   | 0.616   | 0.461   |         |         |
 | Bio-Medical| BioASQ       |         |         |         |         |
-|            | NFCorpus     |         |         |         |         |
+|            | NFCorpus     | 0.294   | 0.233   |         |         |
 |            |              |         |         |         |         |
-| Question   | NQ           |         |         |         |         |
-| Answering  | HotpotQA     |         |         |         |         |
+| Question   | NQ           | 0.481   | 0.530   |         |         |
+| Answering  | HotpotQA     | 0.601   | 0.419   |         |         |
 |            |              |         |         |         |         |
-| News       | NewsQA       |         |         |         |         |
+| News       | NewsQA       | 0.457   | 0.263   |         |         |
 |            |              |         |         |         |         |
-| Twitter    | Signal-1M    |         |         |         |         |
+| Twitter    | Signal-1M    |  0.477  | 0.272   |         |         |
 |            |              |         |         |         |         |
-| Finance    | FiQA-2018    |         |         |         |         |
-| Argument   | ArguAna      |         |         |         |         |
-|            | Touche-2020  |         |         |         |         |
+| Finance    | FiQA-2018    |         |  0.223  |         |         |
+| Argument   | ArguAna      |  0.441  |  0.415  |         |         |
+|            | Touche-2020  |  0.605  |         |         |         |
 |            |              |         |         |         |         |
-| Duplicate  | CQaDupstack  |         |         |         |         |
+| Duplicate  | CQaDupstack  |  0.069  |  0.061  |         |         |
 | Question   | Quora        |         |         |         |         |
 |            |              |         |         |         |         |
-|  Entity    | DBPedia-v2   |         |         |         |         |
+|  Entity    | DBPedia-v2   |  0.285  |  0.261  |         |         |
 |            |              |         |         |         |         |
 | Scientific | SCIDOCS      |         |         |         |         |
 |            |              |         |         |         |         |
-| Claim      | FEVER        |         |         |         |         |
-|Verification|Climate-FEVER |         |         |         |         |
+| Claim      | FEVER        |  0.649  |  0.601  |         |         |
+|Verification|Climate-FEVER |  0.179  |  0.192  |         |         |
 
 
 ## Citing & Authors

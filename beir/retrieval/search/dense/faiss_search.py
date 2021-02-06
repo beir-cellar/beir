@@ -1,13 +1,14 @@
 import faiss
 import logging
 import numpy as np
+from typing import List, Dict
 
 logger = logging.getLogger(__name__)
 
 #Parent class for any dense model
 class DenseRetrievalFaissSearch:
     
-    def __init__(self, model, n_clusters, nprobe, batch_size=128, show_progress_bar=True, **kwargs):
+    def __init__(self, model, n_clusters: int, nprobe: int, batch_size: int = 128, show_progress_bar: bool = True, **kwargs):
         #model is class that provides encode_corpus() and encode_queries()
         self.model = model
         self.embedding_size = 768
@@ -19,7 +20,7 @@ class DenseRetrievalFaissSearch:
         self.index.nprobe = nprobe
         self.results = {}
     
-    def search(self, corpus, queries, top_k):
+    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int]) -> Dict[str, Dict[str, float]]:
         #Create embeddings for all queries using model.encode_queries()
         #Runs semantic search against the corpus embeddings
         #Returns a ranked list with the corpus ids

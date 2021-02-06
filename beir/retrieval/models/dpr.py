@@ -2,10 +2,11 @@ from transformers import DPRContextEncoder, DPRContextEncoderTokenizerFast
 from transformers import DPRQuestionEncoder, DPRQuestionEncoderTokenizerFast
 import numpy as np
 import torch
+from typing import List, Dict
 from tqdm.autonotebook import trange
 
 class DPR:
-    def __init__(self, q_model=None, ctx_model=None, **kwargs):
+    def __init__(self, q_model: str = None, ctx_model: str = None, **kwargs):
         # Query tokenizer and model
         self.query_tokenizer = DPRQuestionEncoderTokenizerFast.from_pretrained(q_model)
         self.query_model = DPRQuestionEncoder.from_pretrained(q_model)
@@ -18,7 +19,7 @@ class DPR:
         self.context_model.cuda()
         self.context_model.eval()
     
-    def encode_queries(self, queries, batch_size=16, **kwargs):
+    def encode_queries(self, queries: List[str], batch_size: int = 16, **kwargs) -> np.ndarray:
         output = []
         with torch.no_grad():
             for start_idx in trange(0, len(queries), batch_size, desc='que'):
@@ -32,7 +33,7 @@ class DPR:
         assert out_tensor.shape[0] == len(queries)
         return np.asarray(out_tensor.cpu())
         
-    def encode_corpus(self, corpus, batch_size=8, **kwargs):
+    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int = 8, **kwargs) -> np.ndarray:
         
         output = []
         with torch.no_grad():

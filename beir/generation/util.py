@@ -1,7 +1,8 @@
 import csv
 import json
+from typing import Dict
 
-def write_to_json(output_file, data):
+def write_to_json(output_file: str, data: Dict[str, str]):
     with open(output_file, 'w') as fOut:
         for idx, text in data.items():
             json.dump({
@@ -11,7 +12,7 @@ def write_to_json(output_file, data):
             }, fOut)
             fOut.write('\n')
 
-def write_to_tsv(output_file, data):
+def write_to_tsv(output_file: str, data: Dict[str, str]):
     with open(output_file, 'w') as fOut:
         writer = csv.writer(fOut, delimiter="\t", quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["query-id", "corpus-id", "score"])

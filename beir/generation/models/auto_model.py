@@ -1,15 +1,16 @@
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 import torch
+from typing import List, Dict
 
 class QGenModel:
-    def __init__(self, model_path, **kwargs):
+    def __init__(self, model_path: str, **kwargs):
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=True)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
         self.gen_prefix = ""
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = self.model.to(self.device)
     
-    def generate(self, corpus, ques_per_passage, top_p, top_k, max_length):
+    def generate(self, corpus: List[Dict[str, str]], ques_per_passage: int, top_p: int, top_k: int, max_length: int) -> List[str]:
         
         texts = [(self.gen_prefix + doc["title"] + " " + doc["text"]) for doc in corpus]
         encodings = self.tokenizer(texts, padding=True, truncation=True, return_tensors="pt")

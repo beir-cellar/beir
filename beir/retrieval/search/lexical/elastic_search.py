@@ -1,5 +1,6 @@
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import streaming_bulk
+from typing import Dict, List, Tuple
 import logging
 import tqdm
 import sys
@@ -9,7 +10,7 @@ tracer.setLevel(logging.CRITICAL) # supressing INFO messages for elastic-search
 
 class ElasticSearch(object):
     
-    def __init__(self, es_credentials):
+    def __init__(self, es_credentials: Dict[str, object]):
         
         logging.info("Activating Elasticsearch....")
         logging.info("Elastic Search Credentials: %s", es_credentials)
@@ -26,7 +27,7 @@ class ElasticSearch(object):
             maxsize=es_credentials["maxsize"])
         
     
-    def check_index_name(self, valid=True):
+    def check_index_name(self, valid: bool = True):
         """Check Elasticsearch Index Name"""
         # https://stackoverflow.com/questions/41585392/what-are-the-rules-for-index-names-in-elastic-search
         # Check 1: Must not contain the characters ===> #:\/*?"<>|,
@@ -91,7 +92,7 @@ class ElasticSearch(object):
         progress.reset()
         progress.close()
     
-    def lexical_multisearch(self, texts, top_hits, skip=0, text_present=False):
+    def lexical_multisearch(self, texts: List[str], top_hits: int, skip: int = 0, text_present: bool = False):
         """lexical search using text in Elastic Search
 
         Args:
@@ -142,7 +143,7 @@ class ElasticSearch(object):
         return result
     
     
-    def generate_actions(self, dictionary, update=False):
+    def generate_actions(self, dictionary: Dict[str, Dict[str, str]], update: bool = False):
         """Iterator function for efficient addition to elastic-search
         Update - https://stackoverflow.com/questions/35182403/bulk-update-with-pythons-elasticsearch
 
@@ -169,7 +170,7 @@ class ElasticSearch(object):
                 
             yield doc
         
-    def hit_template(self, es_res, hits):
+    def hit_template(self, es_res: Dict[str, object], hits: List[Tuple[str, float]]) -> Dict[str, object]:
         result = {
             'meta': {
                 'total': es_res['hits']['total']['value'],

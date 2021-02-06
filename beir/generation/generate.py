@@ -1,5 +1,6 @@
 from tqdm.autonotebook import trange
 from .util import write_to_json, write_to_tsv
+from typing import Dict
 import logging, os
 
 logger = logging.getLogger(__name__)
@@ -11,7 +12,7 @@ class QueryGenerator:
         self.gen_queries = {}
 
     @staticmethod
-    def save(output_dir, queries, qrels, prefix):
+    def save(output_dir: str, queries: Dict[str, str], qrels: Dict[str, Dict[str, int]], prefix: str):
         
         os.makedirs(output_dir, exist_ok=True)
         os.makedirs(os.path.join(output_dir, prefix + "-qrels"), exist_ok=True)
@@ -22,10 +23,18 @@ class QueryGenerator:
         write_to_json(output_file=query_file, data=queries)
         write_to_tsv(output_file=qrels_file, data=qrels)
 
-    def generate(self, corpus, output_dir, top_p=0.95, top_k=25, max_length=64,
-                    ques_per_passage=1, prefix="gen", batch_size=32, save_after=100000):
+    def generate(self, 
+                 corpus: Dict[str, Dict[str, str]], 
+                 output_dir: str, 
+                 top_p: int = 0.95, 
+                 top_k: int = 25, 
+                 max_length: int = 64,
+                 ques_per_passage: int = 1, 
+                 prefix: str = "gen", 
+                 batch_size: int = 32, 
+                 save_after: int = 100000):
         
-        logger.info("Starting to Generate Questions...")
+        logger.info("Starting to Generate {} Questions Per Passage...".format(ques_per_passage))
         logger.info("Batch Size: --- {} ---".format(batch_size))
         
         count = 0

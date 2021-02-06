@@ -2,13 +2,14 @@ from .util import pytorch_cos_sim
 import logging
 import sys
 import torch
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
 #Parent class for any dense model
 class DenseRetrievalExactSearch:
     
-    def __init__(self, model, batch_size=128, corpus_chunk_size=50000, **kwargs):
+    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, **kwargs):
         #model is class that provides encode_corpus() and encode_queries()
         self.model = model
         self.batch_size = batch_size
@@ -16,7 +17,7 @@ class DenseRetrievalExactSearch:
         self.show_progress_bar = True #TODO: implement no progress bar if false
         self.results = {}
     
-    def search(self, corpus, queries, top_k):
+    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int]) -> Dict[str, Dict[str, float]]:
         #Create embeddings for all queries using model.encode_queries()
         #Runs semantic search against the corpus embeddings
         #Returns a ranked list with the corpus ids

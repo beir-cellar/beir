@@ -1,10 +1,11 @@
 from .elastic_search import ElasticSearch
 import tqdm
 from tqdm import trange
+from typing import List, Dict
 
 class BM25Search:
-    def __init__(self, index_name, hostname="localhost", keys={"title": "title", "body": "txt"}, 
-                 batch_size=128, timeout=100, retry_on_timeout=True, maxsize=24):
+    def __init__(self, index_name: str, hostname: str = "localhost", keys: Dict[str, str] = {"title": "title", "body": "txt"}, 
+                 batch_size: int = 128, timeout: int = 100, retry_on_timeout: bool = True, maxsize: int = 24):
         self.results = {}
         self.batch_size = batch_size
         self.config = {
@@ -22,7 +23,7 @@ class BM25Search:
         self.es.delete_index()
         self.es.create_index()
     
-    def search(self, corpus, queries, top_k):
+    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int]) -> Dict[str, Dict[str, float]]:
         # Index Corpus within elastic-search
         self.index(corpus)
         
@@ -46,7 +47,7 @@ class BM25Search:
         return self.results
         
     
-    def index(self, corpus):
+    def index(self, corpus: Dict[str, Dict[str, str]]):
         progress = tqdm.tqdm(unit="docs", total=len(corpus))
         # dictionary structure = {_id: {title_key: title, text_key: text}}
         dictionary = {idx: {
@@ -59,35 +60,3 @@ class BM25Search:
                 dictionary=dictionary, update=False),
                 progress=progress
                 )
-
-
-    def bm25_rank(self, queries, judgements, top_k, batch_size):
-        """[summary]
-
-        Args:
-            queries ([type]): [description]
-            top_k ([type]): [description]
-            batch_size ([type]): [description]
-        """
-        _type = next(iter(list(judgements.values())[0]))
-        generator = chunks(list(queries.keys()), batch_size)
-        batches = int(len(queries)/batch_size)
-        total = batches if len(queries) % batch_size == 0 else batches + 1 
-        
-        for query_id_chunks in tqdm.tqdm(generator, total=total):
-            texts = [queries[query_id] for query_id in query_id_chunks]
-            results = self.es.lexical_multisearch(
-                texts=texts, top_hits=top_k + 1) 
-            # add 1 extra just incase if query within document
-
-            for (query_id, hit) in zip(query_id_chunks, results):
-                scores = {}
-                for corpus_id, score in hit['hits']:
-                    corpus_id = type(_type)(corpus_id)
-                    # making sure query doesnt return in results
-                    if corpus_id != query_id:
-                        scores[corpus_id] = score
-                    
-                self.rank_results[query_id] = scores
-                
-        return self.rank_results

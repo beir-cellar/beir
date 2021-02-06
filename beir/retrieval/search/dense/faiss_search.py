@@ -31,7 +31,7 @@ class DenseRetrievalFaissSearch:
         query_embeddings = self.model.encode_queries(
             queries, show_progress_bar=self.show_progress_bar, batch_size=self.batch_size)
           
-        logger.info("Encoding Corpus... Warning: This might take a while!")
+        logger.info("Encoding Whole Corpus... Warning: This might take a while!")
         corpus_ids = list(corpus.keys())
         corpus = [corpus[cid] for cid in corpus_ids]
         corpus_embeddings = self.model.encode_corpus(corpus, show_progress_bar=True, batch_size=self.batch_size)

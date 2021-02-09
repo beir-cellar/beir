@@ -166,9 +166,11 @@ For all examples, see below:
 - [Exact Search Retrieval using Dense Model](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_dense.py)
 - [Faiss Search Retrieval using Dense Model](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_faiss_dense.py)
 - [Training Dense Retrieval Model](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/train_dense.py)
+- [Custom Dataset Retrieval Evaluation](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_custom.py)
 
 ### Generation
-- [Query Generation using T5/BART](https://github.com/benchmarkir/beir/blob/main/examples/generation/query_generator.py)
+- [Question Generation using T5/BART](https://github.com/benchmarkir/beir/blob/main/examples/generation/query_generator.py)
+- [Question Generation and Zero-Shot Training](https://github.com/benchmarkir/beir/blob/main/examples/generation/query_gen_and_train.py)
 
 ## Datasets
 

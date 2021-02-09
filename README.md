@@ -118,12 +118,15 @@ Now, you can use either Sentence-transformers, DPR or USE-QA as your dense retri
 from beir.retrieval import models
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
+#### Load SBERT model ####
 model = DRES(models.SentenceBERT("distilroberta-base-msmarco-v2"))
 
+#### Load DPR model ####
 # model = DRES(EvaluateRetrieval(models.DPR(
 #     'facebook/dpr-question_encoder-single-nq-base',
 #     'facebook/dpr-ctx_encoder-single-nq-base' )))
 
+#### Load USE-QA model ####
 # model = DRES(models.UseQA("https://tfhub.dev/google/universal-sentence-encoder-qa/3"))
 ```
 

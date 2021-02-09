@@ -2,30 +2,63 @@ import json
 import os
 import logging
 import csv
+from typing import Dict, Tuple
 
 logger = logging.getLogger(__name__)
 
 class GenericDataLoader:
     
-    def __init__(self, data_folder, prefix=None, corpus_file="corpus.jsonl", query_file="queries.jsonl", qrels_folder="qrels"):
+    def __init__(self, data_folder: str = None, prefix: str = None, corpus_file: str = "corpus.jsonl", query_file: str = "queries.jsonl", 
+                 qrels_folder: str = "qrels", qrels_file: str = ""):
         self.corpus = {}
         self.queries = {}
         self.qrels = {}
-        self.data_folder = data_folder
         
         if prefix:
             query_file = prefix + "-" + query_file
             qrels_folder = prefix + "-" + qrels_folder
 
-        self.corpus_file = os.path.join(self.data_folder, corpus_file)
-        self.query_file = os.path.join(self.data_folder, query_file)
-        self.qrels_folder = os.path.join(self.data_folder, qrels_folder)
-        self.qrels_file = ""
-        
+        self.corpus_file = os.path.join(data_folder, corpus_file) if data_folder else corpus_file
+        self.query_file = os.path.join(data_folder, query_file) if data_folder else query_file
+        self.qrels_folder = os.path.join(data_folder, qrels_folder) if data_folder else None
+        self.qrels_file = qrels_file
     
-    def load(self, split="test"):
+    @staticmethod
+    def check(fIn: str, ext: str):
+        if not os.path.exists(fIn):
+            raise ValueError("File {} not present! Please provide accurate file.".format(fIn))
+        
+        if not fIn.endswith(ext):
+            raise ValueError("File {} must be present with extension {}".format(fIn, ext))
+
+    def load_custom(self) -> Tuple[Dict[str, Dict[str, str]], Dict[str, str], Dict[str, Dict[str, int]]]:
+
+        self.check(fIn=self.corpus_file, ext="jsonl")
+        self.check(fIn=self.query_file, ext="jsonl")
+        self.check(fIn=self.qrels_file, ext="tsv")
+
+        if not len(self.queries):
+            self._load_queries()
+        
+        if not len(self.corpus):
+            self._load_corpus()
+            logger.info("Loaded %d Documents.", len(self.corpus))
+            logger.info("Doc Example: %s", list(self.corpus.values())[0])
+        
+        if os.path.exists(self.qrels_file):
+            self._load_qrels()
+            self.queries = {qid: self.queries[qid] for qid in self.qrels}
+            logger.info("Loaded %d Queries.", len(self.queries))
+            logger.info("Query Example: %s", list(self.queries.values())[0])
+        
+        return self.corpus, self.queries, self.qrels
+
+    def load(self, split="test") -> Tuple[Dict[str, Dict[str, str]], Dict[str, str], Dict[str, Dict[str, int]]]:
         
         self.qrels_file = os.path.join(self.qrels_folder, split + ".tsv")
+        self.check(fIn=self.corpus_file, ext="jsonl")
+        self.check(fIn=self.query_file, ext="jsonl")
+        self.check(fIn=self.qrels_file, ext="tsv")
         
         if not len(self.queries):
             self._load_queries()
@@ -35,7 +68,6 @@ class GenericDataLoader:
             logger.info("Loaded %d %s Documents.", len(self.corpus), split.upper())
             logger.info("Doc Example: %s", list(self.corpus.values())[0])
         
-        
         if os.path.exists(self.qrels_file):
             self._load_qrels()
             self.queries = {qid: self.queries[qid] for qid in self.qrels}
@@ -44,8 +76,10 @@ class GenericDataLoader:
         
         return self.corpus, self.queries, self.qrels
     
-    def load_corpus(self):
+    def load_corpus(self) -> Dict[str, Dict[str, str]]:
         
+        self.check(fIn=self.corpus_file, ext="jsonl")
+
         if not len(self.corpus):
             self._load_corpus()
             logger.info("Loaded %d Documents.", len(self.corpus))

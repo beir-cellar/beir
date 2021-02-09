@@ -21,7 +21,7 @@ out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
 #### Provide the data_path where nfcorpus has been downloaded and unzipped
-corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
+corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
 #### Sentence-Transformer ####
 #### Provide any pretrained sentence-transformers model path

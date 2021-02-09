@@ -73,6 +73,42 @@ data_path = util.download_and_unzip(url, out_dir)
 #### Provide the data_path where trec-covid has been downloaded and unzipped
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 ```
+### Evaluate on a Custom Dataset?
+
+Load your custom corpus, query, and qrels as python ``dict`` in the format shown below:
+
+```python
+#### Corpus ####
+corpus = {
+    "doc1" : {
+        "title": "Albert Einstein", 
+        "text": "Albert Einstein was a German-born theoretical physicist. who developed the theory of relativity, \
+                 one of the two pillars of modern physics (alongside quantum mechanics). His work is also known for \
+                 its influence on the philosophy of science. He is best known to the general public for his mass–energy \
+                 equivalence formula E = mc2, which has been dubbed 'the world's most famous equation'. He received the 1921 \
+                 Nobel Prize in Physics 'for his services to theoretical physics, and especially for his discovery of the law \
+                 of the photoelectric effect', a pivotal step in the development of quantum theory."
+        },
+    "doc2" : {
+        "title": "", # Keep title an empty string if not present
+        "text": "Wheat beer is a top-fermented beer which is brewed with a large proportion of wheat relative to the amount of \
+                 malted barley. The two main varieties are German Weißbier and Belgian witbier; other types include Lambic (made\
+                 with wild yeast), Berliner Weisse (a cloudy, sour beer), and Gose (a sour, salty beer)."
+    },
+}
+
+#### Queries #### 
+queries = {
+    "q1" : "Who developed the mass-energy equivalence formula?",
+    "q2" : "Which beer is brewed with a large proportion of wheat?"
+}
+
+#### Qrels #### 
+qrels = {
+    "q1" : {"doc1": 1},
+    "q2" : {"doc2": 1},
+}
+```
 
 ### 2. Model Loading
 

@@ -4,8 +4,9 @@ from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
-import pathlib, os
 import logging
+import pathlib, os
+import random
 
 #### Just some code to print debug information to stdout
 logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -15,7 +16,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 #### /print debug information to stdout
 
 #### Download nfcorpus.zip dataset and unzip the dataset
-dataset = "nfcorpus.zip"
+dataset = "nq.zip"
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}".format(dataset)
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
@@ -48,3 +49,11 @@ results = retriever.retrieve(corpus, queries)
 
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+
+#### Retrieval Example ####
+query_id, scores_dict = random.choice(list(results.items()))
+print("Query : %s\n" % queries[query_id])
+
+scores = sorted(scores_dict.items(), key=lambda item: item[1], reverse=True)
+for rank in range(10):
+    print("Doc %d: [%s] - %s\n" % (rank+1, corpus[scores[rank][0]].get("title"), corpus[scores[rank][0]].get("text")))

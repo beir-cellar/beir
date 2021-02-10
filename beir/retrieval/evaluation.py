@@ -18,7 +18,7 @@ class EvaluateRetrieval:
         if not self.retriever:
             raise ValueError("Model/Technique has not been provided!")
         return self.retriever.search(corpus, queries, self.top_k)
-    
+
     @staticmethod
     def evaluate(qrels: Dict[str, Dict[str, int]], 
                  results: Dict[str, Dict[str, float]], 

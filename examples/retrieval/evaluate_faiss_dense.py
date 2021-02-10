@@ -40,3 +40,11 @@ results = retriever.retrieve(corpus, queries)
 
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+
+#### Retrieval Example ####
+query_id, scores_dict = random.choice(list(results.items()))
+print("Query : %s\n" % queries[query_id])
+
+scores = sorted(scores_dict.items(), key=lambda item: item[1], reverse=True)
+for rank in range(10):
+    print("Doc %d: [%s] - %s\n" % (rank+1, corpus[scores[rank][0]].get("title"), corpus[scores[rank][0]].get("text")))

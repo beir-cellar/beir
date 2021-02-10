@@ -31,10 +31,10 @@ model = DRES(models.SentenceBERT("distilroberta-base-msmarco-v2"))
 #### DPR ####
 #### Use the DPR NQ trained question and context encoder
 #### For more details - https://huggingface.co/transformers/model_doc/dpr.html
-# model = DRES(EvaluateRetrieval(models.DPR(
+# model = DRES(models.DPR(
 #     'facebook/dpr-question_encoder-single-nq-base',
 #     'facebook/dpr-ctx_encoder-single-nq-base'
-#     )))
+#     ))
 
 #### USE-QA ####
 #### We use the English USE-QA v3 and provide the tf hub url

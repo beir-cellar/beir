@@ -159,18 +159,18 @@ ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_v
 For all examples, see below:
 
 ### All in One
-- [Google Colab Example](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
+- [Google Colab Example](https://colab.research.google.com/github/UKPLab/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
 
 ### Retrieval
-- [BM25 Retrieval using Elasticsearch](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_bm25.py)
-- [Exact Search Retrieval using Dense Model](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_dense.py)
-- [Faiss Search Retrieval using Dense Model](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_faiss_dense.py)
-- [Training Dense Retrieval Model](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/train_dense.py)
-- [Custom Dataset Retrieval Evaluation](https://github.com/benchmarkir/beir/blob/main/examples/retrieval/evaluate_custom.py)
+- [BM25 Retrieval using Elasticsearch](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluate_bm25.py)
+- [Exact Search Retrieval using Dense Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluate_dense.py)
+- [Faiss Search Retrieval using Dense Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluate_faiss_dense.py)
+- [Training Dense Retrieval Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/train_dense.py)
+- [Custom Dataset Retrieval Evaluation](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluate_custom.py)
 
 ### Generation
-- [Question Generation using T5/BART](https://github.com/benchmarkir/beir/blob/main/examples/generation/query_generator.py)
-- [Question Generation and Zero-Shot Training](https://github.com/benchmarkir/beir/blob/main/examples/generation/query_gen_and_train.py)
+- [Question Generation using T5/BART](https://github.com/UKPLab/beir/blob/main/examples/generation/query_generator.py)
+- [Question Generation and Zero-Shot Training](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py)
 
 ## Datasets
 
@@ -261,7 +261,7 @@ The Table shows the NDCG@10 scores.
 The main contributors of this repository are:
 - [Nandan Thakur](https://github.com/Nthakur20) 
 
-Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)
+Contact person: [Nandan Thakur](https://nthakur.xyz), [nandant@gmail.com](mailto:nandant@gmail.com)
 
 [https://www.ukp.tu-darmstadt.de/](https://www.ukp.tu-darmstadt.de/)
 

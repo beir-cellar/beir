@@ -21,6 +21,7 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=purple)](https://www.python.org/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Nthakur20/StrapDown.js/graphs/commit-activity)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
+[![Downloads](https://pepy.tech/badge/beir)](https://pepy.tech/project/beir)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/benchmarkir/beir/)
 
 ## What is it?
@@ -35,6 +36,24 @@ Worry not! You can easily add your dataset into the benchmark by following this 
 
 Want us to add a new dataset or a new model? feel free to post an issue here or make a pull request!
 
+## Table Of Contents
+
+- [Installation](https://github.com/UKPLab/beir#installation)
+- [Getting Started](https://github.com/UKPLab/beir#getting-started)
+    - [Quick Example](https://github.com/UKPLab/beir#getting-started)
+    - [Google Colab](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
+- [How to use?](https://github.com/UKPLab/beir#getting-started)
+    - [1. Dataset Downloading and Loading](https://github.com/UKPLab/beir#1-data-downloading-and-loading)
+    - [2. Model Loading](https://github.com/UKPLab/beir#2-model-loading)
+    - [3. Retriever Search and Evaluation](https://github.com/UKPLab/beir#3-retriever-search-and-evaluation)
+    - [Evaluate on Custom dataset?](https://github.com/UKPLab/beir#evaluate-on-a-custom-dataset)
+- [Examples](https://github.com/UKPLab/beir#examples)
+    - [Retrieval](https://github.com/UKPLab/beir#retrieval)
+    - [Generation](https://github.com/UKPLab/beir#generation)
+    - [Filtration](https://github.com/UKPLab/beir#)
+- [Datasets](https://github.com/UKPLab/beir#datasets)
+- [Benchmarking](https://github.com/UKPLab/beir#benchmarking)
+- [Citing & Authors](https://github.com/UKPLab/beir#citing--authors)
 ## Installation
 
 Install via pip:
@@ -259,9 +278,9 @@ The Table shows the NDCG@10 scores.
 ## Citing & Authors
 
 The main contributors of this repository are:
-- [Nandan Thakur](https://github.com/Nthakur20) 
+- [Nandan Thakur](https://github.com/Nthakur20), Personal Website: [https://nthakur.xyz](https://nthakur.xyz)
 
-Contact person: [Nandan Thakur](https://nthakur.xyz), [nandant@gmail.com](mailto:nandant@gmail.com)
+Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)
 
 [https://www.ukp.tu-darmstadt.de/](https://www.ukp.tu-darmstadt.de/)
 

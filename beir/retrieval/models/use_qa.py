@@ -35,8 +35,12 @@ class UseQA:
     def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int = 8, **kwargs) -> np.ndarray:
         output = []
         for start_idx in trange(0, len(corpus), batch_size, desc='pas'):
-            titles = [row['title'] for row in corpus[start_idx:start_idx+batch_size]]
+            titles = [row.get('title', "") for row in corpus[start_idx:start_idx+batch_size]]
             texts = [row['text']  for row in corpus[start_idx:start_idx+batch_size]]
+            
+            if all(title == "" for title in titles): # Check is title is not present in the dataset
+                titles = texts # title becomes the context as well
+
             embeddings_c = self.model.signatures['response_encoder'](
                 input=tf.constant(titles),
                 context=tf.constant(texts))

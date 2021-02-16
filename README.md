@@ -46,7 +46,8 @@ Want us to add a new dataset or a new model? feel free to post an issue here or 
     - [1. Dataset Downloading and Loading](https://github.com/UKPLab/beir#1-data-downloading-and-loading)
     - [2. Model Loading](https://github.com/UKPLab/beir#2-model-loading)
     - [3. Retriever Search and Evaluation](https://github.com/UKPLab/beir#3-retriever-search-and-evaluation)
-    - [Evaluate on Custom dataset?](https://github.com/UKPLab/beir#evaluate-on-a-custom-dataset)
+    - [Evaluate on a Custom Dataset?](https://github.com/UKPLab/beir#evaluate-on-a-custom-dataset)
+    - [Evaluate your own Custom Model?](https://github.com/UKPLab/beir#evaluate-on-a-custom-dataset)
 - [Examples](https://github.com/UKPLab/beir#examples)
     - [Retrieval](https://github.com/UKPLab/beir#retrieval)
     - [Generation](https://github.com/UKPLab/beir#generation)
@@ -73,7 +74,46 @@ Tested with python versions 3.6 and 3.7
 
 ## Getting Started
 
+### Google Colab Example
+
 Try it out live with our [Google Colab Example](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
+
+### Quick Example
+
+```python
+from beir import util, LoggingHandler
+from beir.retrieval import models
+from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval.evaluation import EvaluateRetrieval
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+
+import logging
+import pathlib, os
+
+#### Just some code to print debug information to stdout
+logging.basicConfig(format='%(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO,
+                    handlers=[LoggingHandler()])
+#### /print debug information to stdout
+
+#### Download nfcorpus.zip dataset and unzip the dataset
+dataset = "nq.zip"
+url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}".format(dataset)
+out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
+data_path = util.download_and_unzip(url, out_dir)
+
+#### Provide the data_path where nfcorpus has been downloaded and unzipped
+corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+
+model = DRES(models.SentenceBERT("distilroberta-base-msmarco-v2"))
+retriever = EvaluateRetrieval(model)
+
+results = retriever.retrieve(corpus, queries)
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+```
+
+## Deeper Exploration of Retriever Evaluation
 
 ### 1. Data Downloading and Loading
 
@@ -91,42 +131,6 @@ data_path = util.download_and_unzip(url, out_dir)
 
 #### Provide the data_path where trec-covid has been downloaded and unzipped
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
-```
-### Evaluate on a Custom Dataset?
-
-Load your custom corpus, query, and qrels as python ``dict`` in the format shown below:
-
-```python
-#### Corpus ####
-corpus = {
-    "doc1" : {
-        "title": "Albert Einstein", 
-        "text": "Albert Einstein was a German-born theoretical physicist. who developed the theory of relativity, \
-                 one of the two pillars of modern physics (alongside quantum mechanics). His work is also known for \
-                 its influence on the philosophy of science. He is best known to the general public for his mass–energy \
-                 equivalence formula E = mc2, which has been dubbed 'the world's most famous equation'. He received the 1921 \
-                 Nobel Prize in Physics 'for his services to theoretical physics, and especially for his discovery of the law \
-                 of the photoelectric effect', a pivotal step in the development of quantum theory."
-        },
-    "doc2" : {
-        "title": "", # Keep title an empty string if not present
-        "text": "Wheat beer is a top-fermented beer which is brewed with a large proportion of wheat relative to the amount of \
-                 malted barley. The two main varieties are German Weißbier and Belgian witbier; other types include Lambic (made\
-                 with wild yeast), Berliner Weisse (a cloudy, sour beer), and Gose (a sour, salty beer)."
-    },
-}
-
-#### Queries #### 
-queries = {
-    "q1" : "Who developed the mass-energy equivalence formula?",
-    "q2" : "Which beer is brewed with a large proportion of wheat?"
-}
-
-#### Qrels #### 
-qrels = {
-    "q1" : {"doc1": 1},
-    "q2" : {"doc2": 1},
-}
 ```
 
 ### 2. Model Loading
@@ -172,6 +176,64 @@ results = retriever.retrieve(corpus, queries)
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
 ```
+### Evaluate on a Custom Dataset?
+
+Load your custom corpus, query, and qrels as python ``dict`` in the format shown below:
+
+```python
+#### Corpus ####
+corpus = {
+    "doc1" : {
+        "title": "Albert Einstein", 
+        "text": "Albert Einstein was a German-born theoretical physicist. who developed the theory of relativity, \
+                 one of the two pillars of modern physics (alongside quantum mechanics). His work is also known for \
+                 its influence on the philosophy of science. He is best known to the general public for his mass–energy \
+                 equivalence formula E = mc2, which has been dubbed 'the world's most famous equation'. He received the 1921 \
+                 Nobel Prize in Physics 'for his services to theoretical physics, and especially for his discovery of the law \
+                 of the photoelectric effect', a pivotal step in the development of quantum theory."
+        },
+    "doc2" : {
+        "title": "", # Keep title an empty string if not present
+        "text": "Wheat beer is a top-fermented beer which is brewed with a large proportion of wheat relative to the amount of \
+                 malted barley. The two main varieties are German Weißbier and Belgian witbier; other types include Lambic (made\
+                 with wild yeast), Berliner Weisse (a cloudy, sour beer), and Gose (a sour, salty beer)."
+    },
+}
+
+#### Queries #### 
+queries = {
+    "q1" : "Who developed the mass-energy equivalence formula?",
+    "q2" : "Which beer is brewed with a large proportion of wheat?"
+}
+
+#### Qrels #### 
+qrels = {
+    "q1" : {"doc1": 1},
+    "q2" : {"doc2": 1},
+}
+```
+
+### Evaluate your own Custom Model?
+
+Mention your custom model in a class and have two functions: 1. ``encode_queries`` and 2. ``encode_corpus``. 
+
+```python
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+
+class YourCustomModel:
+    def __init__(self, model_path=None, **kwargs)
+        self.model = None # ---> HERE Load your custom model
+    
+    # Write your own encoding query function (Returns: Query embeddings as numpy array)
+    def encode_queries(self, queries: List[str], batch_size: int, **kwargs) -> np.ndarray:
+        pass
+    
+    # Write your own encoding corpus function (Returns: Document embeddings as numpy array)  
+    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int, **kwargs) -> np.ndarray:
+        pass
+
+custom_model = DRES(YourCustomModel(model_path="your-custom-model-path"))
+```
 
 ## Examples
 
@@ -181,15 +243,20 @@ For all examples, see below:
 - [Google Colab Example](https://colab.research.google.com/github/UKPLab/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
 
 ### Retrieval
-- [BM25 Retrieval using Elasticsearch](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluate_bm25.py)
-- [Exact Search Retrieval using Dense Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluate_dense.py)
-- [Faiss Search Retrieval using Dense Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluate_faiss_dense.py)
-- [Training Dense Retrieval Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/train_dense.py)
-- [Custom Dataset Retrieval Evaluation](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluate_custom.py)
+- [BM25 Retrieval using Elasticsearch](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_bm25.py)
+- [Exact Search Retrieval using Dense Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_dense.py)
+- [Faiss Search Retrieval using Dense Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_faiss_dense.py)
+- [Training Dense Retrieval Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_dense.py)
+- [Custom Dataset Retrieval Evaluation](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/custom/evaluate_custom_dataset.py)
+- [Custom Model Retrieval Evaluation](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/custom/evaluate_custom_model.py)
 
 ### Generation
-- [Question Generation using T5/BART](https://github.com/UKPLab/beir/blob/main/examples/generation/query_generator.py)
-- [Question Generation and Zero-Shot Training](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py)
+- [Question Generation using T5 Seq2Seq model](https://github.com/UKPLab/beir/blob/main/examples/generation/query_generator.py)
+- [Question Generation and Zero-Shot Dense Encoder Training](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py)
+
+### Filtration
+- [Question Generation and Filtration using Tiny-BERT Cross-Encoder](https://github.com/UKPLab/beir/blob/main/examples/filtration/query_gen_and_filter.py)
+- [Question Generation and Filtration and Zero-shot Dense Encoder Training](https://github.com/UKPLab/beir/blob/main/examples/filtration/query_gen_filter_and_train.py)
 
 ## Datasets
 

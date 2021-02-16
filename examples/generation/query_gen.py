@@ -22,6 +22,10 @@ data_path = util.download_and_unzip(url, out_dir)
 #### Provide the data_path where nfcorpus has been downloaded and unzipped
 corpus = GenericDataLoader(data_path).load_corpus()
 
+###########################
+#### Query-Generation  ####
+###########################
+
 #### Model Loading 
 model_path = "/home/ukp/srivastava/projects/generation-train/output/msmarco/t5-small-1-epoch/checkpoint-66500"
 generator = QGen(model=QGenModel(model_path))

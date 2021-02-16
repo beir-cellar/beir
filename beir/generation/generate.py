@@ -1,5 +1,5 @@
 from tqdm.autonotebook import trange
-from .util import write_to_json, write_to_tsv
+from ..util import write_to_json, write_to_tsv
 from typing import Dict
 import logging, os
 
@@ -20,7 +20,10 @@ class QueryGenerator:
         query_file = os.path.join(output_dir, prefix + "-queries.jsonl")
         qrels_file = os.path.join(output_dir, prefix + "-qrels", "train.tsv")
         
+        logger.info("Saving Generated Queries to {}".format(query_file))
         write_to_json(output_file=query_file, data=queries)
+        
+        logger.info("Saving Generated Qrels to {}".format(qrels_file))
         write_to_tsv(output_file=qrels_file, data=qrels)
 
     def generate(self, 

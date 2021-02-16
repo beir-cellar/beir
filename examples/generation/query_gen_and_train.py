@@ -24,6 +24,12 @@ data_path = util.download_and_unzip(url, out_dir)
 #### Provide the data_path where nfcorpus has been downloaded and unzipped
 corpus = GenericDataLoader(data_path).load_corpus()
 
+
+##############################
+#### 1. Query-Generation  ####
+##############################
+
+
 #### Model Loading 
 model_path = "/home/ukp/srivastava/projects/generation-train/output/msmarco/t5-small-1-epoch/checkpoint-66500"
 generator = QGen(model=QGenModel(model_path))
@@ -39,6 +45,12 @@ ques_per_passage = 3
 #### Generate queries per passage from docs in corpus and save them in data_path
 generator.generate(corpus, data_path, ques_per_passage, prefix=prefix)
 
+
+################################
+#### 2. Train Dense-Encoder ####
+################################
+
+
 #### Training on Generated Queries ####
 corpus, gen_queries, gen_qrels = GenericDataLoader(data_path, prefix=prefix).load(split="train")
 dev_corpus, dev_queries, dev_qrels = GenericDataLoader(data_path).load(split="dev")
@@ -48,7 +60,7 @@ model_name = "distilroberta-base"
 retriever = TrainRetriever(model_name=model_name, batch_size=64)
 
 #### Prepare training samples
-train_samples = retriever.load_train(corpus, queries, qrels)
+train_samples = retriever.load_train(corpus, gen_queries, gen_qrels)
 train_dataloader = retriever.prepare_train(train_samples, shuffle=True)
 train_loss = losses.MultipleNegativesRankingLoss(model=retriever.model)
 
@@ -58,7 +70,7 @@ ir_evaluator = retriever.load_ir_evaluator(dev_corpus, dev_queries, dev_qrels)
 # ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-genQ-nfcorpus".format(model_name))
+model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-GenQ-nfcorpus".format(model_name))
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params

@@ -39,4 +39,4 @@ prefix = "gen-3"
 ques_per_passage = 3
 
 #### Generate queries per passage from docs in corpus and save them in data_path
-generator.generate(corpus, data_path, ques_per_passage, prefix="gen")
+generator.generate(corpus, output_dir=data_path, ques_per_passage=ques_per_passage, prefix=prefix)

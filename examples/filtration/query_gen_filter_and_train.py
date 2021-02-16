@@ -44,7 +44,7 @@ prefix = "gen"
 ques_per_passage = 3
 
 #### Generate queries per passage from docs in corpus and save them in data_path
-generator.generate(corpus, data_path, ques_per_passage, prefix=prefix)
+generator.generate(corpus, output_dir=data_path, ques_per_passage=ques_per_passage, prefix=prefix)
 
 
 ##############################
@@ -71,7 +71,7 @@ query_filter.filter(corpus, gen_queries, gen_qrels, output_dir=data_path, thresh
 
 
 #### Load the Filter datasets, by providing the unique filter prefix  
-corpus, filter_queries, filter_qrels = GenericDataLoader(data_path, prefix=prefix).load(split="train")
+corpus, filter_queries, filter_qrels = GenericDataLoader(data_path, prefix=filter_prefix).load(split="train")
 dev_corpus, dev_queries, dev_qrels = GenericDataLoader(data_path).load(split="dev")
 
 #### Provide any sentence-transformers model path

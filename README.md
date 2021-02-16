@@ -40,14 +40,14 @@ Want us to add a new dataset or a new model? feel free to post an issue here or 
 
 - [Installation](https://github.com/UKPLab/beir#installation)
 - [Getting Started](https://github.com/UKPLab/beir#getting-started)
-    - [Quick Example](https://github.com/UKPLab/beir#getting-started)
+    - [Quick Example](https://github.com/UKPLab/beir#quick-example)
     - [Google Colab](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
-- [How to use?](https://github.com/UKPLab/beir#getting-started)
+- [Deeper Exploration](https://github.com/UKPLab/beir#deeper-exploration)
     - [1. Dataset Downloading and Loading](https://github.com/UKPLab/beir#1-data-downloading-and-loading)
     - [2. Model Loading](https://github.com/UKPLab/beir#2-model-loading)
     - [3. Retriever Search and Evaluation](https://github.com/UKPLab/beir#3-retriever-search-and-evaluation)
     - [Evaluate on a Custom Dataset?](https://github.com/UKPLab/beir#evaluate-on-a-custom-dataset)
-    - [Evaluate your own Custom Model?](https://github.com/UKPLab/beir#evaluate-on-a-custom-dataset)
+    - [Evaluate your own Custom Model?](https://github.com/UKPLab/beir#evaluate-your-own-custom-model)
 - [Examples](https://github.com/UKPLab/beir#examples)
     - [Retrieval](https://github.com/UKPLab/beir#retrieval)
     - [Generation](https://github.com/UKPLab/beir#generation)
@@ -113,7 +113,7 @@ results = retriever.retrieve(corpus, queries)
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
 ```
 
-## Deeper Exploration of Retriever Evaluation
+## Deeper Exploration
 
 ### 1. Data Downloading and Loading
 
@@ -251,7 +251,7 @@ For all examples, see below:
 - [Custom Model Retrieval Evaluation](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/custom/evaluate_custom_model.py)
 
 ### Generation
-- [Question Generation using T5 Seq2Seq model](https://github.com/UKPLab/beir/blob/main/examples/generation/query_generator.py)
+- [Question Generation using T5 Seq2Seq model](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen.py)
 - [Question Generation and Zero-Shot Dense Encoder Training](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py)
 
 ### Filtration

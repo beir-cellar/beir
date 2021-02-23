@@ -1,4 +1,4 @@
-from .util import pytorch_cos_sim
+from .util import cos_sim, dot_score
 import logging
 import sys
 import torch
@@ -13,11 +13,16 @@ class DenseRetrievalExactSearch:
         #model is class that provides encode_corpus() and encode_queries()
         self.model = model
         self.batch_size = batch_size
+        self.score_functions = {'cos_sim': cos_sim, 'dot_score': dot_score}
         self.corpus_chunk_size = corpus_chunk_size
         self.show_progress_bar = True #TODO: implement no progress bar if false
         self.results = {}
     
-    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int]) -> Dict[str, Dict[str, float]]:
+    def search(self, 
+               corpus: Dict[str, Dict[str, str]], 
+               queries: Dict[str, str], 
+               top_k: List[int], 
+               score_function: str = "cos_sim") -> Dict[str, Dict[str, float]]:
         #Create embeddings for all queries using model.encode_queries()
         #Runs semantic search against the corpus embeddings
         #Returns a ranked list with the corpus ids
@@ -46,8 +51,8 @@ class DenseRetrievalExactSearch:
                 batch_size=self.batch_size
                 )
 
-            #Compute cosine similarites
-            cos_scores = pytorch_cos_sim(query_embeddings, sub_corpus_embeddings)
+            #Compute similarites using either cosine-similarity or dot product
+            cos_scores = self.score_functions[score_function](query_embeddings, sub_corpus_embeddings)
             cos_scores[torch.isnan(cos_scores)] = -1
 
             #Get top-k values

@@ -9,15 +9,16 @@ logger = logging.getLogger(__name__)
 
 class EvaluateRetrieval:
     
-    def __init__(self, retriever: Union[Type[DRES], Type[DRFS], Type[BM25]] = None, k_values: List[int] = [1,3,5,10,100,1000]):
+    def __init__(self, retriever: Union[Type[DRES], Type[DRFS], Type[BM25]] = None, k_values: List[int] = [1,3,5,10,100,1000], score_function: str = "cos_sim"):
         self.k_values = k_values
         self.top_k = max(k_values)
         self.retriever = retriever
+        self.score_function = score_function
             
     def retrieve(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str]) -> Dict[str, Dict[str, float]]:
         if not self.retriever:
             raise ValueError("Model/Technique has not been provided!")
-        return self.retriever.search(corpus, queries, self.top_k)
+        return self.retriever.search(corpus, queries, self.top_k, self.score_function)
 
     @staticmethod
     def evaluate(qrels: Dict[str, Dict[str, int]], 

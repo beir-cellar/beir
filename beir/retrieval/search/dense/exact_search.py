@@ -13,7 +13,7 @@ class DenseRetrievalExactSearch:
         #model is class that provides encode_corpus() and encode_queries()
         self.model = model
         self.batch_size = batch_size
-        self.score_functions = {'cos_sim': cos_sim, 'dot_score': dot_score}
+        self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.corpus_chunk_size = corpus_chunk_size
         self.show_progress_bar = True #TODO: implement no progress bar if false
         self.results = {}
@@ -22,7 +22,7 @@ class DenseRetrievalExactSearch:
                corpus: Dict[str, Dict[str, str]], 
                queries: Dict[str, str], 
                top_k: List[int], 
-               score_function: str = "cos_sim") -> Dict[str, Dict[str, float]]:
+               score_function: str) -> Dict[str, Dict[str, float]]:
         #Create embeddings for all queries using model.encode_queries()
         #Runs semantic search against the corpus embeddings
         #Returns a ranked list with the corpus ids

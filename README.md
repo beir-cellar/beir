@@ -245,7 +245,9 @@ for query_id, metadata in qrels.items():
 
 ## Benchmarking
 
-The Table shows the NDCG@10 scores.
+The benchmarking results will be included soon.
+
+<!-- The Table shows the NDCG@10 scores.
 
 | Domain     |Dataset       | BM25    | SBERT   | USE-QA  | DPR     |
 | :---------:|------------: |:------: |:------: |:------: |:------: |
@@ -272,7 +274,7 @@ The Table shows the NDCG@10 scores.
 | Scientific | SCIDOCS      |         |         |         |         |
 |            |              |         |         |         |         |
 | Claim      | FEVER        |  0.649  |  0.601  |         |         |
-|Verification|Climate-FEVER |  0.179  |  0.192  |         |         |
+|Verification|Climate-FEVER |  0.179  |  0.192  |         |         | -->
 
 
 ## Citing & Authors

@@ -8,7 +8,7 @@ import pathlib, os
 import random
 
 class YourCustomModel:
-    def __init__(self, model_path=None, **kwargs)
+    def __init__(self, model_path=None, **kwargs):
         self.model = None # ---> HERE Load your custom model
         # self.model = SentenceTransformer(model_path)
     
@@ -43,7 +43,7 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 #### Provide your custom model class name --> HERE
 model = DRES(YourCustomModel(model_path="your-custom-model-path"))
 
-retriever = EvaluateRetrieval(model)
+retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" if you wish dot-product
 
 #### Retrieve dense results (format of results is identical to qrels)
 results = retriever.retrieve(corpus, queries)

@@ -47,4 +47,5 @@ print("Query : %s\n" % queries[query_id])
 
 scores = sorted(scores_dict.items(), key=lambda item: item[1], reverse=True)
 for rank in range(10):
-    print("Doc %d: [%s] - %s\n" % (rank+1, corpus[scores[rank][0]].get("title"), corpus[scores[rank][0]].get("text")))
+    doc_id = scores[rank][0]
+    print("Doc %d: %s [%s] - %s\n" % (rank+1, doc_id, corpus[doc_id].get("title"), corpus[doc_id].get("text")))

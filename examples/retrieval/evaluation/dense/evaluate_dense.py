@@ -42,7 +42,13 @@ model = DRES(models.SentenceBERT("distilroberta-base-msmarco-v2"))
 #### Link: https://tfhub.dev/google/universal-sentence-encoder-qa/3
 # model = DRES(models.UseQA("https://tfhub.dev/google/universal-sentence-encoder-qa/3"))
 
-retriever = EvaluateRetrieval(model)
+
+#### Use Cosine-Similarity or Dot-Product for embedding similarity
+#### For SBERT: use cos_sim. 
+#### For DPR: use dot. 
+#### for USE-QA: use either.
+
+retriever = EvaluateRetrieval(model, score_function="cos_sim") # use "dot" for dot-product
 
 #### Retrieve dense results (format of results is identical to qrels)
 results = retriever.retrieve(corpus, queries)
@@ -56,4 +62,5 @@ print("Query : %s\n" % queries[query_id])
 
 scores = sorted(scores_dict.items(), key=lambda item: item[1], reverse=True)
 for rank in range(10):
-    print("Doc %d: [%s] - %s\n" % (rank+1, corpus[scores[rank][0]].get("title"), corpus[scores[rank][0]].get("text")))
+    doc_id = scores[rank][0]
+    print("Doc %d: %s [%s] - %s\n" % (rank+1, doc_id, corpus[doc_id].get("title"), corpus[doc_id].get("text")))

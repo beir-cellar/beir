@@ -58,7 +58,7 @@ qrels = {
 #### Complete list - https://www.sbert.net/docs/pretrained_models.html
 model = DRES(models.SentenceBERT("distilroberta-base-msmarco-v2"))
 
-retriever = EvaluateRetrieval(model)
+retriever = EvaluateRetrieval(model, score_function="cos_sim")
 
 #### Retrieve dense results (format of results is identical to qrels)
 results = retriever.retrieve(corpus, queries)

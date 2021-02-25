@@ -23,7 +23,7 @@ class BM25Search:
         self.es.delete_index()
         self.es.create_index()
     
-    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int]) -> Dict[str, Dict[str, float]]:
+    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int], *args) -> Dict[str, Dict[str, float]]:
         # Index Corpus within elastic-search
         self.index(corpus)
         

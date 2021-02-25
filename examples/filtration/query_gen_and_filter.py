@@ -31,7 +31,7 @@ corpus = GenericDataLoader(data_path).load_corpus()
 
 
 #### Model Loading 
-model_path = "t5-small"
+model_path = "BeIR/query-gen-msmarco-t5-base"
 generator = QGen(model=QGenModel(model_path))
 
 #### Prefix is required to seperate out synthetic queries and qrels from original

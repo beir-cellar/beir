@@ -27,7 +27,7 @@ corpus = GenericDataLoader(data_path).load_corpus()
 ###########################
 
 #### Model Loading 
-model_path = "/home/ukp/srivastava/projects/generation-train/output/msmarco/t5-small-1-epoch/checkpoint-66500"
+model_path = "BeIR/query-gen-msmarco-t5-base"
 generator = QGen(model=QGenModel(model_path))
 
 #### Query-Generation ####

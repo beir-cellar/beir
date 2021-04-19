@@ -5,9 +5,10 @@ from typing import List, Dict
 
 class BM25Search:
     def __init__(self, index_name: str, hostname: str = "localhost", keys: Dict[str, str] = {"title": "title", "body": "txt"}, 
-                 batch_size: int = 128, timeout: int = 100, retry_on_timeout: bool = True, maxsize: int = 24):
+                 batch_size: int = 128, timeout: int = 100, retry_on_timeout: bool = True, maxsize: int = 24, initialize: bool =True):
         self.results = {}
         self.batch_size = batch_size
+        self.initialize = initialize
         self.config = {
             "hostname": hostname, 
             "index_name": index_name,
@@ -17,15 +18,19 @@ class BM25Search:
             "maxsize": maxsize
         }
         self.es = ElasticSearch(self.config)
-        self.initialise()
+        if self.initialize:
+            self.initialise()
     
     def initialise(self):
         self.es.delete_index()
         self.es.create_index()
     
     def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int], *args) -> Dict[str, Dict[str, float]]:
-        # Index Corpus within elastic-search
-        self.index(corpus)
+        
+        # Index the corpus within elastic-search
+        # False, if the corpus has been already indexed
+        if self.initialize:
+            self.index(corpus)
         
         #retrieve results from BM25 
         query_ids = list(queries.keys())

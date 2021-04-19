@@ -1,6 +1,6 @@
 # Custom added
-examples/*/datasets/
-examples/*/output/
+examples/**/datasets/
+examples/**/output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

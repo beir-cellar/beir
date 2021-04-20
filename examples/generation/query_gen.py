@@ -13,13 +13,14 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-#### Download nfcorpus.zip dataset and unzip the dataset
-dataset = "nfcorpus.zip"
-url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}".format(dataset)
+#### Download scifact.zip dataset and unzip the dataset
+dataset = "scifact"
+
+url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
-#### Provide the data_path where nfcorpus has been downloaded and unzipped
+#### Provide the data_path where scifact has been downloaded and unzipped
 corpus = GenericDataLoader(data_path).load_corpus()
 
 ###########################
@@ -30,7 +31,8 @@ corpus = GenericDataLoader(data_path).load_corpus()
 model_path = "BeIR/query-gen-msmarco-t5-base"
 generator = QGen(model=QGenModel(model_path))
 
-#### Query-Generation ####
+#### Query-Generation using Nucleus Sampling (top_k=25, top_p=0.95) ####
+#### https://huggingface.co/blog/how-to-generate
 #### Prefix is required to seperate out synthetic queries and qrels from original
 prefix = "gen-3"
 

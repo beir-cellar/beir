@@ -15,23 +15,23 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-dataset = "nfcorpus"
+dataset = "scifact"
 
-#### Download NFCorpus dataset and unzip the dataset
+#### Download scifact dataset and unzip the dataset
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
-#### Provide the data path where nfcorpus has been downloaded and unzipped to the data loader
+#### Provide the data path where scifact has been downloaded and unzipped to the data loader
 # data folder would contain these files: 
-# (1) nfcorpus/corpus.jsonl  (format: jsonlines)
-# (2) nfcorpus/queries.jsonl (format: jsonlines)
-# (3) nfcorpus/qrels/test.tsv (format: tsv ("\t"))
+# (1) scifact/corpus.jsonl  (format: jsonlines)
+# (2) scifact/queries.jsonl (format: jsonlines)
+# (3) scifact/qrels/test.tsv (format: tsv ("\t"))
 
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
 #### Sparse Retrieval using SPARTA #### 
-model_path = "/home/thakur/seir/sbert_retriever/models/msmarco-distilbert-base-uncased-2021-02-27_08-09-55"
+model_path = "BeIR/sparta-msmarco-distilbert-base-v1"
 sparse_model = SparseSearch(models.SPARTA(model_path), batch_size=128)
 retriever = EvaluateRetrieval(sparse_model)
 

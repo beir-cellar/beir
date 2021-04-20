@@ -13,19 +13,20 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-#### Download nfcorpus.zip dataset and unzip the dataset
-dataset = "nfcorpus.zip"
-url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}".format(dataset)
+#### Download scifact.zip dataset and unzip the dataset
+dataset = "scifact"
+url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
-#### Provide the data_path where nfcorpus has been downloaded and unzipped
+#### Provide the data_path where scifact has been downloaded and unzipped
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 
 #### Provide parameters for elastic-search
 hostname = "your-hostname" #localhost
-index_name = "your-index-name" # nfcorpus
-model = BM25(index_name=index_name, hostname=hostname)
+index_name = "your-index-name" # scifact
+initialize = True # True, will delete existing index with same name and reindex all documents
+model = BM25(index_name=index_name, hostname=hostname, initialize=initialize)
 retriever = EvaluateRetrieval(model)
 
 #### Retrieve dense results (format of results is identical to qrels)

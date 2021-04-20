@@ -16,8 +16,8 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 #### /print debug information to stdout
 
 #### Download nfcorpus.zip dataset and unzip the dataset
-dataset = "nfcorpus.zip"
-url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}".format(dataset)
+dataset = "scifact"
+url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
@@ -34,7 +34,8 @@ corpus = GenericDataLoader(data_path).load_corpus()
 model_path = "BeIR/query-gen-msmarco-t5-large"
 generator = QGen(model=QGenModel(model_path))
 
-#### Query-Generation ####
+#### Query-Generation using Nucleus Sampling (top_k=25, top_p=0.95) ####
+#### https://huggingface.co/blog/how-to-generate
 #### Prefix is required to seperate out synthetic queries and qrels from original
 prefix = "gen"
 
@@ -45,7 +46,6 @@ ques_per_passage = 3
 #### Generate queries per passage from docs in corpus and save them in data_path
 generator.generate(corpus, output_dir=data_path, ques_per_passage=ques_per_passage, prefix=prefix)
 
-
 ################################
 #### 2. Train Dense-Encoder ####
 ################################
@@ -53,10 +53,11 @@ generator.generate(corpus, output_dir=data_path, ques_per_passage=ques_per_passa
 
 #### Training on Generated Queries ####
 corpus, gen_queries, gen_qrels = GenericDataLoader(data_path, prefix=prefix).load(split="train")
+#### Please Note - not all datasets contain a dev split, comment out the line if such the case
 dev_corpus, dev_queries, dev_qrels = GenericDataLoader(data_path).load(split="dev")
 
 #### Provide any sentence-transformers model path
-model_name = "distilroberta-base"
+model_name = "bert-base-uncased"
 retriever = TrainRetriever(model_name=model_name, batch_size=64)
 
 #### Prepare training samples
@@ -66,11 +67,11 @@ train_loss = losses.MultipleNegativesRankingLoss(model=retriever.model)
 
 #### Prepare dev evaluator
 ir_evaluator = retriever.load_ir_evaluator(dev_corpus, dev_queries, dev_qrels)
-#### If no dev set is present
+#### If no dev set is present evaluate using dummy evaluator
 # ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-GenQ-nfcorpus".format(model_name))
+model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-GenQ-scifact".format(model_name))
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params

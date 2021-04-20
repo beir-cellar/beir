@@ -1,21 +1,6 @@
-
-<!-- <h1>
-<img style="vertical-align:middle" width="120" height="120" src="https://raw.githubusercontent.com/benchmarkir/beir/main/images/color_logo.png" />
-BeIR: A Heterogeneous Benchmark for IR
-</h1> -->
-
-<!-- <h1 text-align= "center">
-    <img width="300" height="120" src="https://raw.githubusercontent.com/benchmarkir/beir/main/images/color_logo_transparent_cropped.png" style="vertical-align: middle;"/>
-</h1> -->
-
 <h1 style="text-align:center">
 <img style="vertical-align:middle" width="450" height="180" src="https://raw.githubusercontent.com/benchmarkir/beir/main/images/color_logo_transparent_cropped.png" />
 </h1>
-
-<!-- <h3 align="center">
-BEIR: A heterogeneous benchmark for Information Retrieval
-</h3> -->
-
 
 ![PyPI](https://img.shields.io/pypi/v/beir)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=purple)](https://www.python.org/)
@@ -38,7 +23,7 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 - [Datasets](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
     - [Download a preprocessed dataset](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
     - [Available Datasets](https://github.com/UKPLab/beir#beers-available-datasets)
-- [Models]((https://github.com/UKPLab/beir#beers-evaluate-a-model)
+- [Models](https://github.com/UKPLab/beir#beers-evaluate-a-model)
     - [Evaluate a model](https://github.com/UKPLab/beir#beers-evaluate-a-model)
     - [Available Models](https://github.com/UKPLab/beir#beers-available-models)
     - [Evaluate your own Model](https://github.com/UKPLab/beir#evaluate-your-own-model)
@@ -84,6 +69,9 @@ To easily understand and get your hands dirty with BEIR, we invite you to try ou
 | Exact-search retrieval using (dense) USE-QA  | [evaluate_useqa.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_useqa.py) |
 | Hybrid sparse retrieval using SPARTA | [evaluate_sparta.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_sparta.py) |
 | Reranking top-100 BM25 results with SBERT CE | [evaluate_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_ce_reranking.py) |
+| Fine-tuning SBERT over a dataset from scratch | [train_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert.py) |
+| Synthetic Query Generation using T5-model | [query_gen.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen.py) |
+| (GenQ) Synthetic QG using T5-model + fine-tuning SBERT | [query_gen_and_train.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py) |
 
 ## :beers: Quick Example
 
@@ -247,7 +235,7 @@ model = BM25(index_name=index_name, hostname=hostname, initialize=initialize)
 from beir.retrieval.search.sparse import SparseSearch
 from beir.retrieval import models
 
-model_path = "/home/thakur/seir/sbert_retriever/models/msmarco-distilbert-base-uncased-2021-02-27_08-09-55"
+model_path = "BeIR/sparta-msmarco-distilbert-base-v1"
 sparse_model = SparseSearch(models.SPARTA(model_path), batch_size=128)
 ```
 

@@ -144,35 +144,38 @@ For other datasets, just use one of the datasets names, mention below.
 
 | Dataset   | Website| BEIR-Name | Queries  | Documents | Avg. Docs/Q | Download |
 | -------- | -----| ---------| ----------- | ---------| ---------| ------------| 
-| MSMARCO    | [``Homepage``](https://microsoft.github.io/msmarco/)| ``msmarco`` |  6,980   |  8.84M     |    1.1 | Yes |  
-| TREC-COVID |  [``Homepage``](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| 50|  171K| 493.5 | Yes | 
-| NFCorpus   | [``Homepage``](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/) | ``nfcorpus``  |  323     |  3.6K     |  38.2 | Yes |
+| MSMARCO    | [``Homepage``](https://microsoft.github.io/msmarco/)| ``msmarco`` |  6,980   |  8.84M     |    1.1 | [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip] |  
+| TREC-COVID |  [``Homepage``](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| 50|  171K| 493.5 | [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/trec-covid.zip] | 
+| NFCorpus   | [``Homepage``](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/) | ``nfcorpus``  |  323     |  3.6K     |  38.2 | [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/nfcorpus.zip] |
 | BioASQ     | [``Homepage``](http://bioasq.org) | ``bioasq``|  500    |  14.91M    |  8.05 | No | 
-| NQ         | [``Homepage``](https://ai.google.com/research/NaturalQuestions) | ``nq``|  3,452   |  2.68M  |  1.2 | Yes | 
-| HotpotQA   | [``Homepage``](https://hotpotqa.github.io) | ``hotpotqa``|  7,405   |  5.23M  |  2.0 | Yes |
-| FiQA-2018  | [``Homepage``](https://sites.google.com/view/fiqa/) | ``fiqa``    | 648     |  57K    |  2.6 | Yes | 
+| NQ         | [``Homepage``](https://ai.google.com/research/NaturalQuestions) | ``nq``|  3,452   |  2.68M  |  1.2 | [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/nq.zip] | 
+| HotpotQA   | [``Homepage``](https://hotpotqa.github.io) | ``hotpotqa``|  7,405   |  5.23M  |  2.0 | [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/hotpotqa.zip]  |
+| FiQA-2018  | [``Homepage``](https://sites.google.com/view/fiqa/) | ``fiqa``    | 648     |  57K    |  2.6 | [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/fiqa.zip]  | 
 | Signal-1M(RT) | [``Homepage``](https://research.signal-ai.com/datasets/signal1m-tweetir.html)| ``signal1m`` |  97   |  2.86M  |  19.6 | No |
 | TREC-NEWS  | [``Homepage``](https://trec.nist.gov/data/news2019.html) | ``trec-news``    | 57    |  595K    |  19.6 | No |
-| ArguAna    | [``Homepage``](http://argumentation.bplaced.net/arguana/data) | ``arguana`` | 1,406     |  8.67K    |  1.0 | Yes |
-| Touche-2020| [``Homepage``](https://webis.de/events/touche-20/shared-task-1.html) | ``webis-touche2020``| 49     |  382K    |  49.2 |  Yes |
-| CQADupstack| [``Homepage``](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/) | ``cqadupstack``|  13,145 |  457K  |  1.4 |  Yes |
-| Quora| [``Homepage``](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs) | ``quora``|  10,000     |  523K    |  1.6 |  Yes | 
-| DBPedia | [``Homepage``](https://github.com/iai-group/DBpedia-Entity/) | ``dbpedia-entity``| 400    |  4.63M    |  38.2 |  Yes | 
-| SCIDOCS| [``Homepage``](https://allenai.org/data/scidocs) | ``scidocs``|  1,000     |  25K    |  4.9 |  Yes | 
-| FEVER| [``Homepage``](http://fever.ai) | ``fever``|  6,666     |  5.42M    |  1.2|  Yes | 
-| Climate-FEVER| [``Homepage``](http://climatefever.ai) | ``climate-fever``|  1,535     |  5.42M |  3.0 |  Yes |
-| SciFact| [``Homepage``](https://github.com/allenai/scifact) | ``scifact``|  300     |  5K    |  1.1 |  Yes |
+| ArguAna    | [``Homepage``](http://argumentation.bplaced.net/arguana/data) | ``arguana`` | 1,406     |  8.67K    |  1.0 | [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/arguana.zip]  |
+| Touche-2020| [``Homepage``](https://webis.de/events/touche-20/shared-task-1.html) | ``webis-touche2020``| 49     |  382K    |  49.2 |  [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/webis-touche2020.zip] |
+| CQADupstack| [``Homepage``](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/) | ``cqadupstack``|  13,145 |  457K  |  1.4 |  [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/cqadupstack.zip] |
+| Quora| [``Homepage``](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs) | ``quora``|  10,000     |  523K    |  1.6 |  [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/quora.zip] | 
+| DBPedia | [``Homepage``](https://github.com/iai-group/DBpedia-Entity/) | ``dbpedia-entity``| 400    |  4.63M    |  38.2 | [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/dbpedia-entity.zip] | 
+| SCIDOCS| [``Homepage``](https://allenai.org/data/scidocs) | ``scidocs``|  1,000     |  25K    |  4.9 |  [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scidocs.zip] | 
+| FEVER| [``Homepage``](http://fever.ai) | ``fever``|  6,666     |  5.42M    |  1.2|  [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/fever.zip]  | 
+| Climate-FEVER| [``Homepage``](http://climatefever.ai) | ``climate-fever``|  1,535     |  5.42M |  3.0 |  [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/climate-fever.zip]  |
+| SciFact| [``Homepage``](https://github.com/allenai/scifact) | ``scifact``|  300     |  5K    |  1.1 |  [``Link``][https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip]  |
 
 Otherwise, you can load a custom preprocessed dataset in the following way:
 
 ```python
 from beir.datasets.data_loader import GenericDataLoader
 
-corpus_path = "/home/thakur/your-custom-dataset/your_corpus_file.jsonl"
-query_path = "/home/thakur/your-custom-dataset/your_query_file.jsonl"
-qrels_path = "/home/thakur/your-custom-dataset/your_qrels_file.tsv"
+corpus_path = "your_corpus_file.jsonl"
+query_path = "your_query_file.jsonl"
+qrels_path = "your_qrels_file.tsv"
 
-corpus, queries, qrels = GenericDataLoader(corpus_file=corpus_path, query_file=query_path, qrels_file=qrels_path).load_custom()
+corpus, queries, qrels = GenericDataLoader(
+    corpus_file=corpus_path, 
+    query_file=query_path, 
+    qrels_file=qrels_path).load_custom()
 ```
 
 **Make sure that the dataset is in the following format**:

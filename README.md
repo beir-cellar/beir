@@ -26,9 +26,35 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 
 ## What is it?
 
-**BEIR** consists a **heterogeneous benchmark** for diverse sentence or passage IR level tasks. It also provides a **common and easy framework** for evaluation of your NLP models on them.
+**BEIR** :beers: is a **heterogeneous benchmark** containing diverse passage or sentence-level IR tasks. It also provides a **common and easy framework** for evaluation of your NLP-based retrieval models within the benchmark.
 
-The package takes care of the downloading, hosting, preprocessing datasets and providing you in a single easy to understand dataset zip folders. We take care of transforming the dataset and provide 15 diverse datasets used for IR in the both academia and industry, with more to add. Further the package provides an easy framework to evalaute your models against some competitive benchmarks including Sentence-Transformers (SBERT), Dense Passage Retrieval (DPR), Universal Sentence Encoder (USE-QA) and Elastic Search.
+## Installation
+
+Install via pip:
+
+```python
+pip install beir
+```
+
+If you want to build from source, use:
+
+```python
+$ git clone https://github.com/benchmarkir/beir.git
+$ pip install -e .
+```
+
+Tested with python versions 3.6 and 3.7
+
+## Features 
+
+- Preprocess your own IR dataset or use one of the already-preprocessed 17 benchmark datasets
+- Wide settings included, Covers diverse benchmarks useful for both academia and industry
+- Includes well-known retrieval architectures (lexical, dense, sparse and reranking-based)
+- Add and evaluate your own model in a easy framework using different state-of-the-art evaluation metrics
+
+## Examples and Tutorials
+
+To easily understand and get your hands dirty with BEIR, we invite you to try our tutorials out 
 
 ### Worried about your dataset or model not present in the benchmark?
 

@@ -31,19 +31,19 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 
 ## Table Of Contents
 
-- [Installation](https://github.com/UKPLab/beir#installation)
-- [Getting Started](https://github.com/UKPLab/beir#getting-started)
-    - [Quick Example](https://github.com/UKPLab/beir#quick-example)
-    - [Google Colab](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
-    - [Evaluate on a Custom Dataset?](https://github.com/UKPLab/beir#evaluate-on-a-custom-dataset)
-    - [Evaluate your own Custom Model?](https://github.com/UKPLab/beir#evaluate-your-own-custom-model)
-- [Examples](https://github.com/UKPLab/beir#examples)
-    - [Retrieval](https://github.com/UKPLab/beir#retrieval)
-    - [Generation](https://github.com/UKPLab/beir#generation)
-    - [Filtration](https://github.com/UKPLab/beir#)
-- [Datasets](https://github.com/UKPLab/beir#datasets)
-- [Benchmarking](https://github.com/UKPLab/beir#benchmarking)
-- [Citing & Authors](https://github.com/UKPLab/beir#citing--authors)
+- [Installation](https://github.com/UKPLab/beir#beers-installation)
+- [Features](https://github.com/UKPLab/beir#beers-features)
+- [Examples and Tutorials](https://github.com/UKPLab/beir#beers-examples-and-tutorials)
+- [Quick Example](https://github.com/UKPLab/beir#beers-quick-example)
+- Datasets
+    - [Download a preprocessed dataset](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
+    - [Available Datasets](https://github.com/UKPLab/beir#beers-available-datasets)
+- Models
+    - [Evaluate a model](https://github.com/UKPLab/beir#beers-evaluate-a-model)
+    - [Available Models](https://github.com/UKPLab/beir#beers-available-models)
+    - [Evaluate your own Model](https://github.com/UKPLab/beir#evaluate-your-own-model)
+- [Available Metrics](https://github.com/UKPLab/beir#beers-available-metrics)
+- [Citing & Authors](https://github.com/UKPLab/beir#beers-citing--authors)
 
 
 ## :beers: Installation
@@ -214,13 +214,18 @@ qrels = {
 
 ```
 
-## Disclaimer
+### Disclaimer
 
-Similarly to HuggingFace's nlp library, we just downloaded and prepared public datasets. We only distribute these datasets in a specific format, but we do not vouch for their quality or fairness, or claim that you have license to use the dataset. It remains the user's responsibility to determine whether you as a user have permission to use the dataset under the dataset's license and to cite the right owner of the dataset.
+Similar to Tensorflow [datasets](https://github.com/tensorflow/datasets) or HuggingFace's [datasets](https://github.com/huggingface/datasets) library, we just downloaded and prepared public datasets. We only distribute these datasets in a specific format, but we do not vouch for their quality or fairness, or claim that you have license to use the dataset. It remains the user's responsibility to determine whether you as a user have permission to use the dataset under the dataset's license and to cite the right owner of the dataset.
 
 If you're a dataset owner and wish to update any part of it, or do not want your dataset to be included in this library, feel free to post an issue here or make a pull request!
 
 If you're a dataset owner and wish to include your dataset or model in this library, feel free to post an issue here or make a pull request!
+
+
+## :beers: Evaluate a model
+
+
 
 
 ## :beers: Available Models
@@ -235,17 +240,19 @@ If you're a dataset owner and wish to include your dataset or model in this libr
 |  SPARTA (Zhao et al., 2020) | [https://huggingface.co/BeIR](https://huggingface.co/BeIR) |
 |  ColBERT (Khattab and Zaharia, 2020) | [https://github.com/stanford-futuredata/ColBERT](https://github.com/stanford-futuredata/ColBERT) |
 
+### Disclaimer
+
 If you use any one of the implementations, please make sure to include the correct citation.
 
 If you implemented a model and wish to update any part of it, or do not want the model to be included, feel free to post an issue here or make a pull request! 
 
 If you implemented a model and wish to include your model in this library, feel free to post an issue here or make a pull request. Otherwise, if you want to evaluate the model on your own, see the following section.
 
-## Evaluate your own Model
+## :beers: Evaluate your own Model
 
 ### Dense-Retriever Model (Dual-Encoder)
 
-Mention your dual-encoder model in a class and have two functions: 1. ``encode_queries`` and 2. ``encode_corpus``. 
+Mention your dual-encoder model in a class and have two functions: 1. ``encode_queries`` and 2. ``encode_corpus``.
 
 ```python
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
@@ -262,30 +269,30 @@ class YourCustomDEModel:
     def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int, **kwargs) -> np.ndarray:
         pass
 
-custom_model = DRES(YourCustomModel(model_path="your-custom-model-path"))
+custom_model = DRES(YourCustomDEModel(model_path="your-custom-model-path"))
 ```
 
 ### Re-ranking-based Model (Cross-Encoder)
 
-Mention your cross-encoder model in a class and have a single function: 1. ``encode_queries`` and 2. ``encode_corpus``. 
+Mention your cross-encoder model in a class and have a single function:  ``predict``
 
 ```python
-from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+from beir.reranking import Rerank
 
 class YourCustomCEModel:
     def __init__(self, model_path=None, **kwargs)
         self.model = None # ---> HERE Load your custom model
     
-    # Write your own score function, which takes in query-document text pairs and returns the lists similarity scores
+    # Write your own score function, which takes in query-document text pairs and returns the similarity scores
     def predict(self, sentences: List[Tuple[str,str]], batch_size: int, **kwags) -> List[float]:
-        pass
+        pass # return only the list of float scores
 
-custom_model = DRES(YourCustomModel(model_path="your-custom-model-path"))
+reranker = Rerank(YourCustomCEModel(model_path="your-custom-model-path"), batch_size=128)
 ```
 
 ## :beers: Available Metrics
 
-We evaluate our models using ``pytrec_eval``, we in future can extend to include more metrics provided the original package -
+We evaluate our models using [pytrec_eval](https://github.com/cvangysel/pytrec_eval) and in future we can extend to include more retrieval-based metrics:
 
 - NDCG (``ndcg@k``)
 - MAP (``map@k``)
@@ -297,13 +304,13 @@ We evaluate our models using ``pytrec_eval``, we in future can extend to include
 If you find this repository helpful, feel free to cite our publication BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models:
 
 ```
-@misc{thakur2021beir,
-      title={BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models}, 
-      author={Nandan Thakur and Nils Reimers and Andreas Rücklé and Abhishek Srivastava and Iryna Gurevych},
-      year={2021},
-      eprint={2104.08663},
-      archivePrefix={arXiv},
-      primaryClass={cs.IR}
+@article{thakur2021beir,
+    title = "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+    author = "Thakur, Nandan and Reimers, Nils and Rücklé, Andreas and Srivastava, Abhishek and Gurevych, Iryna", 
+    journal= "arXiv preprint arXiv:2104.08663",
+    month = "4",
+    year = "2021",
+    url = "https://arxiv.org/abs/2104.08663",
 }
 ```
 

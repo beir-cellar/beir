@@ -20,13 +20,13 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 ![PyPI](https://img.shields.io/pypi/v/beir)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=purple)](https://www.python.org/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Nthakur20/StrapDown.js/graphs/commit-activity)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HfutiEhHMJLXiWGT8pcipxT5L2TpYEdt?usp=sharing)
 [![Downloads](https://pepy.tech/badge/beir)](https://pepy.tech/project/beir)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/benchmarkir/beir/)
 
 ## :beers: What is it?
 
-**BEIR** :beers: is a **heterogeneous benchmark** containing diverse passage or sentence-level IR tasks. It also provides a **common and easy framework** for evaluation of your NLP-based retrieval models within the benchmark.
+**BEIR** is a **heterogeneous benchmark** containing diverse passage or sentence-level IR tasks. It also provides a **common and easy framework** for evaluation of your NLP-based retrieval models within the benchmark.
 
 ## :beers: Installation
 
@@ -52,9 +52,96 @@ Tested with python versions 3.6 and 3.7
 - Includes well-known retrieval architectures (lexical, dense, sparse and reranking-based)
 - Add and evaluate your own model in a easy framework using different state-of-the-art evaluation metrics
 
-## Examples and Tutorials
+## :beers: Examples and Tutorials
 
-To easily understand and get your hands dirty with BEIR, we invite you to try our tutorials out 
+To easily understand and get your hands dirty with BEIR, we invite you to try our tutorials out :rocket: :rocket:
+
+|                          Name                |     Link     |
+| -------------------------------------------  |  ----------  |
+| How to evaluate pre-trained models on BEIR datasets (NFCorpus) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HfutiEhHMJLXiWGT8pcipxT5L2TpYEdt?usp=sharing) |
+| Retrieval using (lexical) BM25 with Elasticsearch             | [evaluate_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_bm25.py) |
+| Exact-search retrieval using (dense) Sentence-BERT | [evaluate_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_sbert.py) |
+| Exact-search retrieval using (dense) ANCE          | [evaluate_ance.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_ance.py) |
+| Exact-search retrieval using (dense) DPR | [evaluate_dpr.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_dpr.py) |
+| Exact-search retrieval using (dense) USE-QA  | [evaluate_useqa.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_useqa.py) |
+| Hybrid sparse retrieval using SPARTA | [evaluate_sparta.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_sparta.py) |
+| Reranking top-100 BM25 results with SBERT CE | [evaluate_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_ce_reranking.py) |
+
+## :beers: Quick Example
+
+```python
+from beir import util, LoggingHandler
+from beir.retrieval import models
+from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval.evaluation import EvaluateRetrieval
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+
+import logging
+import pathlib, os
+
+#### Just some code to print debug information to stdout
+logging.basicConfig(format='%(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO,
+                    handlers=[LoggingHandler()])
+#### /print debug information to stdout
+
+#### Download scifact.zip dataset and unzip the dataset
+dataset = "scifact"
+url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
+data_path = util.download_and_unzip(url, out_dir)
+
+#### Provide the data_path where scifact has been downloaded and unzipped
+corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+
+#### Load the SBERT model and retrieve using cosine-similarity
+model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=16)
+retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for dot-product
+results = retriever.retrieve(corpus, queries)
+
+#### Evaluate your model with NDCG@k, MAP@K, Recall@K and Precision@K  where k = [1,3,5,10,100,1000] 
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+```
+
+## :beers: Download a preprocessed dataset
+
+To load one of the already preprocessed datasets in your current directory as follows:
+
+```python
+from beir import util
+
+dataset = "scifact"
+url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+data_path = util.download_and_unzip(url, "datasets")
+```
+This will download the ``scifact`` dataset under the ``datasets`` directory. 
+
+For other datasets, just use one of the datasets names, mention below.
+
+## :beers: Available Datasets
+
+| Dataset   | Website| BEIR-Name | Domain     | Relevancy| Queries  | Documents | Avg. Docs/Q | Download | 
+| -------- | -----| ---------| ----------- | ---------| ---------| --------- | ------| ------------| 
+| MSMARCO    | [``Homepage``](https://microsoft.github.io/msmarco/)| ``msmarco`` | Misc.       |  Binary  |  6,980   |  8.84M     |    1.1 | Yes |  
+| TREC-COVID |  [``Homepage``](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| Bio-Medical |  3-level|50|  171K| 493.5 | Yes | 
+| NFCorpus   | [``Homepage``](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/) | ``nfcorpus``  | Bio-Medical |  3-level |  323     |  3.6K     |  38.2 | Yes |
+| BioASQ     | [``Homepage``](http://bioasq.org) | ``bioasq``| Bio-Medical |  Binary  |   500    |  14.91M    |  8.05 | No | 
+| NQ         | [``Homepage``](https://ai.google.com/research/NaturalQuestions) | ``nq``| Wikipedia   |  Binary  |  3,452   |  2.68M  |  1.2 | Yes | 
+| HotpotQA   | [``Homepage``](https://hotpotqa.github.io) | ``hotpotqa``| Wikipedia   |  Binary  |  7,405   |  5.23M  |  2.0 | Yes |
+| FiQA-2018  | [``Homepage``](https://sites.google.com/view/fiqa/) | ``fiqa``    | Finance     |  Binary  |  648     |  57K    |  2.6 | Yes | 
+| Signal-1M (RT) | [``Homepage``](https://research.signal-ai.com/datasets/signal1m-tweetir.html)| ``signal1m`` | Twitter     |  3-level  |   97   |  2.86M  |  19.6 | No |
+| TREC-NEWS  | [``Homepage``](https://trec.nist.gov/data/news2019.html) | ``trec-news``    | News     |  5-level  |   57    |  595K    |  19.6 | No |
+| ArguAna    | [``Homepage``](http://argumentation.bplaced.net/arguana/data) | ``arguana`` | Misc.       |  Binary  |  1,406     |  8.67K    |  1.0 | Yes |
+| Touche-2020| [``Homepage``](https://webis.de/events/touche-20/shared-task-1.html) | ``webis-touche2020``| Misc.       |  6-level  |  49     |  382K    |  49.2 |  Yes |
+| CQADupstack| [``Homepage``](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/) | ``cqadupstack``| StackEx.      |  Binary  |  13,145 |  457K  |  1.4 |  Yes |
+| Quora| [``Homepage``](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs) | ``quora``| Quora  | Binary  |  10,000     |  523K    |  1.6 |  Yes | 
+| DBPedia | [``Homepage``](https://github.com/iai-group/DBpedia-Entity/) | ``dbpedia-entity``| Wikipedia |  3-level  |  400    |  4.63M    |  38.2 |  Yes | 
+| SCIDOCS| [``Homepage``](https://allenai.org/data/scidocs) | ``scidocs``| Scientific |  Binary  |  1,000     |  25K    |  4.9 |  Yes | 
+| FEVER| [``Homepage``](http://fever.ai) | ``fever``| Wikipedia     |  Binary  |  6,666     |  5.42M    |  1.2|  Yes | 
+| Climate-FEVER| [``Homepage``](http://climatefever.ai) | ``climate-fever``| Wikipedia |  Binary  |  1,535     |  5.42M |  3.0 |  Yes |
+| SciFact| [``Homepage``](https://github.com/allenai/scifact) | ``scifact``| Scientific |  Binary  |  300     |  5K    |  1.1 |  Yes |
+
 
 ### Worried about your dataset or model not present in the benchmark?
 

@@ -24,11 +24,11 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 [![Downloads](https://pepy.tech/badge/beir)](https://pepy.tech/project/beir)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/benchmarkir/beir/)
 
-## What is it?
+## :beers: What is it?
 
 **BEIR** :beers: is a **heterogeneous benchmark** containing diverse passage or sentence-level IR tasks. It also provides a **common and easy framework** for evaluation of your NLP-based retrieval models within the benchmark.
 
-## Installation
+## :beers: Installation
 
 Install via pip:
 
@@ -45,10 +45,10 @@ $ pip install -e .
 
 Tested with python versions 3.6 and 3.7
 
-## Features 
+## :beers: Features 
 
 - Preprocess your own IR dataset or use one of the already-preprocessed 17 benchmark datasets
-- Wide settings included, Covers diverse benchmarks useful for both academia and industry
+- Wide settings included, covers diverse benchmarks useful for both academia and industry
 - Includes well-known retrieval architectures (lexical, dense, sparse and reranking-based)
 - Add and evaluate your own model in a easy framework using different state-of-the-art evaluation metrics
 

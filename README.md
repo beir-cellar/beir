@@ -26,7 +26,25 @@ BEIR: A heterogeneous benchmark for Information Retrieval
 
 ## :beers: What is it?
 
-**BEIR** is a **heterogeneous benchmark** containing diverse passage or sentence-level IR tasks. It also provides a **common and easy framework** for evaluation of your NLP-based retrieval models within the benchmark.
+**BEIR** is a **heterogeneous benchmark** containing diverseIR tasks. It also provides a **common and easy framework** for evaluation of your NLP-based retrieval models within the benchmark.
+
+
+## Table Of Contents
+
+- [Installation](https://github.com/UKPLab/beir#installation)
+- [Getting Started](https://github.com/UKPLab/beir#getting-started)
+    - [Quick Example](https://github.com/UKPLab/beir#quick-example)
+    - [Google Colab](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
+    - [Evaluate on a Custom Dataset?](https://github.com/UKPLab/beir#evaluate-on-a-custom-dataset)
+    - [Evaluate your own Custom Model?](https://github.com/UKPLab/beir#evaluate-your-own-custom-model)
+- [Examples](https://github.com/UKPLab/beir#examples)
+    - [Retrieval](https://github.com/UKPLab/beir#retrieval)
+    - [Generation](https://github.com/UKPLab/beir#generation)
+    - [Filtration](https://github.com/UKPLab/beir#)
+- [Datasets](https://github.com/UKPLab/beir#datasets)
+- [Benchmarking](https://github.com/UKPLab/beir#benchmarking)
+- [Citing & Authors](https://github.com/UKPLab/beir#citing--authors)
+
 
 ## :beers: Installation
 
@@ -110,124 +128,62 @@ To load one of the already preprocessed datasets in your current directory as fo
 
 ```python
 from beir import util
+from beir.datasets.data_loader import GenericDataLoader
 
 dataset = "scifact"
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
 data_path = util.download_and_unzip(url, "datasets")
+corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 ```
-This will download the ``scifact`` dataset under the ``datasets`` directory. 
+
+This will download the ``scifact`` dataset under the ``datasets`` directory.
 
 For other datasets, just use one of the datasets names, mention below.
 
 ## :beers: Available Datasets
 
-| Dataset   | Website| BEIR-Name | Domain     | Relevancy| Queries  | Documents | Avg. Docs/Q | Download | 
-| -------- | -----| ---------| ----------- | ---------| ---------| --------- | ------| ------------| 
-| MSMARCO    | [``Homepage``](https://microsoft.github.io/msmarco/)| ``msmarco`` | Misc.       |  Binary  |  6,980   |  8.84M     |    1.1 | Yes |  
-| TREC-COVID |  [``Homepage``](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| Bio-Medical |  3-level|50|  171K| 493.5 | Yes | 
-| NFCorpus   | [``Homepage``](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/) | ``nfcorpus``  | Bio-Medical |  3-level |  323     |  3.6K     |  38.2 | Yes |
-| BioASQ     | [``Homepage``](http://bioasq.org) | ``bioasq``| Bio-Medical |  Binary  |   500    |  14.91M    |  8.05 | No | 
-| NQ         | [``Homepage``](https://ai.google.com/research/NaturalQuestions) | ``nq``| Wikipedia   |  Binary  |  3,452   |  2.68M  |  1.2 | Yes | 
-| HotpotQA   | [``Homepage``](https://hotpotqa.github.io) | ``hotpotqa``| Wikipedia   |  Binary  |  7,405   |  5.23M  |  2.0 | Yes |
-| FiQA-2018  | [``Homepage``](https://sites.google.com/view/fiqa/) | ``fiqa``    | Finance     |  Binary  |  648     |  57K    |  2.6 | Yes | 
-| Signal-1M (RT) | [``Homepage``](https://research.signal-ai.com/datasets/signal1m-tweetir.html)| ``signal1m`` | Twitter     |  3-level  |   97   |  2.86M  |  19.6 | No |
-| TREC-NEWS  | [``Homepage``](https://trec.nist.gov/data/news2019.html) | ``trec-news``    | News     |  5-level  |   57    |  595K    |  19.6 | No |
-| ArguAna    | [``Homepage``](http://argumentation.bplaced.net/arguana/data) | ``arguana`` | Misc.       |  Binary  |  1,406     |  8.67K    |  1.0 | Yes |
-| Touche-2020| [``Homepage``](https://webis.de/events/touche-20/shared-task-1.html) | ``webis-touche2020``| Misc.       |  6-level  |  49     |  382K    |  49.2 |  Yes |
-| CQADupstack| [``Homepage``](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/) | ``cqadupstack``| StackEx.      |  Binary  |  13,145 |  457K  |  1.4 |  Yes |
-| Quora| [``Homepage``](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs) | ``quora``| Quora  | Binary  |  10,000     |  523K    |  1.6 |  Yes | 
-| DBPedia | [``Homepage``](https://github.com/iai-group/DBpedia-Entity/) | ``dbpedia-entity``| Wikipedia |  3-level  |  400    |  4.63M    |  38.2 |  Yes | 
-| SCIDOCS| [``Homepage``](https://allenai.org/data/scidocs) | ``scidocs``| Scientific |  Binary  |  1,000     |  25K    |  4.9 |  Yes | 
-| FEVER| [``Homepage``](http://fever.ai) | ``fever``| Wikipedia     |  Binary  |  6,666     |  5.42M    |  1.2|  Yes | 
-| Climate-FEVER| [``Homepage``](http://climatefever.ai) | ``climate-fever``| Wikipedia |  Binary  |  1,535     |  5.42M |  3.0 |  Yes |
-| SciFact| [``Homepage``](https://github.com/allenai/scifact) | ``scifact``| Scientific |  Binary  |  300     |  5K    |  1.1 |  Yes |
+| Dataset   | Website| BEIR-Name | Queries  | Documents | Avg. Docs/Q | Download |
+| -------- | -----| ---------| ----------- | ---------| ---------| ------------| 
+| MSMARCO    | [``Homepage``](https://microsoft.github.io/msmarco/)| ``msmarco`` |  6,980   |  8.84M     |    1.1 | Yes |  
+| TREC-COVID |  [``Homepage``](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| 50|  171K| 493.5 | Yes | 
+| NFCorpus   | [``Homepage``](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/) | ``nfcorpus``  |  323     |  3.6K     |  38.2 | Yes |
+| BioASQ     | [``Homepage``](http://bioasq.org) | ``bioasq``|  500    |  14.91M    |  8.05 | No | 
+| NQ         | [``Homepage``](https://ai.google.com/research/NaturalQuestions) | ``nq``|  3,452   |  2.68M  |  1.2 | Yes | 
+| HotpotQA   | [``Homepage``](https://hotpotqa.github.io) | ``hotpotqa``|  7,405   |  5.23M  |  2.0 | Yes |
+| FiQA-2018  | [``Homepage``](https://sites.google.com/view/fiqa/) | ``fiqa``    | 648     |  57K    |  2.6 | Yes | 
+| Signal-1M(RT) | [``Homepage``](https://research.signal-ai.com/datasets/signal1m-tweetir.html)| ``signal1m`` |  97   |  2.86M  |  19.6 | No |
+| TREC-NEWS  | [``Homepage``](https://trec.nist.gov/data/news2019.html) | ``trec-news``    | 57    |  595K    |  19.6 | No |
+| ArguAna    | [``Homepage``](http://argumentation.bplaced.net/arguana/data) | ``arguana`` | 1,406     |  8.67K    |  1.0 | Yes |
+| Touche-2020| [``Homepage``](https://webis.de/events/touche-20/shared-task-1.html) | ``webis-touche2020``| 49     |  382K    |  49.2 |  Yes |
+| CQADupstack| [``Homepage``](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/) | ``cqadupstack``|  13,145 |  457K  |  1.4 |  Yes |
+| Quora| [``Homepage``](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs) | ``quora``|  10,000     |  523K    |  1.6 |  Yes | 
+| DBPedia | [``Homepage``](https://github.com/iai-group/DBpedia-Entity/) | ``dbpedia-entity``| 400    |  4.63M    |  38.2 |  Yes | 
+| SCIDOCS| [``Homepage``](https://allenai.org/data/scidocs) | ``scidocs``|  1,000     |  25K    |  4.9 |  Yes | 
+| FEVER| [``Homepage``](http://fever.ai) | ``fever``|  6,666     |  5.42M    |  1.2|  Yes | 
+| Climate-FEVER| [``Homepage``](http://climatefever.ai) | ``climate-fever``|  1,535     |  5.42M |  3.0 |  Yes |
+| SciFact| [``Homepage``](https://github.com/allenai/scifact) | ``scifact``|  300     |  5K    |  1.1 |  Yes |
 
-
-### Worried about your dataset or model not present in the benchmark?
-
-Worry not! You can easily add your dataset into the benchmark by following this data format (here) and also you are free to evaluate your own model and required to return a dictionary with mappings (here) and you can evaluate your IR model using our easy plugin code.
-
-Want us to add a new dataset or a new model? feel free to post an issue here or make a pull request!
-
-## Table Of Contents
-
-- [Installation](https://github.com/UKPLab/beir#installation)
-- [Getting Started](https://github.com/UKPLab/beir#getting-started)
-    - [Quick Example](https://github.com/UKPLab/beir#quick-example)
-    - [Google Colab](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
-    - [Evaluate on a Custom Dataset?](https://github.com/UKPLab/beir#evaluate-on-a-custom-dataset)
-    - [Evaluate your own Custom Model?](https://github.com/UKPLab/beir#evaluate-your-own-custom-model)
-- [Examples](https://github.com/UKPLab/beir#examples)
-    - [Retrieval](https://github.com/UKPLab/beir#retrieval)
-    - [Generation](https://github.com/UKPLab/beir#generation)
-    - [Filtration](https://github.com/UKPLab/beir#)
-- [Datasets](https://github.com/UKPLab/beir#datasets)
-- [Benchmarking](https://github.com/UKPLab/beir#benchmarking)
-- [Citing & Authors](https://github.com/UKPLab/beir#citing--authors)
-## Installation
-
-Install via pip:
+Otherwise, you can load a custom preprocessed dataset in the following way:
 
 ```python
-pip install beir
-```
-
-If you want to build from source, use:
-
-```python
-$ git clone https://github.com/benchmarkir/beir.git
-$ pip install -e .
-```
-
-Tested with python versions 3.6 and 3.7
-
-## Getting Started
-
-### Google Colab Example
-
-Try it out live with our [Google Colab Example](https://colab.research.google.com/github/benchmarkir/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb).
-
-### Quick Example
-
-```python
-from beir import util, LoggingHandler
-from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
-from beir.retrieval.evaluation import EvaluateRetrieval
-from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
-import logging
-import pathlib, os
+corpus_path = "/home/thakur/your-custom-dataset/your_corpus_file.jsonl"
+query_path = "/home/thakur/your-custom-dataset/your_query_file.jsonl"
+qrels_path = "/home/thakur/your-custom-dataset/your_qrels_file.tsv"
 
-#### Just some code to print debug information to stdout
-logging.basicConfig(format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.INFO,
-                    handlers=[LoggingHandler()])
-#### /print debug information to stdout
-
-#### Download nfcorpus.zip dataset and unzip the dataset
-dataset = "nq.zip"
-url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}".format(dataset)
-out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
-data_path = util.download_and_unzip(url, out_dir)
-
-#### Provide the data_path where nfcorpus has been downloaded and unzipped
-corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
-
-model = DRES(models.SentenceBERT("distilroberta-base-msmarco-v2"))
-retriever = EvaluateRetrieval(model)
-
-results = retriever.retrieve(corpus, queries)
-ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+corpus, queries, qrels = GenericDataLoader(corpus_file=corpus_path, query_file=query_path, qrels_file=qrels_path).load_custom()
 ```
 
-### Evaluate on your Custom Dataset?
+**Make sure that the dataset is in the following format**:
+- corpus file: a .jsonl file (jsonlines) that contains a list of dictionaries, each with three fields ``_id`` with unique document identifier, ``title`` with document title (optional) and ``text`` with document paragraph or passage. For example: ``{"_id": "doc1", "title": "Albert Einstein", "text": "Albert Einstein was a German-born...."}``
+- queries file: a .jsonl file (jsonlines) that contains a list of dictionaries, each with two fields ``_id`` with unique query identifier and ``text`` with query text. For example: ``{"_id": "q1", "text": "Who developed the mass-energy equivalence formula?"}``
+- qrels file: a .tsv file (tab-seperated) that contains three columns, i.e. the query-id, corpus-id and score in this order. Keep 1st row as header. For example: ``q1    doc1    1``
 
-Load your custom corpus, query, and qrels as python ``dict`` in the format shown below:
+
+You can also **skip** the loading part and provide corpus, queries and qrels for evaluation in the following way:
 
 ```python
-#### Corpus ####
 corpus = {
     "doc1" : {
         "title": "Albert Einstein", 
@@ -246,27 +202,55 @@ corpus = {
     },
 }
 
-#### Queries #### 
 queries = {
     "q1" : "Who developed the mass-energy equivalence formula?",
     "q2" : "Which beer is brewed with a large proportion of wheat?"
 }
 
-#### Qrels #### 
 qrels = {
     "q1" : {"doc1": 1},
     "q2" : {"doc2": 1},
 }
+
 ```
 
-### Evaluate your own Custom Model?
+## Disclaimer
 
-Mention your custom model in a class and have two functions: 1. ``encode_queries`` and 2. ``encode_corpus``. 
+Similarly to HuggingFace's nlp library, we just downloaded and prepared public datasets. We only distribute these datasets in a specific format, but we do not vouch for their quality or fairness, or claim that you have license to use the dataset. It remains the user's responsibility to determine whether you as a user have permission to use the dataset under the dataset's license and to cite the right owner of the dataset.
+
+If you're a dataset owner and wish to update any part of it, or do not want your dataset to be included in this library, feel free to post an issue here or make a pull request!
+
+If you're a dataset owner and wish to include your dataset or model in this library, feel free to post an issue here or make a pull request!
+
+
+## :beers: Available Models
+
+|  Name     |  Implementation  |
+|  -------  |   -------------  |
+|  BM25  (Robertson and Zaragoza, 2009) | [https://www.elastic.co/](https://www.elastic.co/) |
+|  SBERT (Reimers and Gurevych, 2019)   | [https://www.sbert.net/](https://www.sbert.net/) |
+|  ANCE (Xiong et al., 2020) | [https://github.com/microsoft/ANCE](https://github.com/microsoft/ANCE) |
+|  DPR (Karpukhin et al., 2020) | [https://github.com/facebookresearch/DPR](https://github.com/facebookresearch/DPR) |
+|  USE-QA (Yang et al., 2020) | [https://tfhub.dev/google/universal-sentence-encoder-qa/3](https://tfhub.dev/google/universal-sentence-encoder-qa/3) |
+|  SPARTA (Zhao et al., 2020) | [https://huggingface.co/BeIR](https://huggingface.co/BeIR) |
+|  ColBERT (Khattab and Zaharia, 2020) | [https://github.com/stanford-futuredata/ColBERT](https://github.com/stanford-futuredata/ColBERT) |
+
+If you use any one of the implementations, please make sure to include the correct citation.
+
+If you implemented a model and wish to update any part of it, or do not want the model to be included, feel free to post an issue here or make a pull request! 
+
+If you implemented a model and wish to include your model in this library, feel free to post an issue here or make a pull request. Otherwise, if you want to evaluate the model on your own, see the following section.
+
+## Evaluate your own Model
+
+### Dense-Retriever Model (Dual-Encoder)
+
+Mention your dual-encoder model in a class and have two functions: 1. ``encode_queries`` and 2. ``encode_corpus``. 
 
 ```python
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
-class YourCustomModel:
+class YourCustomDEModel:
     def __init__(self, model_path=None, **kwargs)
         self.model = None # ---> HERE Load your custom model
     
@@ -281,116 +265,47 @@ class YourCustomModel:
 custom_model = DRES(YourCustomModel(model_path="your-custom-model-path"))
 ```
 
-## Examples
+### Re-ranking-based Model (Cross-Encoder)
 
-For all examples, see below:
-
-### All in One
-- [Google Colab Example](https://colab.research.google.com/github/UKPLab/beir/blob/main/examples/retrieval/Retrieval_Example.ipynb)
-
-### Retrieval
-- [BM25 Retrieval using Elasticsearch](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_bm25.py)
-- [Exact Search Retrieval using Dense Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_dense.py)
-- [Faiss Search Retrieval using Dense Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_faiss_dense.py)
-- [Training Dense Retrieval Model](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_dense.py)
-- [Custom Dataset Retrieval Evaluation](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/custom/evaluate_custom_dataset.py)
-- [Custom Model Retrieval Evaluation](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/custom/evaluate_custom_model.py)
-
-### Generation
-- [Question Generation using T5 Seq2Seq model](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen.py)
-- [Question Generation and Zero-Shot Dense Encoder Training](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py)
-
-### Filtration
-- [Question Generation and Filtration using Tiny-BERT Cross-Encoder](https://github.com/UKPLab/beir/blob/main/examples/filtration/query_gen_and_filter.py)
-- [Question Generation and Filtration and Zero-shot Dense Encoder Training](https://github.com/UKPLab/beir/blob/main/examples/filtration/query_gen_filter_and_train.py)
-
-## Datasets
-
-Available datasets include:
-
-- [TREC-COVID](https://ir.nist.gov/covidSubmit/index.html)
-- [NFCorpus](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/)
-- [NQ](https://ai.google.com/research/NaturalQuestions)
-- [HotpotQA](https://hotpotqa.github.io/)
-- [NewsQA](https://www.microsoft.com/en-us/research/project/newsqa-dataset/)
-- [FiQA](https://sites.google.com/view/fiqa/home)
-- [ArguAna](http://argumentation.bplaced.net/arguana/data)
-- [Touche-2020](https://webis.de/events/touche-20/)
-- [CQaDupstack](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/)
-- [Quora](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs)
-- [DBPedia-v2](https://iai-group.github.io/DBpedia-Entity/)
-- [SCIDOCS](https://allenai.org/data/scidocs)
-- [FEVER](https://fever.ai/)
-- [Climate-FEVER](https://www.sustainablefinance.uzh.ch/en/research/climate-fever.html)
-- [Signal-1M](https://research.signal-ai.com/datasets/signal1m-tweetir.html) (Optional)
-- [BioASQ](http://bioasq.org/) (Optional)
-
-## Data Formats
+Mention your cross-encoder model in a class and have a single function: 1. ``encode_queries`` and 2. ``encode_corpus``. 
 
 ```python
-from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
-data_path = "datasets/trec-covid/"
-corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
+class YourCustomCEModel:
+    def __init__(self, model_path=None, **kwargs)
+        self.model = None # ---> HERE Load your custom model
+    
+    # Write your own score function, which takes in query-document text pairs and returns the lists similarity scores
+    def predict(self, sentences: List[Tuple[str,str]], batch_size: int, **kwags) -> List[float]:
+        pass
 
-# Corpus
-for doc_id, doc_metadata in corpus.items():
-    print(doc_id, doc_metadata)
-# ug7v899j  {"title": "Clinical features of culture-proven Mycoplasma...", "text": "This retrospective chart review describes the epidemiology..."}
-# 02tnwd4m  {"title": "Nitric oxide: a pro-inflammatory mediator in lung disease?, "text": "Inflammatory diseases of the respiratory tract are commonly associated..."}
-# ...
-
-# Queries
-for query_id, query_text in query.items():
-    print(query_id, query_text)
-# 1     what is the origin of COVID-19?
-# 2     how does the coronavirus respond to changes in the weather?
-# ...
-
-# Query Relevance Judgements (Qrels)
-for query_id, metadata in qrels.items():
-    for doc_id, gold_score in metadata.items():
-        print(query_id, doc_id, gold_score)
-# 1     005b2j4b    2
-# 1     00fmeepz    1
-# ...
+custom_model = DRES(YourCustomModel(model_path="your-custom-model-path"))
 ```
 
-## Benchmarking
+## :beers: Available Metrics
 
-The benchmarking results will be included soon.
+We evaluate our models using ``pytrec_eval``, we in future can extend to include more metrics provided the original package -
 
-<!-- The Table shows the NDCG@10 scores.
+- NDCG (``ndcg@k``)
+- MAP (``map@k``)
+- Recall (``recall@k``)
+- Precision (``precision@k``)
 
-| Domain     |Dataset       | BM25    | SBERT   | USE-QA  | DPR     |
-| :---------:|------------: |:------: |:------: |:------: |:------: |
-|            | TREC-COVID   | 0.616   | 0.461   |         |         |
-| Bio-Medical| BioASQ       |         |         |         |         |
-|            | NFCorpus     | 0.294   | 0.233   |         |         |
-|            |              |         |         |         |         |
-| Question   | NQ           | 0.481   | 0.530   |         |         |
-| Answering  | HotpotQA     | 0.601   | 0.419   |         |         |
-|            |              |         |         |         |         |
-| News       | NewsQA       | 0.457   | 0.263   |         |         |
-|            |              |         |         |         |         |
-| Twitter    | Signal-1M    |  0.477  | 0.272   |         |         |
-|            |              |         |         |         |         |
-| Finance    | FiQA-2018    |         |  0.223  |         |         |
-| Argument   | ArguAna      |  0.441  |  0.415  |         |         |
-|            | Touche-2020  |  0.605  |         |         |         |
-|            |              |         |         |         |         |
-| Duplicate  | CQaDupstack  |  0.069  |  0.061  |         |         |
-| Question   | Quora        |         |         |         |         |
-|            |              |         |         |         |         |
-|  Entity    | DBPedia-v2   |  0.285  |  0.261  |         |         |
-|            |              |         |         |         |         |
-| Scientific | SCIDOCS      |         |         |         |         |
-|            |              |         |         |         |         |
-| Claim      | FEVER        |  0.649  |  0.601  |         |         |
-|Verification|Climate-FEVER |  0.179  |  0.192  |         |         | -->
+## :beers: Citing & Authors
 
+If you find this repository helpful, feel free to cite our publication BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models:
 
-## Citing & Authors
+```
+@misc{thakur2021beir,
+      title={BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models}, 
+      author={Nandan Thakur and Nils Reimers and Andreas Rücklé and Abhishek Srivastava and Iryna Gurevych},
+      year={2021},
+      eprint={2104.08663},
+      archivePrefix={arXiv},
+      primaryClass={cs.IR}
+}
+```
 
 The main contributors of this repository are:
 - [Nandan Thakur](https://github.com/Nthakur20), Personal Website: [https://nthakur.xyz](https://nthakur.xyz)
@@ -402,4 +317,3 @@ Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)
 Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
 
 > This repository contains experimental software and is published for the sole purpose of giving additional background details on the respective publication.
-

@@ -11,7 +11,11 @@
 
 ## :beers: What is it?
 
-**BEIR** is a **heterogeneous benchmark** containing diverseIR tasks. It also provides a **common and easy framework** for evaluation of your NLP-based retrieval models within the benchmark.
+**BEIR** is a **heterogeneous benchmark** containing diverse IR tasks. It also provides a **common and easy framework** for evaluation of your NLP-based retrieval models within the benchmark.
+
+For more information, checkout our publications:
+
+- [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://arxiv.org/abs/2104.08663) (arXiv 2021)
 
 
 ## Table Of Contents
@@ -336,7 +340,7 @@ We evaluate our models using [pytrec_eval](https://github.com/cvangysel/pytrec_e
 
 ## :beers: Citing & Authors
 
-If you find this repository helpful, feel free to cite our publication BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models:
+If you find this repository helpful, feel free to cite our publication [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://arxiv.org/abs/2104.08663):
 
 ```
 @article{thakur2021beir,

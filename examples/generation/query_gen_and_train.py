@@ -29,8 +29,7 @@ corpus = GenericDataLoader(data_path).load_corpus()
 #### 1. Query-Generation  ####
 ##############################
 
-
-#### Model Loading 
+#### question-generation model loading 
 model_path = "BeIR/query-gen-msmarco-t5-large"
 generator = QGen(model=QGenModel(model_path))
 
@@ -57,8 +56,8 @@ corpus, gen_queries, gen_qrels = GenericDataLoader(data_path, prefix=prefix).loa
 dev_corpus, dev_queries, dev_qrels = GenericDataLoader(data_path).load(split="dev")
 
 #### Provide any sentence-transformers model path
-model_name = "bert-base-uncased"
-retriever = TrainRetriever(model_name=model_name, batch_size=64)
+model_path = "bert-base-uncased" # or "msmarco-distilbert-base-v3"
+retriever = TrainRetriever(model_path=model_path, batch_size=64, max_seq_length=350)
 
 #### Prepare training samples
 train_samples = retriever.load_train(corpus, gen_queries, gen_qrels)
@@ -71,7 +70,7 @@ ir_evaluator = retriever.load_ir_evaluator(dev_corpus, dev_queries, dev_qrels)
 # ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-GenQ-scifact".format(model_name))
+model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-GenQ-scifact".format(model_path))
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params
@@ -84,5 +83,5 @@ retriever.fit(train_objectives=[(train_dataloader, train_loss)],
                 epochs=num_epochs,
                 output_path=model_save_path,
                 warmup_steps=warmup_steps,
-                evaluation_steps=evaluation_steps,
+                evaluation_steps=evaluation_stepmodel_paths,
                 use_amp=True)

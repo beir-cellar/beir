@@ -1,3 +1,19 @@
+"""
+This example show how to evaluate BM25 model (Elasticsearch) in BEIR.
+To be able to run Elasticsearch, you should have it installed locally (on your desktop) along with ``pip install beir``.
+Depending on your OS, you would be able to find how to download Elasticsearch. I like this guide for Ubuntu 18.04 -
+https://linuxize.com/post/how-to-install-elasticsearch-on-ubuntu-18-04/ 
+For more details, please refer here - https://www.elastic.co/downloads/elasticsearch. 
+
+This code doesn't require GPU to run.
+
+If unable to get it running locally, you could try the Google Colab Demo, where we first install elastic search locally and retrieve using BM25
+https://colab.research.google.com/drive/1HfutiEhHMJLXiWGT8pcipxT5L2TpYEdt?usp=sharing#scrollTo=nqotyXuIBPt6
+
+
+Usage: python evaluate_bm25.py
+"""
+
 from beir import util, LoggingHandler
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval

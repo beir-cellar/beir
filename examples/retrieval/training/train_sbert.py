@@ -1,7 +1,6 @@
 from beir import util, LoggingHandler
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.train import TrainRetriever
-
 from sentence_transformers import losses
 import pathlib, os
 import logging
@@ -26,8 +25,8 @@ corpus, queries, qrels = GenericDataLoader(data_path).load(split="train")
 dev_corpus, dev_queries, dev_qrels = GenericDataLoader(data_path).load(split="dev")
 
 #### Provide any sentence-transformers model path
-model_name = "bert-base-uncased"
-retriever = TrainRetriever(model_name=model_name, batch_size=64)
+model_path = "bert-base-uncased" # or "msmarco-distilbert-base-v3"
+retriever = TrainRetriever(model_path=model_path, batch_size=64, max_seq_length=350)
 
 #### Prepare training samples
 train_samples = retriever.load_train(corpus, queries, qrels)
@@ -40,7 +39,7 @@ ir_evaluator = retriever.load_ir_evaluator(dev_corpus, dev_queries, dev_qrels)
 # ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-scifact".format(model_name))
+model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-scifact".format(model_path))
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params

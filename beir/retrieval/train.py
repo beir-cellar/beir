@@ -8,22 +8,17 @@ from torch.optim import Optimizer
 from tqdm.autonotebook import trange
 from typing import Dict, Type, List, Callable, Iterable, Tuple
 import logging
-import time
-import random
 
 logger = logging.getLogger(__name__)
 
 class TrainRetriever:
     
-    def __init__(self, model_name: str, batch_size: int = 64, max_seq_length: int = 350):
-        self.model_name = model_name
+    def __init__(self, model_path: str, batch_size: int = 64, max_seq_length: int = None):
         self.batch_size = batch_size
-        self.max_seq_length = max_seq_length
-
-        word_embedding_model = models.Transformer(model_name, max_seq_length=self.max_seq_length)
-        pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension())
-        self.model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
-    
+        self.model = SentenceTransformer(model_path)
+        if max_seq_length != None:
+            self.model.max_seq_length = max_seq_length
+            
     def load_train(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], 
                    qrels: Dict[str, Dict[str, int]]) -> List[Type[InputExample]]:
         

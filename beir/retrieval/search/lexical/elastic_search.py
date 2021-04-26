@@ -92,7 +92,34 @@ class ElasticSearch(object):
         progress.reset()
         progress.close()
     
-    def lexical_multisearch(self, texts: List[str], top_hits: int, skip: int = 0, text_present: bool = False):
+    def lexical_search(self, text: str, top_hits: int) -> Dict[str, object]:
+        """Single query search using text in Elastic Search
+
+        Args:
+            text (str): query text
+            top_hits (int): top k hits to retrieved
+
+        Returns:
+            dict: Hit results
+        """
+        res = self.es.search(
+            index = self.index_name, 
+            body = {"query" : {"multi_match": {
+                "query": text, 
+                "fields": [self.text_key, self.title_key]}
+            }}, 
+            size = top_hits
+        )
+        
+        hits = []
+        
+        for hit in res["hits"]["hits"]:
+            hits.append((hit["_id"], hit['_score']))
+        
+        return self.hit_template(es_res=res, hits=hits)
+    
+    
+    def lexical_multisearch(self, texts: List[str], top_hits: int, skip: int = 0, text_present: bool = False) -> Dict[str, object]:
         """lexical search using text in Elastic Search
 
         Args:

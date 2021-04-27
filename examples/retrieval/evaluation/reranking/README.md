@@ -1,15 +1,21 @@
 ### Re-ranking BM25 top-100 using Cross-Encoder (Leaderboard)
 
-| Reranking-Model                        |Docs/Sec| MSMARCO | TREC-COVID | BIOASQ |NFCORPUS| NQ   |HOTPOTQA| FIQA |SIGNAL1M|
-| ----------------------------------     |:------:| :-----: | :--------: | :-----:|:------:| :--: |:------:| :--: |:------:|
+In table below, we evaluate various different reranking architectures and evaluate them based on performance and speed. We include the following model architectures - 
+
+- [MiniLM](https://www.sbert.net/docs/pretrained-models/ce-msmarco.html)
+- [TinyBERT](https://www.sbert.net/docs/pretrained-models/ce-msmarco.html)
+
+
+| Reranking-Model                        |Docs / Sec| MSMARCO | TREC-COVID | BIOASQ |NFCORPUS| NQ   |HOTPOT-QA| FIQA |SIGNAL-1M|
+| ----------------------------------     |:------:  | :-----: | :--------: | :-----:|:------:| :--: |:------:| :--: |:--------:|
 | **MiniLM Models**                      | |
-| cross-encoder/ms-marco-MiniLM-L-2-v2   | 4100   |  0.373  |   0.669    | 0.471  | 0.337  |0.465 | 0.655  | 0.278| 0.334  |
-| cross-encoder/ms-marco-MiniLM-L-4-v2   | 2500   |  0.392  |   0.720    | 0.516  | 0.358  |0.509 | 0.699  | 0.327| 0.350  |
-| cross-encoder/ms-marco-MiniLM-L-6-v2   | 1800   |  0.401  |   0.722    | 0.529  | 0.360  |0.530 | 0.712  | 0.334| 0.351  |
-| cross-encoder/ms-marco-MiniLM-L-12-v2  |  960   |  0.401  |   0.737    | 0.532  | 0.339  |0.531 | 0.717  | 0.336| 0.348  |
+| cross-encoder/ms-marco-MiniLM-L-2-v2   | 4100     |  0.373  |   0.669    | 0.471  | 0.337  |0.465 | 0.655  | 0.278| 0.334  |
+| cross-encoder/ms-marco-MiniLM-L-4-v2   | 2500     |  0.392  |   0.720    | 0.516  | 0.358  |0.509 | 0.699  | 0.327| 0.350  |
+| cross-encoder/ms-marco-MiniLM-L-6-v2   | 1800     |  0.401  |   0.722    | 0.529  | 0.360  |0.530 | 0.712  | 0.334| 0.351  |
+| cross-encoder/ms-marco-MiniLM-L-12-v2  |  960     |  0.401  |   0.737    | 0.532  | 0.339  |0.531 | 0.717  | 0.336| 0.348  |
 | **TinyBERT Models**                    | |
-| cross-encoder/ms-marco-TinyBERT-L-2-v2 | 9000   |  0.354  |   0.689    |  0.466 |  0.346 |0.444 | 0.650  | 0.270| 0.338  |
-| cross-encoder/ms-marco-electra-base    | 340    |  0.384  |   0.667    |  0.489 |  0.303 |0.516 | 0.701  | 0.326| 0.308  |
+| cross-encoder/ms-marco-TinyBERT-L-2-v2 | 9000     |  0.354  |   0.689    |  0.466 |  0.346 |0.444 | 0.650  | 0.270| 0.338  |
+| cross-encoder/ms-marco-electra-base    | 340      |  0.384  |   0.667    |  0.489 |  0.303 |0.516 | 0.701  | 0.326| 0.308  |
 
 
 | Reranking-Model                        |Docs / Sec| TREC-NEWS |ArguAna| Touche'20| DBPedia |SCIDOCS| FEVER |Clim.-FEVER| SciFact |

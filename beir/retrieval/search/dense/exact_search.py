@@ -26,6 +26,8 @@ class DenseRetrievalExactSearch:
         #Create embeddings for all queries using model.encode_queries()
         #Runs semantic search against the corpus embeddings
         #Returns a ranked list with the corpus ids
+        if score_function not in self.score_functions:
+            raise ValueError("score function: {} must be either (cos_sim) for cosine similarity or (dot) for dot product".format(score_function))
             
         logger.info("Encoding Queries...")
         query_ids = list(queries.keys())

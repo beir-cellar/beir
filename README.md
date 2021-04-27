@@ -65,7 +65,7 @@ To easily understand and get your hands dirty with BEIR, we invite you to try ou
 
 |                          Name                |     Link     |
 | -------------------------------------------  |  ----------  |
-| How to evaluate pre-trained models on BEIR datasets (NFCorpus) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HfutiEhHMJLXiWGT8pcipxT5L2TpYEdt?usp=sharing) |
+| How to evaluate pre-trained models on BEIR datasets | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HfutiEhHMJLXiWGT8pcipxT5L2TpYEdt?usp=sharing) |
 | Retrieval using (lexical) BM25 with Elasticsearch             | [evaluate_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_bm25.py) |
 | Exact-search retrieval using (dense) Sentence-BERT | [evaluate_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_sbert.py) |
 | Exact-search retrieval using (dense) ANCE          | [evaluate_ance.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_ance.py) |

@@ -20,6 +20,24 @@ class EvaluateRetrieval:
         if not self.retriever:
             raise ValueError("Model/Technique has not been provided!")
         return self.retriever.search(corpus, queries, self.top_k, self.score_function)
+    
+    def rerank(self, 
+            corpus: Dict[str, Dict[str, str]], 
+            queries: Dict[str, str],
+            results: Dict[str, Dict[str, float]],
+            top_k: int) -> Dict[str, Dict[str, float]]:
+    
+        new_corpus = {}
+    
+        for query_id in results:
+            if len(results[query_id]) > top_k:
+                for (doc_id, _) in sorted(results[query_id].items(), key=lambda item: item[1], reverse=True)[:top_k]:
+                    new_corpus[doc_id] = corpus[doc_id]
+            else:
+                for doc_id in results[query_id]:
+                    new_corpus[doc_id] = corpus[doc_id]
+                    
+        return self.retriever.search(new_corpus, queries, top_k, self.score_function)
 
     @staticmethod
     def evaluate(qrels: Dict[str, Dict[str, int]], 

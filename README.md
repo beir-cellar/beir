@@ -18,7 +18,7 @@ For more information, checkout our publications:
 - [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://arxiv.org/abs/2104.08663) (arXiv 2021)
 
 
-## Table Of Contents
+## :beers: Table Of Contents
 
 - [Installation](https://github.com/UKPLab/beir#beers-installation)
 - [Features](https://github.com/UKPLab/beir#beers-features)
@@ -73,9 +73,13 @@ To easily understand and get your hands dirty with BEIR, we invite you to try ou
 | Exact-search retrieval using (dense) USE-QA  | [evaluate_useqa.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_useqa.py) |
 | Hybrid sparse retrieval using SPARTA | [evaluate_sparta.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_sparta.py) |
 | Reranking top-100 BM25 results with SBERT CE | [evaluate_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_ce_reranking.py) |
+| Reranking top-100 BM25 results with Dense Retriever | [evaluate_bm25_sbert_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_sbert_reranking.py) |
 | Fine-tuning SBERT over a dataset from scratch | [train_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert.py) |
 | Synthetic Query Generation using T5-model | [query_gen.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen.py) |
 | (GenQ) Synthetic QG using T5-model + fine-tuning SBERT | [query_gen_and_train.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py) |
+| Benchmark BM25 (Inference speed) | [benchmark_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_bm25.py) |
+| Benchmark Cross-Encoder Reranking (Inference speed) | [benchmark_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_bm25_ce_reranking.py) |
+| Benchmark Dense Retriever (Inference speed) | [benchmark_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_sbert.py) |
 
 ## :beers: Quick Example
 

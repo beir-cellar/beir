@@ -8,6 +8,7 @@ from torch.optim import Optimizer
 from tqdm.autonotebook import trange
 from typing import Dict, Type, List, Callable, Iterable, Tuple
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class TrainRetriever:
                 for corpus_id, score in qrels[query_id].items():
                     if score >= 1: # if score = 0, we don't consider for training
                         s1 = queries[query_id]
-                        s2 = corpus[corpus_id]
+                        s2 = corpus[corpus_id].get("title") + " " + corpus[corpus_id].get("text") 
                         train_samples.append(InputExample(guid=idx, texts=[s1, s2], label=1))
 
         logger.info("Loaded {} training pairs.".format(len(train_samples)))
@@ -53,7 +54,7 @@ class TrainRetriever:
         corpus_ids = set()
         
         # need to convert corpus to cid => doc      
-        corpus = {idx: corpus[idx].get("text") + " " + corpus[idx].get("title") for idx in corpus}
+        corpus = {idx: corpus[idx].get("title") + " " + corpus[idx].get("text") for idx in corpus}
         
         # need to convert dev_qrels to qid => Set[cid]        
         for query_id, metadata in qrels.items():

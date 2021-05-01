@@ -12,21 +12,21 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-#### Download scifact.zip dataset and unzip the dataset
-dataset = "scifact"
+#### Download nfcorpus.zip dataset and unzip the dataset
+dataset = "nfcorpus"
 
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
-#### Provide the data_path where scifact has been downloaded and unzipped
+#### Provide the data_path where nfcorpus has been downloaded and unzipped
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="train")
 #### Please Note not all datasets contain a dev split, comment out the line if such the case
 dev_corpus, dev_queries, dev_qrels = GenericDataLoader(data_path).load(split="dev")
 
 #### Provide any sentence-transformers model path
 model_path = "bert-base-uncased" # or "msmarco-distilbert-base-v3"
-retriever = TrainRetriever(model_path=model_path, batch_size=64, max_seq_length=350)
+retriever = TrainRetriever(model_path=model_path, batch_size=16, max_seq_length=350)
 
 #### Prepare training samples
 train_samples = retriever.load_train(corpus, queries, qrels)
@@ -35,11 +35,12 @@ train_loss = losses.MultipleNegativesRankingLoss(model=retriever.model)
 
 #### Prepare dev evaluator
 ir_evaluator = retriever.load_ir_evaluator(dev_corpus, dev_queries, dev_qrels)
+
 #### If no dev set is present from above use dummy evaluator
 # ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-scifact".format(model_path))
+model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-nfcorpus".format(model_path))
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params

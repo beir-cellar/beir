@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     license="Apache License 2.0",
     url="https://github.com/beir-nlp/beir",
-    download_url="https://github.com/beir-nlp/beir/archive/v0.1.2.zip",
+    download_url="https://github.com/beir-nlp/beir/archive/v0.1.3.zip",
     packages=find_packages(),
     python_requires='>=3.6',
     install_requires=[

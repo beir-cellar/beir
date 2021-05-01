@@ -16,7 +16,8 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 #### /print debug information to stdout
 
 #### Download nfcorpus.zip dataset and unzip the dataset
-dataset = "scifact"
+dataset = "nfcorpus"
+
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
@@ -30,7 +31,7 @@ corpus = GenericDataLoader(data_path).load_corpus()
 ##############################
 
 #### question-generation model loading 
-model_path = "BeIR/query-gen-msmarco-t5-large"
+model_path = "BeIR/query-gen-msmarco-t5-base-v1"
 generator = QGen(model=QGenModel(model_path))
 
 #### Query-Generation using Nucleus Sampling (top_k=25, top_p=0.95) ####
@@ -66,11 +67,12 @@ train_loss = losses.MultipleNegativesRankingLoss(model=retriever.model)
 
 #### Prepare dev evaluator
 ir_evaluator = retriever.load_ir_evaluator(dev_corpus, dev_queries, dev_qrels)
+
 #### If no dev set is present evaluate using dummy evaluator
 # ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-GenQ-scifact".format(model_path))
+model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-GenQ-nfcorpus".format(model_path))
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params

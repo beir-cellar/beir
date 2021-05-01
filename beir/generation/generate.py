@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 class QueryGenerator:
     def __init__(self, model, **kwargs):
         self.model = model
-        self.gen_qrels = {}
-        self.gen_queries = {}
+        self.qrels = {}
+        self.queries = {}
 
     @staticmethod
     def save(output_dir: str, queries: Dict[str, str], qrels: Dict[str, Dict[str, int]], prefix: str):
@@ -59,9 +59,9 @@ class QueryGenerator:
 
             for idx in range(size):      
                 # Saving generated questions after every "save_after" corpus ids
-                if (len(self.gen_queries) % save_after == 0 and len(self.gen_queries) >= save_after):
-                    logger.info("Saving {} Generated Queries...".format(len(self.gen_queries)))
-                    self.save(output_dir, self.gen_queries, self.gen_qrels, prefix)
+                if (len(self.queries) % save_after == 0 and len(self.queries) >= save_after):
+                    logger.info("Saving {} Generated Queries...".format(len(self.queries)))
+                    self.save(output_dir, self.queries, self.qrels, prefix)
 
                 corpus_id = corpus_ids[start_idx + idx]
                 start_id = idx * ques_per_passage
@@ -71,9 +71,9 @@ class QueryGenerator:
                 for query in query_set:
                     count += 1
                     query_id = "genQ" + str(count)
-                    self.gen_queries[query_id] = query
-                    self.gen_qrels[query_id] = {corpus_id: 1}
+                    self.queries[query_id] = query
+                    self.qrels[query_id] = {corpus_id: 1}
         
         # Saving finally all the questions
-        logger.info("Saving {} Generated Queries...".format(len(self.gen_queries)))
-        self.save(output_dir, self.gen_queries, self.gen_qrels, prefix)
+        logger.info("Saving {} Generated Queries...".format(len(self.queries)))
+        self.save(output_dir, self.queries, self.qrels, prefix)

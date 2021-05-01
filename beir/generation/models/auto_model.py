@@ -3,10 +3,10 @@ import torch
 from typing import List, Dict
 
 class QGenModel:
-    def __init__(self, model_path: str, **kwargs):
+    def __init__(self, model_path: str, gen_prefix: str = "", **kwargs):
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=True)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
-        self.gen_prefix = ""
+        self.gen_prefix = gen_prefix
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = self.model.to(self.device)
     

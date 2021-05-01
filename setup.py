@@ -5,7 +5,7 @@ with open("README.md", mode="r", encoding="utf-8") as readme_file:
 
 setup(
     name="beir",
-    version="0.1.2",
+    version="0.1.3",
     author="Nandan Thakur",
     author_email="nandant@gmail.com",
     description="A Heterogeneous Benchmark for Information Retrieval",

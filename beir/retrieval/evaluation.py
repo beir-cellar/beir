@@ -5,6 +5,7 @@ from .search.dense import DenseRetrievalExactSearch as DRES
 from .search.dense import DenseRetrievalFaissSearch as DRFS
 from .search.lexical import BM25Search as BM25
 from .search.sparse import SparseSearch as SS
+from .custom_metrics import mrr
 
 logger = logging.getLogger(__name__)
 
@@ -82,3 +83,10 @@ class EvaluateRetrieval:
 
         return ndcg, _map, recall, precision
     
+    @staticmethod
+    def evaluate_custom(qrels: Dict[str, Dict[str, int]], 
+                 results: Dict[str, Dict[str, float]], 
+                 k_values: List[int], metric: str = "mrr") -> Tuple[Dict[str, float]]:
+        
+        if metric.lower() in ["mrr", "mrr@k", "mrr_cut"]:
+            return mrr(qrels, results, k_values)

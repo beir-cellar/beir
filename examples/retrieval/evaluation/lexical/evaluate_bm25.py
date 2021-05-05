@@ -41,8 +41,21 @@ corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 #### Provide parameters for elastic-search
 hostname = "your-hostname" #localhost
 index_name = "your-index-name" # scifact
-initialize = True # True, will delete existing index with same name and reindex all documents
-model = BM25(index_name=index_name, hostname=hostname, initialize=initialize)
+
+#### Intialize 
+# True - Delete existing index and re-index all documents from scratch 
+# False - Load existing index
+initialize = True # False
+
+#### Sharding 
+# For datasets with small corpus (datasets ~ < 5k docs) => limit shards = 1 
+# SciFact is a relatively small dataset! (limit shards to 1)
+number_of_shards = 1
+model = BM25(index_name=index_name, hostname=hostname, initialize=initialize, number_of_shards=number_of_shards)
+
+# For datasets with big corpus ==> keep default configuration
+# model = BM25(index_name=index_name, hostname=hostname, initialize=initialize)
+
 retriever = EvaluateRetrieval(model)
 
 #### Retrieve dense results (format of results is identical to qrels)

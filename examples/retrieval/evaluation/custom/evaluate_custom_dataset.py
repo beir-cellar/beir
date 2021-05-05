@@ -56,7 +56,7 @@ qrels = {
 #### Sentence-Transformer ####
 #### Provide any pretrained sentence-transformers model path
 #### Complete list - https://www.sbert.net/docs/pretrained_models.html
-model = DRES(models.SentenceBERT("distilroberta-base-msmarco-v2"))
+model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"))
 
 retriever = EvaluateRetrieval(model, score_function="cos_sim")
 

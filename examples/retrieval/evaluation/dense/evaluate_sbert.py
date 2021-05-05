@@ -46,6 +46,10 @@ results = retriever.retrieve(corpus, queries)
 logging.info("Retriever evaluation for k in: {}".format(retriever.k_values))
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
 
+mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
+recall_cap = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="r_cap")
+hole = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="hole")
+
 #### Print top-k documents retrieved ####
 top_k = 10
 

@@ -16,19 +16,28 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-#### Download nfcorpus.zip dataset and unzip the dataset
+#### Download trec-covid.zip dataset and unzip the dataset
 dataset = "trec-covid"
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
-#### Provide the data_path where nfcorpus has been downloaded and unzipped
+#### Provide the data path where trec-covid has been downloaded and unzipped to the data loader
+# data folder would contain these files: 
+# (1) trec-covid/corpus.jsonl  (format: jsonlines)
+# (2) trec-covid/queries.jsonl (format: jsonlines)
+# (3) trec-covid/qrels/test.tsv (format: tsv ("\t"))
+
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 
-#### Provide parameters for elastic-search
+#########################################
+#### (1) RETRIEVE Top-100 docs using BM25
+#########################################
+
+#### Provide parameters for Elasticsearch
 hostname = "your-hostname" #localhost
-index_name = "your-index-name" # nfcorpus
-initialize = True
+index_name = "your-index-name" # trec-covid
+initialize = True # False
 
 model = BM25(index_name=index_name, hostname=hostname, initialize=initialize)
 retriever = EvaluateRetrieval(model)
@@ -36,8 +45,18 @@ retriever = EvaluateRetrieval(model)
 #### Retrieve dense results (format of results is identical to qrels)
 results = retriever.retrieve(corpus, queries)
 
-#### Reranking using Cross-Encoder models (list: )
+################################################
+#### (2) RERANK Top-100 docs using Cross-Encoder
+################################################
+
+#### Reranking using Cross-Encoder models #####
+#### https://www.sbert.net/docs/pretrained_cross-encoders.html
 cross_encoder_model = CrossEncoder('cross-encoder/ms-marco-electra-base')
+
+#### Or use MiniLM, TinyBERT etc. CE models (https://www.sbert.net/docs/pretrained-models/ce-msmarco.html)
+# cross_encoder_model = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
+# cross_encoder_model = CrossEncoder('cross-encoder/ms-marco-TinyBERT-L-6')
+
 reranker = Rerank(cross_encoder_model, batch_size=128)
 
 # Rerank top-100 results using the reranker provided

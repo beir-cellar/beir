@@ -5,7 +5,7 @@ from .search.dense import DenseRetrievalExactSearch as DRES
 from .search.dense import DenseRetrievalFaissSearch as DRFS
 from .search.lexical import BM25Search as BM25
 from .search.sparse import SparseSearch as SS
-from .custom_metrics import mrr
+from .custom_metrics import mrr, recall_cap, hole
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +86,13 @@ class EvaluateRetrieval:
     @staticmethod
     def evaluate_custom(qrels: Dict[str, Dict[str, int]], 
                  results: Dict[str, Dict[str, float]], 
-                 k_values: List[int], metric: str = "mrr") -> Tuple[Dict[str, float]]:
+                 k_values: List[int], metric: str in ["mrr", "r_cap", "hole"]) -> Tuple[Dict[str, float]]:
         
         if metric.lower() in ["mrr", "mrr@k", "mrr_cut"]:
             return mrr(qrels, results, k_values)
+        
+        elif metric.lower() in ["recall_cap", "r_cap", "r_cap@k"]:
+            return recall_cap(qrels, results, k_values)
+        
+        elif metric.lower() in ["hole", "hole@k"]:
+            return hole(qrels, results, k_values)

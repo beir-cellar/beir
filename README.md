@@ -337,10 +337,16 @@ reranker = Rerank(YourCustomCEModel(model_path="your-custom-model-path"), batch_
 
 We evaluate our models using [pytrec_eval](https://github.com/cvangysel/pytrec_eval) and in future we can extend to include more retrieval-based metrics:
 
-- NDCG (``ndcg@k``)
-- MAP (``map@k``)
-- Recall (``recall@k``)
-- Precision (``precision@k``)
+- NDCG (``NDCG@k``)
+- MAP (``MAP@k``)
+- Recall (``Recall@k``)
+- Precision (``P@k``)
+
+We also include custom-metrics now which can be used for evaluation, please refer here - [evaluate_custom_metrics.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/custom/evaluate_custom_metrics.py)
+
+- MRR (``MRR@k``)
+- Capped Recall (``R_cap@k``)
+- Hole (``Hole@k``)
 
 ## :beers: Citing & Authors
 

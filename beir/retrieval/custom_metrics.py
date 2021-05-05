@@ -29,4 +29,59 @@ def mrr(qrels: Dict[str, Dict[str, int]],
         logging.info("MRR@{}: {:.4f}".format(k, MRR[f"MRR@{k}"]))
 
     return MRR
-        
+
+def recall_cap(qrels: Dict[str, Dict[str, int]], 
+               results: Dict[str, Dict[str, float]], 
+               k_values: List[int]) -> Tuple[Dict[str, float]]:
+    
+    capped_recall = {}
+    
+    for k in k_values:
+        capped_recall[f"R_cap@{k}"] = 0.0
+    
+    k_max = max(k_values)
+    logging.info("\n")
+    
+    for query_id, doc_scores in results.items():
+        top_hits = sorted(doc_scores.items(), key=lambda item: item[1], reverse=True)[0:k_max]   
+        query_relevant_docs = [doc_id for doc_id in qrels[query_id] if qrels[query_id][doc_id] > 0]
+        for k in k_values:
+            retrieved_docs = [row[0] for row in top_hits[0:k] if qrels[query_id].get(row[0], 0) > 0]
+            denominator = min(len(query_relevant_docs), k)
+            capped_recall[f"R_cap@{k}"] += (len(retrieved_docs) / denominator)
+
+    for k in k_values:
+        capped_recall[f"R_cap@{k}"] = round(capped_recall[f"R_cap@{k}"]/len(results), 5)
+        logging.info("R_cap@{}: {:.4f}".format(k, capped_recall[f"R_cap@{k}"]))
+
+    return capped_recall
+
+
+def hole(qrels: Dict[str, Dict[str, int]], 
+               results: Dict[str, Dict[str, float]], 
+               k_values: List[int]) -> Tuple[Dict[str, float]]:
+    
+    Hole = {}
+    
+    for k in k_values:
+        Hole[f"Hole@{k}"] = 0.0
+    
+    annotated_corpus = set()
+    for _, docs in qrels.items():
+        for doc_id, score in docs.items():    
+            if score > 0: annotated_corpus.add(doc_id)
+    
+    k_max = max(k_values)
+    logging.info("\n")
+    
+    for _, scores in results.items():
+        top_hits = sorted(scores.items(), key=lambda item: item[1], reverse=True)[0:k_max]
+        for k in k_values:
+            hole_docs = [row[0] for row in top_hits[0:k] if row[0] not in annotated_corpus]
+            Hole[f"Hole@{k}"] += len(hole_docs) / k
+
+    for k in k_values:
+        Hole[f"Hole@{k}"] = round(Hole[f"Hole@{k}"]/len(results), 5)
+        logging.info("Hole@{}: {:.4f}".format(k, Hole[f"Hole@{k}"]))
+
+    return Hole

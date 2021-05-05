@@ -1,11 +1,11 @@
 from .elastic_search import ElasticSearch
 import tqdm
-from tqdm import trange
+import time
 from typing import List, Dict
 
 class BM25Search:
     def __init__(self, index_name: str, hostname: str = "localhost", keys: Dict[str, str] = {"title": "title", "body": "txt"}, 
-                 batch_size: int = 128, timeout: int = 100, retry_on_timeout: bool = True, maxsize: int = 24, initialize: bool =True):
+                 batch_size: int = 128, timeout: int = 100, retry_on_timeout: bool = True, maxsize: int = 24, number_of_shards: int = "default", initialize: bool = True):
         self.results = {}
         self.batch_size = batch_size
         self.initialize = initialize
@@ -15,7 +15,8 @@ class BM25Search:
             "keys": keys,
             "timeout": timeout,
             "retry_on_timeout": retry_on_timeout,
-            "maxsize": maxsize
+            "maxsize": maxsize,
+            "number_of_shards": number_of_shards
         }
         self.es = ElasticSearch(self.config)
         if self.initialize:
@@ -25,18 +26,20 @@ class BM25Search:
         self.es.delete_index()
         self.es.create_index()
     
-    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int], *args) -> Dict[str, Dict[str, float]]:
+    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int], *args, **kwargs) -> Dict[str, Dict[str, float]]:
         
         # Index the corpus within elastic-search
         # False, if the corpus has been already indexed
         if self.initialize:
             self.index(corpus)
+            # Sleep for few seconds so that elastic-search indexes the docs properly
+            if kwargs.get("sleep_for", None): time.sleep(kwargs.get("sleep_for"))
         
         #retrieve results from BM25 
         query_ids = list(queries.keys())
         queries = [queries[qid] for qid in query_ids]
         
-        for start_idx in trange(0, len(queries), self.batch_size, desc='que'):
+        for start_idx in tqdm.trange(0, len(queries), self.batch_size, desc='que'):
             query_ids_batch = query_ids[start_idx:start_idx+self.batch_size]
             results = self.es.lexical_multisearch(
                 texts=queries[start_idx:start_idx+self.batch_size], 

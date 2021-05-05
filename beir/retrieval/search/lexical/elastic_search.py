@@ -19,6 +19,7 @@ class ElasticSearch(object):
 
         self.text_key = es_credentials["keys"]["body"]
         self.title_key = es_credentials["keys"]["title"]
+        self.number_of_shards = es_credentials["number_of_shards"]
         
         self.es = Elasticsearch(
             [es_credentials["hostname"]], 
@@ -57,14 +58,24 @@ class ElasticSearch(object):
         logging.info("Creating fresh Elasticsearch-Index named - {}".format(self.index_name))
         
         try:
-            mapping = {
-                "mappings" : {
-                    "properties" : {
-                        self.title_key: {"type": "text"},
-                        self.text_key: {"type": "text"}
-                    }
-                }
-            }
+            if self.number_of_shards == "default":
+                mapping = {
+                    "mappings" : {
+                        "properties" : {
+                            self.title_key: {"type": "text"},
+                            self.text_key: {"type": "text"}
+                        }}}
+            else:
+                mapping = {
+                    "settings": {
+                        "number_of_shards": self.number_of_shards
+                    },
+                    "mappings" : {
+                        "properties" : {
+                            self.title_key: {"type": "text"},
+                            self.text_key: {"type": "text"}
+                        }}}
+                
             self.es.indices.create(index=self.index_name, body=mapping, ignore=[400]) #400: IndexAlreadyExistsException
         except Exception as e:
             logging.error("Unable to create Index in Elastic Search. Reason: {}".format(e))

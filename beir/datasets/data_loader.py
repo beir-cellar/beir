@@ -113,7 +113,7 @@ class GenericDataLoader:
         for id, row in enumerate(reader):
             query_id, corpus_id, score = row[0], row[1], int(row[2])
             
-            if query_id not in self.qrels and score > 0:
+            if query_id not in self.qrels:
                 self.qrels[query_id] = {corpus_id: score}
-            elif score > 0:
+            else:
                 self.qrels[query_id][corpus_id] = score

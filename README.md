@@ -22,6 +22,7 @@ For more information, checkout our publications:
 
 - [Installation](https://github.com/UKPLab/beir#beers-installation)
 - [Features](https://github.com/UKPLab/beir#beers-features)
+- [Leaderboard](https://github.com/UKPLab/beir#beers-leaderboard)
 - [Examples and Tutorials](https://github.com/UKPLab/beir#beers-examples-and-tutorials)
 - [Quick Example](https://github.com/UKPLab/beir#beers-quick-example)
 - [Datasets](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
@@ -58,6 +59,15 @@ Tested with python versions 3.6 and 3.7
 - Wide settings included, covers diverse benchmarks useful for both academia and industry
 - Includes well-known retrieval architectures (lexical, dense, sparse and reranking-based)
 - Add and evaluate your own model in a easy framework using different state-of-the-art evaluation metrics
+
+## :beers: Leaderboard
+
+Find below Google Sheets for BEIR Leaderboard. Unfortunately with Markdown the tables were not easy to read.
+
+|           Leaderboard       |      Link     |
+| -------------------------   |  ------------ |
+|  Dense Retrieval            | [Google Sheet](https://docs.google.com/spreadsheets/d/1L8aACyPaXrL8iEelJLGqlMqXKPX2oSP_R10pZoy77Ns/edit#gid=0) |
+| BM25 top-100 + CE Reranking | [Google Sheet](https://docs.google.com/spreadsheets/d/1L8aACyPaXrL8iEelJLGqlMqXKPX2oSP_R10pZoy77Ns/edit#gid=867044147) | 
 
 ## :beers: Examples and Tutorials
 

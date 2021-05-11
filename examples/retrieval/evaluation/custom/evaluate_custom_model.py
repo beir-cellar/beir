@@ -2,8 +2,10 @@ from beir import util, LoggingHandler
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+from typing import List, Dict
 
 import logging
+import numpy as np
 import pathlib, os
 import random
 

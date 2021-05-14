@@ -1,5 +1,6 @@
 from typing import Dict
 import csv
+import torch
 import json
 import logging
 import os
@@ -7,6 +8,25 @@ import requests
 import zipfile
 
 logger = logging.getLogger(__name__)
+
+def dot_score(a: torch.Tensor, b: torch.Tensor):
+    """
+    Computes the dot-product dot_prod(a[i], b[j]) for all i and j.
+    :return: Matrix with res[i][j]  = dot_prod(a[i], b[j])
+    """
+    if not isinstance(a, torch.Tensor):
+        a = torch.tensor(a)
+
+    if not isinstance(b, torch.Tensor):
+        b = torch.tensor(b)
+
+    if len(a.shape) == 1:
+        a = a.unsqueeze(0)
+
+    if len(b.shape) == 1:
+        b = b.unsqueeze(0)
+
+    return torch.mm(a, b.transpose(0, 1))
 
 def download_url(url: str, save_path: str, chunk_size: int = 128):
     if not os.path.isfile(save_path):

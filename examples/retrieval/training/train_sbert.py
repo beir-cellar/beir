@@ -31,7 +31,11 @@ retriever = TrainRetriever(model_path=model_path, batch_size=16, max_seq_length=
 #### Prepare training samples
 train_samples = retriever.load_train(corpus, queries, qrels)
 train_dataloader = retriever.prepare_train(train_samples, shuffle=True)
+
+#### Training SBERT with cosine-product
 train_loss = losses.MultipleNegativesRankingLoss(model=retriever.model)
+#### training SBERT with dot-product
+# train_loss = losses.MultipleNegativesRankingLoss(model=retriever.model, similarity_fct=util.dot_score)
 
 #### Prepare dev evaluator
 ir_evaluator = retriever.load_ir_evaluator(dev_corpus, dev_queries, dev_qrels)

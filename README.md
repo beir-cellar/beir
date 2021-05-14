@@ -23,7 +23,9 @@ For more information, checkout our publications:
 - [Installation](https://github.com/UKPLab/beir#beers-installation)
 - [Features](https://github.com/UKPLab/beir#beers-features)
 - [Leaderboard](https://github.com/UKPLab/beir#beers-leaderboard)
+- [Relevant Course Material](https://github.com/UKPLab/beir#beers-relevant-course-material)
 - [Examples and Tutorials](https://github.com/UKPLab/beir#beers-examples-and-tutorials)
+- [Course Material on IR](https://github.com/UKPLab/beir#beers-course-material-on-ir)
 - [Quick Example](https://github.com/UKPLab/beir#beers-quick-example)
 - [Datasets](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
     - [Download a preprocessed dataset](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
@@ -67,7 +69,16 @@ Find below Google Sheets for BEIR Leaderboard. Unfortunately with Markdown the t
 |           Leaderboard       |      Link     |
 | -------------------------   |  ------------ |
 |  Dense Retrieval            | [Google Sheet](https://docs.google.com/spreadsheets/d/1L8aACyPaXrL8iEelJLGqlMqXKPX2oSP_R10pZoy77Ns/edit#gid=0) |
-| BM25 top-100 + CE Reranking | [Google Sheet](https://docs.google.com/spreadsheets/d/1L8aACyPaXrL8iEelJLGqlMqXKPX2oSP_R10pZoy77Ns/edit#gid=867044147) | 
+| BM25 top-100 + CE Reranking | [Google Sheet](https://docs.google.com/spreadsheets/d/1L8aACyPaXrL8iEelJLGqlMqXKPX2oSP_R10pZoy77Ns/edit#gid=867044147) |
+
+## :beers: Relevant Course Material
+
+If you are new to Information Retrieval and wish to understand and learn more about classical or neural IR, we suggest you to look at the open-sourced courses below. 
+
+|      Course         |  University   |  Instructor            |   Link   |  Available |
+| -----------------   |  ------------ |  --------------------- | ---------|  --------- |
+| Intro to Advanced IR|  TU Wien'21   |  Sebastian Hofstaetter | [Link](https://github.com/sebastian-hofstaetter/teaching) | Videos + Slides |
+| CS224U NLU + IR     |  Stanford'21  |  Omar Khattab          | [Link](http://web.stanford.edu/class/cs224u/) | Slides |
 
 ## :beers: Examples and Tutorials
 

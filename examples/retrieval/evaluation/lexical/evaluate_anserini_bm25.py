@@ -11,10 +11,10 @@ After docker installation, please follow the steps below to get docker container
 
 1. Download beir-pyserini docker image (link: TODO)
 2. cd beir-pyserini
-3. docker build -t beir-pyserini
+3. docker build -t beir-pyserini .
 4. docker run -p 8000:8000 -it --name docker-beir-pyserini --rm beir-pyserini
 
-Once the docker contained is up and running in local, now run the code below.
+Once the docker container is up and running in local, now run the code below.
 
 Important thing to remember docker cannot access local files! 
 So we copy (similar to docker cp) local file onto the mounted docker filesystem.

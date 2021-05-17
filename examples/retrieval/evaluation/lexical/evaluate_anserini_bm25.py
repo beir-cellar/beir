@@ -57,7 +57,7 @@ with open(os.path.join(data_path, "pyserini.jsonl"), "rb") as fIn:
     r = requests.post(docker_beir_pyserini + "/upload/", files={"file": fIn}, verify=False)
 
 #### Index documents to Pyserini #####
-index_name = "beir/robust04" # beir/scifact
+index_name = "beir/you-index-name" # beir/scifact
 r = requests.get(docker_beir_pyserini + "/index/", params={"index_name": index_name})
 
 #### Retrieve documents from Pyserini #####

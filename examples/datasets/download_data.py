@@ -6,10 +6,11 @@ def main():
     
     out_dir = pathlib.Path(__file__).parent.absolute()
     
-    dataset_files = ["nfcorpus.zip", "fiqa.zip", "dbpedia-entity.zip", 
-                     "hotpotqa.zip", "newsqa.zip", "trec-covid.zip", 
-                     "webis-touche2020.zip", "climate-fever.zip", 
-                     "fever.zip", "cqadupstack.zip"]
+    dataset_files = ["msmarco.zip", "trec-covid.zip", "nfcorpus.zip",
+                     "nq.zip", "hotpotqa.zip", "fiqa.zip", "arguana.zip",
+                     "webis-touche2020.zip", "cqadupstack.zip", "quora.zip",
+                     "dbpedia-entity.zip", "scidocs.zip", "fever.zip",
+                     "climate-fever.zip", "scifact.zip]
     
     for dataset in dataset_files:
         

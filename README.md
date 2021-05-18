@@ -160,7 +160,7 @@ For other datasets, just use one of the datasets names, mention below.
 
 ## :beers: Available Datasets
 
-| Dataset   | Website| BEIR-Name | Queries  | Documents | Rel D/Q | Download | md5 |
+| Dataset   | Website| BEIR-Name | Queries  | Corpus | Rel D/Q | Down-load | md5 |
 | -------- | -----| ---------| ----------- | ---------| ---------| :----------: | :------:|
 | MSMARCO    | [Homepage](https://microsoft.github.io/msmarco/)| ``msmarco`` |  6,980   |  8.84M     |    1.1 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip) | ``444067daf65d982533ea17ebd59501e4`` |
 | TREC-COVID |  [Homepage](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| 50|  171K| 493.5 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/trec-covid.zip) | ``ce62140cb23feb9becf6270d0d1fe6d1`` |

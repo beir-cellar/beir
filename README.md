@@ -160,8 +160,8 @@ For other datasets, just use one of the datasets names, mention below.
 
 ## :beers: Available Datasets
 
-| Dataset   | Website| BEIR-Name | Queries  | Documents | Avg. Docs/Q | Download |
-| -------- | -----| ---------| ----------- | ---------| ---------| ------------| 
+| Dataset   | Website| BEIR-Name | Queries  | Documents | Avg. Docs/Q | Download | md5 |
+| -------- | -----| ---------| ----------- | ---------| ---------| :----------: | :------:|
 | MSMARCO    | [Homepage](https://microsoft.github.io/msmarco/)| ``msmarco`` |  6,980   |  8.84M     |    1.1 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip) |  
 | TREC-COVID |  [Homepage](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| 50|  171K| 493.5 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/trec-covid.zip) | 
 | NFCorpus   | [Homepage](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/) | ``nfcorpus``  |  323     |  3.6K     |  38.2 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/nfcorpus.zip) |
@@ -170,7 +170,7 @@ For other datasets, just use one of the datasets names, mention below.
 | HotpotQA   | [Homepage](https://hotpotqa.github.io) | ``hotpotqa``|  7,405   |  5.23M  |  2.0 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/hotpotqa.zip)  |
 | FiQA-2018  | [Homepage](https://sites.google.com/view/fiqa/) | ``fiqa``    | 648     |  57K    |  2.6 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/fiqa.zip)  | 
 | Signal-1M(RT) | [Homepage](https://research.signal-ai.com/datasets/signal1m-tweetir.html)| ``signal1m`` |  97   |  2.86M  |  19.6 | No |
-| TREC-NEWS  | [Homepage](https://trec.nist.gov/data/news2019.html) | ``trec-news``    | 57    |  595K    |  19.6 | No |
+| TREC-NEWS  | [Homepage](https://trec.nist.gov/data/news2019.html) | ``trec-news``    | 57    |  595K    |  19.6 | No | ``d54dd62af1fffbc7c8b94d09ecd8be2f`` |
 | ArguAna    | [Homepage](http://argumentation.bplaced.net/arguana/data) | ``arguana`` | 1,406     |  8.67K    |  1.0 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/arguana.zip)  |
 | Touche-2020| [Homepage](https://webis.de/events/touche-20/shared-task-1.html) | ``webis-touche2020``| 49     |  382K    |  49.2 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/webis-touche2020.zip) |
 | CQADupstack| [Homepage](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/) | ``cqadupstack``|  13,145 |  457K  |  1.4 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/cqadupstack.zip) |
@@ -178,7 +178,7 @@ For other datasets, just use one of the datasets names, mention below.
 | DBPedia | [Homepage](https://github.com/iai-group/DBpedia-Entity/) | ``dbpedia-entity``| 400    |  4.63M    |  38.2 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/dbpedia-entity.zip) | 
 | SCIDOCS| [Homepage](https://allenai.org/data/scidocs) | ``scidocs``|  1,000     |  25K    |  4.9 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scidocs.zip) | 
 | FEVER| [Homepage](http://fever.ai) | ``fever``|  6,666     |  5.42M    |  1.2|  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/fever.zip)  | 
-| Climate-FEVER| [Homepage](http://climatefever.ai) | ``climate-fever``|  1,535     |  5.42M |  3.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/climate-fever.zip)  |
+| Climate-FEVER| [Homepage](http://climatefever.ai) | ``climate-fever``|  1,535     |  5.42M |  3.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/climate-fever.zip)  | ``8b66f0a9126c521bae2bde127b4dc99d`` |
 | SciFact| [Homepage](https://github.com/allenai/scifact) | ``scifact``|  300     |  5K    |  1.1 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip)  |
 
 Otherwise, you can load a custom preprocessed dataset in the following way:

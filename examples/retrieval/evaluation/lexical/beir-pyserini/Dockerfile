@@ -18,7 +18,7 @@ RUN mkdir -p /usr/share/man/man1 && \
     rm -rf /var/lib/apt/lists
 
 
-RUN pip install pyserini==0.12.0 fastapi uvicorn
+RUN pip install pyserini==0.12.0 fastapi uvicorn python-multipart 
 
 WORKDIR /home
 COPY main.py config.py /home/

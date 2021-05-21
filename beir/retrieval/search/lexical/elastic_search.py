@@ -103,22 +103,33 @@ class ElasticSearch(object):
         progress.reset()
         progress.close()
     
-    def lexical_search(self, text: str, top_hits: int) -> Dict[str, object]:
-        """Single query search using text in Elastic Search
+    def lexical_search(self, text: str, top_hits: int, ids: List[str] = None) -> Dict[str, object]:
+        """[summary]
 
         Args:
             text (str): query text
             top_hits (int): top k hits to retrieved
+            ids (List[str], optional): Filter results for only specific ids. Defaults to None.
 
         Returns:
-            dict: Hit results
+            Dict[str, object]: Hit results
         """
-        res = self.es.search(
-            index = self.index_name, 
-            body = {"query" : {"multi_match": {
+        req_body = {"query" : {"multi_match": {
                 "query": text, 
-                "fields": [self.text_key, self.title_key]}
-            }}, 
+                "type": "best_fields",
+                "fields": [self.text_key, self.title_key],
+                "tie_breaker": 0.5
+                }}}
+        
+        if ids: req_body = {"query": {"bool": {
+                    "must": req_body["query"],
+                    "filter":  {"ids": {"values": ids}}
+                }}}
+
+        res = self.es.search(
+            search_type="dfs_query_then_fetch",
+            index = self.index_name, 
+            body = req_body, 
             size = top_hits
         )
         
@@ -130,23 +141,20 @@ class ElasticSearch(object):
         return self.hit_template(es_res=res, hits=hits)
     
     
-    def lexical_multisearch(self, texts: List[str], top_hits: int, skip: int = 0, text_present: bool = False) -> Dict[str, object]:
-        """lexical search using text in Elastic Search
+    def lexical_multisearch(self, texts: List[str], top_hits: int, skip: int = 0) -> Dict[str, object]:
+        """Multiple Query search in Elasticsearch
 
         Args:
-            id (str): id of the head paragraph
-            text (str): text of the head paragraph
-            top_hits (int): top k hits to retrieved
+            texts (List[str]): Multiple query texts
+            top_hits (int): top k hits to be retrieved
+            skip (int, optional): top hits to be skipped. Defaults to 0.
 
         Returns:
-            dict: Hit results
+            Dict[str, object]: Hit results
         """
         request = []
         
         assert top_hits + skip <= 10000, "Elastic-Search Window too large, Max-Size = 10000"
-        
-        if top_hits == 10000 and skip == 0 and text_present == False:
-            top_hits = 9999
         
         for text in texts:
             req_head = {"index" : self.index_name, "search_type": "dfs_query_then_fetch"}
@@ -162,16 +170,14 @@ class ElasticSearch(object):
                     },
                 "size": top_hits + skip + 1, # The same paragraph will occur in results
                 }
+                
             request.extend([req_head, req_body])
         
         res = self.es.msearch(body = request)
 
         result = []
         for resp in res["responses"]:
-            if text_present:
-                responses = resp["hits"]["hits"][(1+skip):]
-            else:
-                responses = resp["hits"]["hits"][skip:-1]
+            responses = resp["hits"]["hits"][skip:-1]
             
             hits = []
             for hit in responses:
@@ -182,11 +188,8 @@ class ElasticSearch(object):
     
     
     def generate_actions(self, dictionary: Dict[str, Dict[str, str]], update: bool = False):
-        """Iterator function for efficient addition to elastic-search
-        Update - https://stackoverflow.com/questions/35182403/bulk-update-with-pythons-elasticsearch
-
-        Args:
-            dictionary (dict): dictionary with id and sentence_text/sentence_embedding.
+        """Iterator function for efficient addition to Elasticsearch
+        Ref: https://stackoverflow.com/questions/35182403/bulk-update-with-pythons-elasticsearch
         """
         for _id, value in dictionary.items():
             if not update: 
@@ -209,6 +212,15 @@ class ElasticSearch(object):
             yield doc
         
     def hit_template(self, es_res: Dict[str, object], hits: List[Tuple[str, float]]) -> Dict[str, object]:
+        """Hit output results template
+
+        Args:
+            es_res (Dict[str, object]): Elasticsearch response
+            hits (List[Tuple[str, float]]): Hits from Elasticsearch
+
+        Returns:
+            Dict[str, object]: Hit results
+        """
         result = {
             'meta': {
                 'total': es_res['hits']['total']['value'],

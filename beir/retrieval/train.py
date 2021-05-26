@@ -1,4 +1,4 @@
-from sentence_transformers import SentenceTransformer, SentencesDataset, models
+from sentence_transformers import SentenceTransformer, SentencesDataset, models, datasets
 from sentence_transformers.evaluation import SentenceEvaluator, SequentialEvaluator, InformationRetrievalEvaluator
 from sentence_transformers.readers import InputExample
 from transformers import AdamW
@@ -19,7 +19,7 @@ class TrainRetriever:
         self.model = SentenceTransformer(model_path)
         if max_seq_length != None:
             self.model.max_seq_length = max_seq_length
-            
+
     def load_train(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], 
                    qrels: Dict[str, Dict[str, int]]) -> List[Type[InputExample]]:
         
@@ -37,11 +37,29 @@ class TrainRetriever:
 
         logger.info("Loaded {} training pairs.".format(len(train_samples)))
         return train_samples
+
+    def load_train_triplets(self, triplets: List[Tuple[str, str, str]]) -> List[Type[InputExample]]:        
+        
+        train_samples = []
+
+        for idx, start_idx in enumerate(trange(0, len(triplets), self.batch_size, desc='Adding Input Examples')):
+            triplets_batch = triplets[start_idx:start_idx+self.batch_size]
+            for triplet in triplets_batch:
+                guid = None
+                train_samples.append(InputExample(guid=guid, texts=triplet))
+
+        logger.info("Loaded {} training pairs.".format(len(train_samples)))
+        return train_samples
     
     def prepare_train(self, train_samples: List[Type[InputExample]], shuffle: bool = True) -> DataLoader:
         
         train_data = SentencesDataset(train_samples, model=self.model)
         train_dataloader = DataLoader(train_data, shuffle=shuffle, batch_size=self.batch_size)
+        return train_dataloader
+    
+    def prepare_train_triplets(self, train_samples: List[Type[InputExample]]) -> DataLoader:
+        
+        train_dataloader = datasets.NoDuplicatesDataLoader(train_samples, batch_size=self.batch_size)
         return train_dataloader
     
     def load_ir_evaluator(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], 

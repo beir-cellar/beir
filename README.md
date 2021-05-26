@@ -23,9 +23,8 @@ For more information, checkout our publications:
 - [Installation](https://github.com/UKPLab/beir#beers-installation)
 - [Features](https://github.com/UKPLab/beir#beers-features)
 - [Leaderboard](https://github.com/UKPLab/beir#beers-leaderboard)
-- [Relevant Course Material](https://github.com/UKPLab/beir#beers-relevant-course-material)
-- [Examples and Tutorials](https://github.com/UKPLab/beir#beers-examples-and-tutorials)
 - [Course Material on IR](https://github.com/UKPLab/beir#beers-course-material-on-ir)
+- [Examples and Tutorials](https://github.com/UKPLab/beir#beers-examples-and-tutorials)
 - [Quick Example](https://github.com/UKPLab/beir#beers-quick-example)
 - [Datasets](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
     - [Download a preprocessed dataset](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
@@ -71,7 +70,7 @@ Find below Google Sheets for BEIR Leaderboard. Unfortunately with Markdown the t
 |  Dense Retrieval            | [Google Sheet](https://docs.google.com/spreadsheets/d/1L8aACyPaXrL8iEelJLGqlMqXKPX2oSP_R10pZoy77Ns/edit#gid=0) |
 | BM25 top-100 + CE Reranking | [Google Sheet](https://docs.google.com/spreadsheets/d/1L8aACyPaXrL8iEelJLGqlMqXKPX2oSP_R10pZoy77Ns/edit#gid=867044147) |
 
-## :beers: Relevant Course Material
+## :beers: Course Material on IR
 
 If you are new to Information Retrieval and wish to understand and learn more about classical or neural IR, we suggest you to look at the open-sourced courses below. 
 
@@ -97,6 +96,7 @@ To easily understand and get your hands dirty with BEIR, we invite you to try ou
 | Reranking top-100 BM25 results with SBERT CE | [evaluate_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_ce_reranking.py) |
 | Reranking top-100 BM25 results with Dense Retriever | [evaluate_bm25_sbert_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_sbert_reranking.py) |
 | Fine-tuning SBERT over a dataset from scratch | [train_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert.py) |
+| Fine-tuning SBERT with MSMARCO triplets | [train_msmarco_triplets.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_triplets.py) |
 | Synthetic Query Generation using T5-model | [query_gen.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen.py) |
 | (GenQ) Synthetic QG using T5-model + fine-tuning SBERT | [query_gen_and_train.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py) |
 | Benchmark BM25 (Inference speed) | [benchmark_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_bm25.py) |
@@ -260,7 +260,7 @@ initialize = True # True, will delete existing index with same name and reindex 
 model = BM25(index_name=index_name, hostname=hostname, initialize=initialize)
 ```
 
-### Sparse retreival using SPARTA
+### Sparse Retrieval using SPARTA
 
 ```python
 from beir.retrieval.search.sparse import SparseSearch
@@ -270,7 +270,7 @@ model_path = "BeIR/sparta-msmarco-distilbert-base-v1"
 sparse_model = SparseSearch(models.SPARTA(model_path), batch_size=128)
 ```
 
-### Dense retreival using SBERT, ANCE, USE-QA or DPR
+### Dense Retrieval using SBERT, ANCE, USE-QA or DPR
 
 ```python
 from beir.retrieval import models
@@ -369,7 +369,7 @@ We also include custom-metrics now which can be used for evaluation, please refe
 
 - MRR (``MRR@k``)
 - Capped Recall (``R_cap@k``)
-- Hole (``Hole@k``)
+- Hole (``Hole@k``): % of top-k docs retrieved unseen by annotators
 
 ## :beers: Citing & Authors
 

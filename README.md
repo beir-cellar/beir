@@ -95,8 +95,9 @@ To easily understand and get your hands dirty with BEIR, we invite you to try ou
 | Hybrid sparse retrieval using SPARTA | [evaluate_sparta.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_sparta.py) |
 | Reranking top-100 BM25 results with SBERT CE | [evaluate_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_ce_reranking.py) |
 | Reranking top-100 BM25 results with Dense Retriever | [evaluate_bm25_sbert_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_sbert_reranking.py) |
-| Fine-tuning SBERT over a dataset from scratch | [train_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert.py) |
-| Fine-tuning SBERT with MSMARCO triplets | [train_msmarco_triplets.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_triplets.py) |
+| Train SBERT with Inbatch negatives| [train_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert.py) |
+| Train SBERT with BM25 hard negatives| [train_sbert_triplets.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert_triplets.py) |
+| Train SBERT with MSMARCO triplets | [train_msmarco_triplets.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_triplets.py) |
 | Synthetic Query Generation using T5-model | [query_gen.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen.py) |
 | (GenQ) Synthetic QG using T5-model + fine-tuning SBERT | [query_gen_and_train.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py) |
 | Benchmark BM25 (Inference speed) | [benchmark_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_bm25.py) |

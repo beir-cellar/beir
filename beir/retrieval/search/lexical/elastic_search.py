@@ -103,7 +103,7 @@ class ElasticSearch(object):
         progress.reset()
         progress.close()
     
-    def lexical_search(self, text: str, top_hits: int, ids: List[str] = None) -> Dict[str, object]:
+    def lexical_search(self, text: str, top_hits: int, ids: List[str] = None, skip: int = 0) -> Dict[str, object]:
         """[summary]
 
         Args:
@@ -130,12 +130,12 @@ class ElasticSearch(object):
             search_type="dfs_query_then_fetch",
             index = self.index_name, 
             body = req_body, 
-            size = top_hits
+            size = skip + top_hits
         )
         
         hits = []
         
-        for hit in res["hits"]["hits"]:
+        for hit in res["hits"]["hits"][skip:]:
             hits.append((hit["_id"], hit['_score']))
         
         return self.hit_template(es_res=res, hits=hits)
@@ -154,7 +154,7 @@ class ElasticSearch(object):
         """
         request = []
         
-        assert top_hits + skip <= 10000, "Elastic-Search Window too large, Max-Size = 10000"
+        assert skip + top_hits <= 10000, "Elastic-Search Window too large, Max-Size = 10000"
         
         for text in texts:
             req_head = {"index" : self.index_name, "search_type": "dfs_query_then_fetch"}
@@ -168,7 +168,7 @@ class ElasticSearch(object):
                         "tie_breaker": 0.5
                         }
                     },
-                "size": top_hits + skip + 1, # The same paragraph will occur in results
+                "size": skip + top_hits, # The same paragraph will occur in results
                 }
                 
             request.extend([req_head, req_body])
@@ -177,7 +177,7 @@ class ElasticSearch(object):
 
         result = []
         for resp in res["responses"]:
-            responses = resp["hits"]["hits"][skip:-1]
+            responses = resp["hits"]["hits"][skip:]
             
             hits = []
             for hit in responses:

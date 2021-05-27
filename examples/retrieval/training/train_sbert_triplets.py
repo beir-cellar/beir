@@ -55,18 +55,20 @@ bm25 = EvaluateRetrieval(model)
 bm25.retriever.index(corpus)
 
 triplets = []
-query_ids = list(qrels) 
-hard_negatives_per_query = 5
+qids = list(qrels) 
+hard_negatives_max = 10
 
-for idx in tqdm.tqdm(range(len(query_ids)), desc="Retrieve Hard Negatives using BM25"):
-    for pos_id in qrels[query_ids[idx]]:
-        pos_doc_text = corpus[pos_id]["title"] + " " + corpus[pos_id]["text"]
-        hit = bm25.retriever.es.lexical_search(text=pos_doc_text, top_hits=hard_negatives_per_query+1)
-        for (neg_id, score) in hit.get("hits"):
-            if neg_id != pos_id: # same document will have highest BM25 score
-                query_text = queries[query_ids[idx]]
-                neg_doc_text = corpus[neg_id]["title"] + " " + corpus[neg_id]["text"]
-                triplets.append([query_text, pos_doc_text, neg_doc_text])
+#### Retrieve BM25 hard negatives => Given a positive document, find most similar lexical documents
+for idx in tqdm.tqdm(range(len(qids)), desc="Retrieve Hard Negatives using BM25"):
+    query_id, query_text = qids[idx], queries[qids[idx]]
+    pos_docs = [doc_id for doc_id in qrels[query_id] if qrels[query_id][doc_id] > 0]
+    pos_doc_texts = [corpus[doc_id]["title"] + " " + corpus[doc_id]["text"] for doc_id in pos_docs]
+    hits = bm25.retriever.es.lexical_multisearch(texts=pos_doc_texts, top_hits=hard_negatives_max+1)
+    for (pos_text, hit) in zip(pos_doc_texts, hits):
+        for (neg_id, _) in hit.get("hits"):
+            if neg_id not in pos_docs:
+                neg_text = corpus[neg_id]["title"] + " " + corpus[neg_id]["text"]
+                triplets.append([query_text, pos_text, neg_text])
 
 #### Provide any sentence-transformers or HF model
 model_path = "distilbert-base-uncased" 

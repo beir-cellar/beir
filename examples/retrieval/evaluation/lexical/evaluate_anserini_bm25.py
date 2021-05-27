@@ -67,7 +67,10 @@ query_texts = [queries[qid] for qid in qids]
 payload = {"queries": query_texts, "qids": qids, "k": max(retriever.k_values)}
 
 #### Retrieve pyserini results (format of results is identical to qrels)
-results = json.loads(requests.post(docker_beir_pyserini + "/batch_search/", json=payload).text)["results"]
+results = json.loads(requests.post(docker_beir_pyserini + "/lexical/batch_search/", json=payload).text)["results"]
+
+#### Retrieve RM3 expanded pyserini results (format of results is identical to qrels)
+# results = json.loads(requests.post(docker_beir_pyserini + "/lexical/rm3/batch_search/", json=payload).text)["results"]
 
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 logging.info("Retriever evaluation for k in: {}".format(retriever.k_values))

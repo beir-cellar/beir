@@ -1,7 +1,7 @@
+from sentence_transformers import losses, models, SentenceTransformer
 from beir import util, LoggingHandler
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.train import TrainRetriever
-from sentence_transformers import losses
 import pathlib, os
 import logging
 
@@ -24,9 +24,16 @@ corpus, queries, qrels = GenericDataLoader(data_path).load(split="train")
 #### Please Note not all datasets contain a dev split, comment out the line if such the case
 dev_corpus, dev_queries, dev_qrels = GenericDataLoader(data_path).load(split="dev")
 
-#### Provide any sentence-transformers model path
-model_path = "bert-base-uncased" # or "msmarco-distilbert-base-v3"
-retriever = TrainRetriever(model_path=model_path, batch_size=16, max_seq_length=350)
+#### Provide any sentence-transformers or HF model
+model_name = "distilbert-base-uncased" 
+word_embedding_model = models.Transformer(model_name, max_seq_length=350)
+pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension())
+model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
+
+#### Or provide pretrained sentence-transformer model
+# model = SentenceTransformer("msmarco-distilbert-base-v3")
+
+retriever = TrainRetriever(model=model, batch_size=16)
 
 #### Prepare training samples
 train_samples = retriever.load_train(corpus, queries, qrels)

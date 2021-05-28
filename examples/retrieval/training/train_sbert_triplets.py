@@ -1,9 +1,9 @@
+from sentence_transformers import losses, models, SentenceTransformer
 from beir import util, LoggingHandler
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.search.lexical import BM25Search as BM25
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.train import TrainRetriever
-from sentence_transformers import losses
 import pathlib, os, tqdm
 import logging
 
@@ -71,9 +71,13 @@ for idx in tqdm.tqdm(range(len(qids)), desc="Retrieve Hard Negatives using BM25"
                 triplets.append([query_text, pos_text, neg_text])
 
 #### Provide any sentence-transformers or HF model
-model_path = "distilbert-base-uncased" 
-#### Provide a high batch-size to train better!
-retriever = TrainRetriever(model_path=model_path, batch_size=16, max_seq_length=300)
+model_name = "distilbert-base-uncased" 
+word_embedding_model = models.Transformer(model_name, max_seq_length=300)
+pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension())
+model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
+
+#### Provide a high batch-size to train better with triplets!
+retriever = TrainRetriever(model=model, batch_size=32)
 
 #### Prepare triplets samples
 train_samples = retriever.load_train_triplets(triplets=triplets)

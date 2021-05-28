@@ -14,11 +14,9 @@ logger = logging.getLogger(__name__)
 
 class TrainRetriever:
     
-    def __init__(self, model_path: str, batch_size: int = 64, max_seq_length: int = None):
+    def __init__(self, model: Type[SentenceTransformer], batch_size: int = 64):
+        self.model = model
         self.batch_size = batch_size
-        self.model = SentenceTransformer(model_path)
-        if max_seq_length != None:
-            self.model.max_seq_length = max_seq_length
 
     def load_train(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], 
                    qrels: Dict[str, Dict[str, int]]) -> List[Type[InputExample]]:

@@ -1,7 +1,7 @@
+from sentence_transformers import SentenceTransformer, models, losses
 from beir import util, LoggingHandler
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.train import TrainRetriever
-from sentence_transformers import losses
 import pathlib, os, gzip
 import logging
 
@@ -39,9 +39,13 @@ with gzip.open(msmarco_triplets_filepath, 'rt', encoding='utf8') as fIn:
         triplets.append(triplet)
         
 #### Provide any sentence-transformers or HF model
-model_path = "distilbert-base-uncased" 
-#### Provide a high batch-size to train better!
-retriever = TrainRetriever(model_path=model_path, batch_size=64, max_seq_length=300)
+model_name = "distilbert-base-uncased" 
+word_embedding_model = models.Transformer(model_name, max_seq_length=300)
+pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension())
+model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
+
+#### Provide a high batch-size to train better with triplets!
+retriever = TrainRetriever(model=model, batch_size=32)
 
 #### Prepare triplets samples
 train_samples = retriever.load_train_triplets(triplets=triplets)

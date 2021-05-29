@@ -96,7 +96,7 @@ train_loss = losses.MultipleNegativesRankingLoss(model=retriever.model)
 ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-scifact-hard-negs".format(model_path))
+model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-scifact-hard-negs".format(model_name))
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params

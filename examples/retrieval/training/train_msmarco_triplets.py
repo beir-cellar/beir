@@ -63,7 +63,7 @@ ir_evaluator = retriever.load_ir_evaluator(dev_corpus, dev_queries, dev_qrels)
 # ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-msmarco".format(model_path))
+model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-msmarco".format(model_name))
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params

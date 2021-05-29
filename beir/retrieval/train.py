@@ -119,8 +119,8 @@ class TrainRetriever:
             save_best_model: bool = True,
             max_grad_norm: float = 1,
             use_amp: bool = False,
-            callback: Callable[[float, int, int], None] = None
-            ):
+            callback: Callable[[float, int, int], None] = None,
+            **kwargs):
         
         # Train the model
         logger.info("Starting to Train...")
@@ -139,4 +139,4 @@ class TrainRetriever:
                 save_best_model=save_best_model,
                 max_grad_norm=max_grad_norm,
                 use_amp=use_amp,
-                callback=callback)
+                callback=callback, **kwargs)

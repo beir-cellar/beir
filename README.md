@@ -399,7 +399,7 @@ If you find this repository helpful, feel free to cite our publication [BEIR: A 
 ```
 
 The main contributors of this repository are:
-- [Nandan Thakur](https://github.com/Nthakur20), Personal Website: [https://nthakur.xyz](https://nthakur.xyz)
+- [Nandan Thakur](https://github.com/Nthakur20), Personal Website: [nandan-thakur.com](https://nandan-thakur.com)
 
 Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)
 

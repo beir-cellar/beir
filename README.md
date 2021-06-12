@@ -24,6 +24,7 @@ For more information, checkout our publications:
 - [Features](https://github.com/UKPLab/beir#beers-features)
 - [Leaderboard](https://github.com/UKPLab/beir#beers-leaderboard)
 - [Course Material on IR](https://github.com/UKPLab/beir#beers-course-material-on-ir)
+- [Current Challenges faced in IR](https://github.com/UKPLab/beir#beers-current-challenges-faced-in-ir)
 - [Examples and Tutorials](https://github.com/UKPLab/beir#beers-examples-and-tutorials)
 - [Quick Example](https://github.com/UKPLab/beir#beers-quick-example)
 - [Datasets](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
@@ -78,6 +79,15 @@ If you are new to Information Retrieval and wish to understand and learn more ab
 | -----------------   |  ------------ |  --------------------- | ---------|  --------- |
 | Intro to Advanced IR|  TU Wien'21   |  Sebastian Hofstaetter | [Link](https://github.com/sebastian-hofstaetter/teaching) | Videos + Slides |
 | CS224U NLU + IR     |  Stanford'21  |  Omar Khattab          | [Link](http://web.stanford.edu/class/cs224u/) | Slides |
+| Pretrained Transformers for Text Ranking: BERT and Beyond    |  MPI, Waterloo'21  |  Andrew Yates, Rodrigo Nogueira, Jimmy Lin | [Link](https://arxiv.org/abs/2010.06467) | PDF |
+
+## :beers: Current Challenges in IR
+
+Here below containes few current challenges faced in IR. Feel free to add more interesting challenges or ideas to solve these using BEIR.
+
+|      Course         |  Conference   |  Instructor            |   Link   |  Available |
+| -----------------   |  ------------ |  --------------------- | ---------|  --------- |
+| BoF on Information Retrieval | NAACL'21 | Sean MacAvaney, Luca Soldaini | [Link](https://docs.google.com/presentation/d/1BkGGnlLLtU-THbqbD60NDZPcPVRSeKxZSy73DKX1u-M/edit) |  Slides |
 
 ## :beers: Examples and Tutorials
 
@@ -93,6 +103,7 @@ To easily understand and get your hands dirty with BEIR, we invite you to try ou
 | Exact-search retrieval using (dense) DPR | [evaluate_dpr.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_dpr.py) |
 | Exact-search retrieval using (dense) USE-QA  | [evaluate_useqa.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_useqa.py) |
 | Hybrid sparse retrieval using SPARTA | [evaluate_sparta.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_sparta.py) |
+| Sparse retrieval using docT5query and Pyserini | [evaluate_anserini_docT5query.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_anserini_docT5query.py) |
 | Reranking top-100 BM25 results with SBERT CE | [evaluate_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_ce_reranking.py) |
 | Reranking top-100 BM25 results with Dense Retriever | [evaluate_bm25_sbert_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_sbert_reranking.py) |
 | Train SBERT with Inbatch negatives| [train_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert.py) |

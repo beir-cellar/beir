@@ -69,7 +69,7 @@ def hole(qrels: Dict[str, Dict[str, int]],
     annotated_corpus = set()
     for _, docs in qrels.items():
         for doc_id, score in docs.items():    
-            if score > 0: annotated_corpus.add(doc_id)
+            annotated_corpus.add(doc_id)
     
     k_max = max(k_values)
     logging.info("\n")

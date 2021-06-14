@@ -177,12 +177,12 @@ For other datasets, just use one of the datasets names, mention below.
 | MSMARCO    | [Homepage](https://microsoft.github.io/msmarco/)| ``msmarco`` |  6,980   |  8.84M     |    1.1 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip) | ``444067daf65d982533ea17ebd59501e4`` |
 | TREC-COVID |  [Homepage](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| 50|  171K| 493.5 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/trec-covid.zip) | ``ce62140cb23feb9becf6270d0d1fe6d1`` |
 | NFCorpus   | [Homepage](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/) | ``nfcorpus``  |  323     |  3.6K     |  38.2 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/nfcorpus.zip) | ``a89dba18a62ef92f7d323ec890a0d38d`` |
-| BioASQ     | [Homepage](http://bioasq.org) | ``bioasq``|  500    |  14.91M    |  8.05 | No | - |
+| BioASQ     | [Homepage](http://bioasq.org) | ``bioasq``|  500    |  14.91M    |  8.05 | No | [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/datasets/README.md) |
 | NQ         | [Homepage](https://ai.google.com/research/NaturalQuestions) | ``nq``|  3,452   |  2.68M  |  1.2 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/nq.zip) | ``d4d3d2e48787a744b6f6e691ff534307`` |
 | HotpotQA   | [Homepage](https://hotpotqa.github.io) | ``hotpotqa``|  7,405   |  5.23M  |  2.0 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/hotpotqa.zip)  | ``f412724f78b0d91183a0e86805e16114`` |
 | FiQA-2018  | [Homepage](https://sites.google.com/view/fiqa/) | ``fiqa``    | 648     |  57K    |  2.6 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/fiqa.zip)  | ``17918ed23cd04fb15047f73e6c3bd9d9`` |
-| Signal-1M(RT) | [Homepage](https://research.signal-ai.com/datasets/signal1m-tweetir.html)| ``signal1m`` |  97   |  2.86M  |  19.6 | No | - |
-| TREC-NEWS  | [Homepage](https://trec.nist.gov/data/news2019.html) | ``trec-news``    | 57    |  595K    |  19.6 | No | - |
+| Signal-1M(RT) | [Homepage](https://research.signal-ai.com/datasets/signal1m-tweetir.html)| ``signal1m`` |  97   |  2.86M  |  19.6 | No | [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/datasets/README.md) |
+| TREC-NEWS  | [Homepage](https://trec.nist.gov/data/news2019.html) | ``trec-news``    | 57    |  595K    |  19.6 | No | [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/datasets/README.md) |
 | ArguAna    | [Homepage](http://argumentation.bplaced.net/arguana/data) | ``arguana`` | 1,406     |  8.67K    |  1.0 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/arguana.zip)  | ``8ad3e3c2a5867cdced806d6503f29b99`` |
 | Touche-2020| [Homepage](https://webis.de/events/touche-20/shared-task-1.html) | ``webis-touche2020``| 49     |  382K    |  49.2 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/webis-touche2020.zip) | ``6e29ac6c57e2d227fb57501872cac45f`` |
 | CQADupstack| [Homepage](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/) | ``cqadupstack``|  13,145 |  457K  |  1.4 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/cqadupstack.zip) | ``4e41456d7df8ee7760a7f866133bda78`` |
@@ -192,7 +192,7 @@ For other datasets, just use one of the datasets names, mention below.
 | FEVER| [Homepage](http://fever.ai) | ``fever``|  6,666     |  5.42M    |  1.2|  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/fever.zip)  | ``88591ef8eb2913126d0c93ecbde6285f`` |
 | Climate-FEVER| [Homepage](http://climatefever.ai) | ``climate-fever``|  1,535     |  5.42M |  3.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/climate-fever.zip)  | ``8b66f0a9126c521bae2bde127b4dc99d`` |
 | SciFact| [Homepage](https://github.com/allenai/scifact) | ``scifact``|  300     |  5K    |  1.1 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip)  | ``5f7d1de60b170fc8027bb7898e2efca1`` |
-| Robust04 | [Homepage](https://trec.nist.gov/data/robust/04.guidelines.html) | ``robust04``|  249  |  528K  |  69.9 |  No  |  -  |
+| Robust04 | [Homepage](https://trec.nist.gov/data/robust/04.guidelines.html) | ``robust04``|  249  |  528K  |  69.9 |  No  |  [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/datasets/README.md)  |
 
 Otherwise, you can load a custom preprocessed dataset in the following way:
 
@@ -311,6 +311,7 @@ rerank_results = reranker.rerank(corpus, queries, bm25_results, top_k=100)
 |  Name     |  Implementation  |
 |  -------  |   -------------  |
 |  BM25  (Robertson and Zaragoza, 2009) | [https://www.elastic.co/](https://www.elastic.co/) |
+| Anserini (Yang et al., 2017) | [https://github.com/castorini/anserini](https://github.com/castorini/anserini) |
 |  SBERT (Reimers and Gurevych, 2019)   | [https://www.sbert.net/](https://www.sbert.net/) |
 |  ANCE (Xiong et al., 2020) | [https://github.com/microsoft/ANCE](https://github.com/microsoft/ANCE) |
 |  DPR (Karpukhin et al., 2020) | [https://github.com/facebookresearch/DPR](https://github.com/facebookresearch/DPR) |

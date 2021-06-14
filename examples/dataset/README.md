@@ -44,7 +44,7 @@ Below we mention how to reproduce retrieval on datasets which are not public -
 
 ### Corpus
 1. Scrape tweets from Twitter manually for the ids here: https://github.com/igorbrigadir/newsir16-data/tree/master/twitter/curated
-2. I used ``tweepy`` (https://www.tweepy.org/) from python to scrape tweets. You can find the script here: [scrape_tweets.py](https://github.com/UKPLab/beir/blob/main/examples/datasets/scrape_tweets.py).
+2. I used ``tweepy`` (https://www.tweepy.org/) from python to scrape tweets. You can find the script here: [scrape_tweets.py](https://github.com/UKPLab/beir/blob/main/examples/dataset/scrape_tweets.py).
 3. We preprocess the text retrieved, we remove emojis and links from the original text. You can find the function implementations in the code above.
 4. Remove tweets which are empty or do not contain any text.
 

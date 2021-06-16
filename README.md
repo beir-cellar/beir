@@ -24,7 +24,6 @@ For more information, checkout our publications:
 - [Features](https://github.com/UKPLab/beir#beers-features)
 - [Leaderboard](https://github.com/UKPLab/beir#beers-leaderboard)
 - [Course Material on IR](https://github.com/UKPLab/beir#beers-course-material-on-ir)
-- [Current Challenges faced in IR](https://github.com/UKPLab/beir#beers-current-challenges-faced-in-ir)
 - [Examples and Tutorials](https://github.com/UKPLab/beir#beers-examples-and-tutorials)
 - [Quick Example](https://github.com/UKPLab/beir#beers-quick-example)
 - [Datasets](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
@@ -80,14 +79,8 @@ If you are new to Information Retrieval and wish to understand and learn more ab
 | Intro to Advanced IR|  TU Wien'21   |  Sebastian Hofstaetter | [Link](https://github.com/sebastian-hofstaetter/teaching) | Videos + Slides |
 | CS224U NLU + IR     |  Stanford'21  |  Omar Khattab          | [Link](http://web.stanford.edu/class/cs224u/) | Slides |
 | Pretrained Transformers for Text Ranking: BERT and Beyond    |  MPI, Waterloo'21  |  Andrew Yates, Rodrigo Nogueira, Jimmy Lin | [Link](https://arxiv.org/abs/2010.06467) | PDF |
+| BoF Session on IR | NAACL'21 | Sean MacAvaney, Luca Soldaini | [Link](https://docs.google.com/presentation/d/1BkGGnlLLtU-THbqbD60NDZPcPVRSeKxZSy73DKX1u-M/edit) |  Slides |
 
-## :beers: Current Challenges in IR
-
-Here below containes few current challenges faced in IR. Feel free to add more interesting challenges or ideas to solve these using BEIR.
-
-|      Course         |  Conference   |  Instructor            |   Link   |  Available |
-| -----------------   |  ------------ |  --------------------- | ---------|  --------- |
-| BoF on Information Retrieval | NAACL'21 | Sean MacAvaney, Luca Soldaini | [Link](https://docs.google.com/presentation/d/1BkGGnlLLtU-THbqbD60NDZPcPVRSeKxZSy73DKX1u-M/edit) |  Slides |
 
 ## :beers: Examples and Tutorials
 

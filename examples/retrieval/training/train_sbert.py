@@ -1,3 +1,18 @@
+'''
+This examples show how to train a basic Bi-Encoder for any BEIR dataset without any mined hard negatives or triplets.
+
+The queries and passages are passed independently to the transformer network to produce fixed sized embeddings.
+These embeddings can then be compared using cosine-similarity to find matching passages for a given query.
+
+For training, we use MultipleNegativesRankingLoss. There, we pass pairs in the format:
+(query, positive_passage). Other positive passages within a single batch becomes negatives given the pos passage.
+
+We do not mine hard negatives or train triplets in this example.
+
+Running this script:
+python train_sbert.py
+'''
+
 from sentence_transformers import losses, models, SentenceTransformer
 from beir import util, LoggingHandler
 from beir.datasets.data_loader import GenericDataLoader
@@ -51,7 +66,7 @@ ir_evaluator = retriever.load_ir_evaluator(dev_corpus, dev_queries, dev_qrels)
 # ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-nfcorpus".format(model_name))
+model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-v1-{}".format(model_name, dataset))
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params

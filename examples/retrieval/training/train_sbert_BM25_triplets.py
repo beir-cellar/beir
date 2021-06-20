@@ -1,3 +1,19 @@
+'''
+This examples show how to train a Bi-Encoder for any BEIR dataset.
+
+The queries and passages are passed independently to the transformer network to produce fixed sized embeddings.
+These embeddings can then be compared using cosine-similarity to find matching passages for a given query.
+
+For training, we use MultipleNegativesRankingLoss. There, we pass triplets in the format:
+(query, positive_passage, negative_passage)
+
+Negative passage are hard negative examples, that where retrieved by lexical search. We use Elasticsearch
+to get (max=10) hard negative examples given a positive passage. 
+
+Running this script:
+python train_sbert_BM25_triplets.py
+'''
+
 from sentence_transformers import losses, models, SentenceTransformer
 from beir import util, LoggingHandler
 from beir.datasets.data_loader import GenericDataLoader
@@ -96,7 +112,7 @@ train_loss = losses.MultipleNegativesRankingLoss(model=retriever.model)
 ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-scifact-hard-negs".format(model_name))
+model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-v2-{}-bm25-hard-negs".format(model_name, dataset))
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params

@@ -139,8 +139,8 @@ class MSMARCODataset(Dataset):
 model_name = "distilbert-base-uncased" 
 word_embedding_model = models.Transformer(model_name, max_seq_length=max_seq_length)
 pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),
-                               pooling_mode_cls_token: True,
-                               pooling_mode_mean_tokens: False)
+                               pooling_mode_cls_token=True,
+                               pooling_mode_mean_tokens=False)
 model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
 
 #### Provide a high batch-size to train better with triplets!

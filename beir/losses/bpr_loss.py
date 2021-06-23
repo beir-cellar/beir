@@ -3,7 +3,7 @@ import torch
 from typing import Iterable, Dict
 from sentence_transformers import SentenceTransformer, util
 
-class BPRLoss(nn.Module):
+class BPRLoss(torch.nn.Module):
     """
         This loss expects as input a batch consisting of sentence triplets (a_1, p_1, n_1), (a_2, p_2, n_2)..., (a_n, p_n, n_n)
         where we assume that (a_i, p_i) are a positive pair and (a_i, p_j) for i!=j a negative pair. 

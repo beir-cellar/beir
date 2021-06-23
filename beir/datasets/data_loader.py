@@ -1,8 +1,9 @@
+from typing import Dict, Tuple
+from tqdm.autonotebook import tqdm
 import json
 import os
 import logging
 import csv
-from typing import Dict, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -36,14 +37,16 @@ class GenericDataLoader:
         self.check(fIn=self.corpus_file, ext="jsonl")
         self.check(fIn=self.query_file, ext="jsonl")
         self.check(fIn=self.qrels_file, ext="tsv")
-
-        if not len(self.queries):
-            self._load_queries()
         
         if not len(self.corpus):
+            logger.info("Loading Corpus...")
             self._load_corpus()
             logger.info("Loaded %d Documents.", len(self.corpus))
             logger.info("Doc Example: %s", list(self.corpus.values())[0])
+        
+        if not len(self.queries):
+            logger.info("Loading Queries...")
+            self._load_queries()
         
         if os.path.exists(self.qrels_file):
             self._load_qrels()
@@ -60,13 +63,15 @@ class GenericDataLoader:
         self.check(fIn=self.query_file, ext="jsonl")
         self.check(fIn=self.qrels_file, ext="tsv")
         
-        if not len(self.queries):
-            self._load_queries()
-        
         if not len(self.corpus):
+            logger.info("Loading Corpus...")
             self._load_corpus()
             logger.info("Loaded %d %s Documents.", len(self.corpus), split.upper())
             logger.info("Doc Example: %s", list(self.corpus.values())[0])
+        
+        if not len(self.queries):
+            logger.info("Loading Queries...")
+            self._load_queries()
         
         if os.path.exists(self.qrels_file):
             self._load_qrels()
@@ -81,6 +86,7 @@ class GenericDataLoader:
         self.check(fIn=self.corpus_file, ext="jsonl")
 
         if not len(self.corpus):
+            logger.info("Loading Corpus...")
             self._load_corpus()
             logger.info("Loaded %d Documents.", len(self.corpus))
             logger.info("Doc Example: %s", list(self.corpus.values())[0])
@@ -88,9 +94,10 @@ class GenericDataLoader:
         return self.corpus
     
     def _load_corpus(self):
-        
+    
+        num_lines = sum(1 for i in open(self.corpus_file, 'rb'))
         with open(self.corpus_file, encoding='utf8') as fIn:
-            for line in fIn:
+            for line in tqdm(fIn, total=num_lines):
                 line = json.loads(line)
                 self.corpus[line.get("_id")] = {
                     "text": line.get("text"),

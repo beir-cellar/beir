@@ -49,15 +49,17 @@ class TrainRetriever:
         logger.info("Loaded {} training pairs.".format(len(train_samples)))
         return train_samples
     
-    def prepare_train(self, train_samples: List[Type[InputExample]], shuffle: bool = True) -> DataLoader:
+    def prepare_train(self, train_dataset: List[Type[InputExample]], shuffle: bool = True, dataset_present: bool = False) -> DataLoader:
         
-        train_data = SentencesDataset(train_samples, model=self.model)
-        train_dataloader = DataLoader(train_data, shuffle=shuffle, batch_size=self.batch_size)
+        if not dataset_present: 
+            train_dataset = SentencesDataset(train_dataset, model=self.model)
+        
+        train_dataloader = DataLoader(train_dataset, shuffle=shuffle, batch_size=self.batch_size)
         return train_dataloader
     
-    def prepare_train_triplets(self, train_samples: List[Type[InputExample]]) -> DataLoader:
+    def prepare_train_triplets(self, train_dataset: List[Type[InputExample]]) -> DataLoader:
         
-        train_dataloader = datasets.NoDuplicatesDataLoader(train_samples, batch_size=self.batch_size)
+        train_dataloader = datasets.NoDuplicatesDataLoader(train_dataset, batch_size=self.batch_size)
         return train_dataloader
     
     def load_ir_evaluator(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], 

@@ -17,10 +17,10 @@ class EvaluateRetrieval:
         self.retriever = retriever
         self.score_function = score_function
             
-    def retrieve(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], *args, **kwargs) -> Dict[str, Dict[str, float]]:
+    def retrieve(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], **kwargs) -> Dict[str, Dict[str, float]]:
         if not self.retriever:
             raise ValueError("Model/Technique has not been provided!")
-        return self.retriever.search(corpus, queries, self.top_k, self.score_function, *args, **kwargs)
+        return self.retriever.search(corpus, queries, self.top_k, self.score_function, **kwargs)
     
     def rerank(self, 
             corpus: Dict[str, Dict[str, str]], 

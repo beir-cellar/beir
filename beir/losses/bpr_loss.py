@@ -27,7 +27,7 @@ class BPRLoss(torch.nn.Module):
         :param binary_ranking_loss_margin: margin used for binary loss. By default original authors found enhanced performance = 2.0, (Appendix D, https://arxiv.org/abs/2106.00882).
         :param hashnet_gamma: hashnet gamma function used for scaling tanh function. By default original authors found enhanced performance = 0.1, (Appendix B, https://arxiv.org/abs/2106.00882).
         """
-        super(BPRLossFunction, self).__init__()
+        super(BPRLoss, self).__init__()
         self.global_step = 0
         self.model = model
         self.scale = scale

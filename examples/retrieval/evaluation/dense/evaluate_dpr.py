@@ -31,15 +31,38 @@ data_path = util.download_and_unzip(url, out_dir)
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
 #### Dense Retrieval using Dense Passage Retriever (DPR) ####
-# https://www.sbert.net/docs/pretrained-models/dpr.html
 # DPR implements a two-tower strategy i.e. encoding the query and document seperately.
 # The DPR model was fine-tuned using dot-product (dot) function.
+
+#########################################################
+#### 1. Loading DPR model using SentenceTransformers ####
+#########################################################
 # You need to provide a ' [SEP] ' to seperate titles and passages in documents
+# Ref: (https://www.sbert.net/docs/pretrained-models/dpr.html)
 
 model = DRES(models.SentenceBERT((
     "facebook-dpr-question_encoder-multiset-base",
     "facebook-dpr-ctx_encoder-multiset-base",
     " [SEP] "), batch_size=128))
+
+################################################################
+#### 2. Loading Original HuggingFace DPR models by Facebook ####
+################################################################
+# If you do not have your saved model on Sentence Transformers, 
+# You can load HF-based DPR models in BEIR.
+# No need to provide seperator token, the model handles automatically!
+
+# model = DRES(models.DPR((
+#     "facebook/dpr-question_encoder-multiset-base",
+#     "facebook/dpr-ctx_encoder-multiset-base"), batch_size=128))
+
+# You can also load similar trained DPR models available on Hugging Face.
+# For eg. GermanDPR (https://deepset.ai/germanquad)
+
+# model = DRES(models.DPR((
+#     "deepset/gbert-base-germandpr-question_encoder",
+#     "deepset/gbert-base-germandpr-ctx_encoder"), batch_size=128))
+
 
 retriever = EvaluateRetrieval(model, score_function="dot")
 

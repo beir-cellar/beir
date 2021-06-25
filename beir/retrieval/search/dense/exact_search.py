@@ -16,6 +16,7 @@ class DenseRetrievalExactSearch:
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.corpus_chunk_size = corpus_chunk_size
         self.show_progress_bar = True #TODO: implement no progress bar if false
+        self.convert_to_tensor = True
         self.results = {}
     
     def search(self, 
@@ -34,7 +35,7 @@ class DenseRetrievalExactSearch:
         self.results = {qid: {} for qid in query_ids}
         queries = [queries[qid] for qid in queries]
         query_embeddings = self.model.encode_queries(
-            queries, show_progress_bar=self.show_progress_bar, batch_size=self.batch_size)
+            queries, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
           
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
         corpus_ids = list(corpus.keys())
@@ -49,8 +50,9 @@ class DenseRetrievalExactSearch:
             #Encode chunk of corpus    
             sub_corpus_embeddings = self.model.encode_corpus(
                 corpus[corpus_start_idx:corpus_end_idx],
+                batch_size=self.batch_size,
                 show_progress_bar=self.show_progress_bar, 
-                batch_size=self.batch_size
+                convert_to_tensor = self.convert_to_tensor
                 )
 
             #Compute similarites using either cosine-similarity or dot product

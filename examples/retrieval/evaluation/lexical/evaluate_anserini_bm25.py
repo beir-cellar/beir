@@ -6,9 +6,9 @@ To install docker on your local machine, please refer here: https://docs.docker.
 
 After docker installation, please follow the steps below to get docker container up and running:
 
-1. docker pull beir/beir-pyserini
-2. docker build -t beir-pyserini .
-3. docker run -p 8000:8000 -it --rm beir-pyserini
+1. docker pull beir/pyserini-fastapi 
+2. docker build -t pyserini-fastapi .
+3. docker run -p 8000:8000 -it --rm pyserini-fastapi
 
 Once the docker container is up and running in local, now run the code below.
 This code doesn't require GPU to run.
@@ -48,7 +48,7 @@ with open(os.path.join(data_path, pyserini_jsonl), 'w', encoding="utf-8") as fOu
         json.dump(data, fOut)
         fOut.write('\n')
 
-#### Download Docker Image beir/beir-pyserini ####
+#### Download Docker Image beir/pyserini-fastapi ####
 #### Locally run the docker Image + FastAPI ####
 docker_beir_pyserini = "http://127.0.0.1:8000"
 

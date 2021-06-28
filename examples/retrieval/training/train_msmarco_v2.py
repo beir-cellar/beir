@@ -16,7 +16,7 @@ Negative passage are hard negative examples, that where retrieved by lexical sea
 passages (the triplets) that are provided by the MS MARCO dataset.
 
 Running this script:
-python train_msmarco_v2_triplets.py
+python train_msmarco_v2.py
 '''
 
 from sentence_transformers import SentenceTransformer, models, losses
@@ -52,7 +52,9 @@ max_seq_length = 350            # Max length for passages. Increasing it, requir
 # The triplets file contains 5,028,051 sentence pairs (ref: https://sbert.net/datasets/paraphrases)
 triplets_url = "https://public.ukp.informatik.tu-darmstadt.de/reimers/sentence-transformers/datasets/paraphrases/msmarco-triplets.tsv.gz"
 msmarco_triplets_filepath = os.path.join(data_path, "msmarco-triplets.tsv.gz")
-util.download_url(triplets_url, msmarco_triplets_filepath)
+
+if not os.path.isfile(msmarco_triplets_filepath):
+    util.download_url(triplets_url, msmarco_triplets_filepath)
 
 #### The triplets file contains tab seperated triplets in each line =>
 # 1. train query (text), 2. positive doc (text), 3. hard negative doc (text) 

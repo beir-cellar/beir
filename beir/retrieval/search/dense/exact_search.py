@@ -23,7 +23,7 @@ class DenseRetrievalExactSearch:
                corpus: Dict[str, Dict[str, str]], 
                queries: Dict[str, str], 
                top_k: List[int], 
-               score_function: str, *args, **kwargs) -> Dict[str, Dict[str, float]]:
+               score_function: str, **kwargs) -> Dict[str, Dict[str, float]]:
         #Create embeddings for all queries using model.encode_queries()
         #Runs semantic search against the corpus embeddings
         #Returns a ranked list with the corpus ids

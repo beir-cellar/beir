@@ -11,7 +11,7 @@ Negative passage are hard negative examples, that where retrieved by lexical sea
 to get (max=10) hard negative examples given a positive passage. 
 
 Running this script:
-python train_sbert_BM25_triplets.py
+python train_sbert_BM25_hardnegs.py
 '''
 
 from sentence_transformers import losses, models, SentenceTransformer

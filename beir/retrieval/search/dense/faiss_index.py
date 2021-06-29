@@ -1,10 +1,11 @@
-import logging
-import time
+from .util import normalize
 from typing import List, Optional, Tuple
+from tqdm.autonotebook import trange
+import numpy as np
 
 import faiss
-import numpy as np
-from tqdm import trange
+import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +17,16 @@ class FaissIndex:
         if passage_ids is not None:
             self._passage_ids = np.array(passage_ids, dtype=np.int64)
 
-    def search(self, query_embeddings: np.ndarray, k: int) -> Tuple[np.ndarray, np.ndarray]:
+    def search(self, query_embeddings: np.ndarray, k: int, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         start_time = time.time()
         scores_arr, ids_arr = self.index.search(query_embeddings, k)
         if self._passage_ids is not None:
             ids_arr = self._passage_ids[ids_arr.reshape(-1)].reshape(query_embeddings.shape[0], -1)
         logger.info("Total search time: %.3f", time.time() - start_time)
         return scores_arr, ids_arr
+    
+    def save(self, fname: str):
+        faiss.write_index(self.index, fname)
 
     @classmethod
     def build(
@@ -52,9 +56,12 @@ class FaissIndex:
 
 
 class FaissHNSWIndex(FaissIndex):
-    def search(self, query_embeddings: np.ndarray, k: int) -> Tuple[np.ndarray, np.ndarray]:
+    def search(self, query_embeddings: np.ndarray, k: int, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         query_embeddings = np.hstack((query_embeddings, np.zeros((query_embeddings.shape[0], 1), dtype=np.float32)))
         return super().search(query_embeddings, k)
+    
+    def save(self, output_path: str):
+        return super().save(output_path)
 
     @classmethod
     def build(
@@ -70,6 +77,23 @@ class FaissHNSWIndex(FaissIndex):
         passage_embeddings = np.hstack((passage_embeddings, aux_dims.reshape(-1, 1)))
         return super().build(passage_ids, passage_embeddings, index, buffer_size)
 
+class FaissPQIndex(FaissIndex):
+    def search(self, query_embeddings: np.ndarray, k: int, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+        return super().search(query_embeddings, k)
+    
+    def save(self, output_path: str):
+        return super().save(output_path)
+
+    @classmethod
+    def build(
+        cls,
+        passage_ids: List[int],
+        passage_embeddings: np.ndarray,
+        index: Optional[faiss.Index] = None,
+        buffer_size: int = 50000,
+    ):
+        index.train(passage_embeddings)
+        return super().build(passage_ids, passage_embeddings, index, buffer_size)
 
 class FaissBinaryIndex(FaissIndex):
     def __init__(self, index: faiss.Index, passage_ids: List[int] = None, passage_embeddings: np.ndarray = None):
@@ -82,7 +106,8 @@ class FaissBinaryIndex(FaissIndex):
         if passage_embeddings is not None:
             self._passage_embeddings = passage_embeddings
 
-    def search(self, query_embeddings: np.ndarray, k: int, binary_k=1000, rerank=True) -> Tuple[np.ndarray, np.ndarray]:
+    def search(self, query_embeddings: np.ndarray, k: int, binary_k: int = 1000, rerank: bool = True, 
+               score_function: str = "dot", **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         start_time = time.time()
         num_queries = query_embeddings.shape[0]
         bin_query_embeddings = np.packbits(np.where(query_embeddings > 0, 1, 0)).reshape(num_queries, -1)
@@ -111,6 +136,10 @@ class FaissBinaryIndex(FaissIndex):
             passage_embeddings = passage_embeddings.astype(np.float32)
 
         passage_embeddings = passage_embeddings * 2 - 1
+        
+        if score_function == "cos_sim": 
+            passage_embeddings, query_embeddings = normalize(passage_embeddings), normalize(query_embeddings)
+
         scores_arr = np.einsum("ijk,ik->ij", passage_embeddings, query_embeddings)
         sorted_indices = np.argsort(-scores_arr, axis=1)
 
@@ -125,6 +154,11 @@ class FaissBinaryIndex(FaissIndex):
         logger.info("Total search time: %.3f", time.time() - start_time)
 
         return scores_arr[:, :k], ids_arr[:, :k]
+    
+    def save(self, fname: str):
+        with open(".".join(fname.split(".")[:-1]) + ".npy", 'wb') as f:
+            np.save(f, self._passage_embeddings)
+        return faiss.write_index_binary(self.index, fname)
 
     @classmethod
     def build(

@@ -50,9 +50,10 @@ class DenseRetrievalFaissSearch:
         input_faiss_path = os.path.join(input_dir, "{}.faiss".format(prefix))
         
         if self.use_binary_hash:
-            base_index = faiss.read_index_binary(input_faiss_path) 
-            with open(os.path.join(input_dir, "{}.npy".format(prefix)), 'rb') as f:
-                passage_embeddings = np.load(f)
+            base_index = faiss.read_index_binary(input_faiss_path)
+            passage_embeddings = base_index.reconstruct(0)
+            for idx in range(1, len(passage_ids)):
+                passage_embeddings = np.vstack((passage_embeddings, base_index.reconstruct(idx)))            
             self.faiss_index = FaissBinaryIndex(base_index, passage_ids, passage_embeddings)
         
         elif self.use_quantization:
@@ -67,7 +68,7 @@ class DenseRetrievalFaissSearch:
             base_index = faiss.read_index(input_faiss_path) 
             self.faiss_index = FaissIndex(base_index, passage_ids)
 
-    def save(self, output_dir: str, prefix: str = "index"):
+    def save(self, output_dir: str, prefix: str = "my-index"):
         
         logger.info("Saving Faiss Index to path: {}".format(output_dir))
 
@@ -113,12 +114,9 @@ class DenseRetrievalFaissSearch:
         dim_size = corpus_embeddings.shape[1]
 
         if self.use_binary_hash:
-            hash_num_bits = self.faiss_params.get("hash_num_bits", 768)
+            logger.info("Using Binary Hashing in Flat Mode!")
             
-            logger.info("Using Binary Hashing with Faiss!")
-            logger.info("Parameters Required: hash_num_bits: {}".format(hash_num_bits))  
-            
-            base_index = faiss.IndexBinaryHash(dim_size * 8, hash_num_bits)
+            base_index = faiss.IndexBinaryFlat(dim_size * 8)
             self.faiss_index = FaissBinaryIndex.build(faiss_ids, corpus_embeddings, base_index)
         
         elif self.use_quantization:

@@ -61,7 +61,7 @@ class FaissHNSWIndex(FaissIndex):
         return super().search(query_embeddings, k)
     
     def save(self, output_path: str):
-        return super().save(output_path)
+        super().save(output_path)
 
     @classmethod
     def build(
@@ -82,7 +82,7 @@ class FaissPQIndex(FaissIndex):
         return super().search(query_embeddings, k)
     
     def save(self, output_path: str):
-        return super().save(output_path)
+        super().save(output_path)
 
     @classmethod
     def build(
@@ -156,9 +156,7 @@ class FaissBinaryIndex(FaissIndex):
         return scores_arr[:, :k], ids_arr[:, :k]
     
     def save(self, fname: str):
-        with open(".".join(fname.split(".")[:-1]) + ".npy", 'wb') as f:
-            np.save(f, self._passage_embeddings)
-        return faiss.write_index_binary(self.index, fname)
+        faiss.write_index_binary(self.index, fname)
 
     @classmethod
     def build(

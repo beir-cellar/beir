@@ -10,7 +10,7 @@ def main():
                      "nq.zip", "hotpotqa.zip", "fiqa.zip", "arguana.zip",
                      "webis-touche2020.zip", "cqadupstack.zip", "quora.zip",
                      "dbpedia-entity.zip", "scidocs.zip", "fever.zip",
-                     "climate-fever.zip", "scifact.zip]
+                     "climate-fever.zip", "scifact.zip", "germanquad.zip"]
     
     for dataset in dataset_files:
         

@@ -22,7 +22,6 @@ class BinarySentenceBERT:
         return self.q_model.encode(queries, batch_size=batch_size, **kwargs)
     
     def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int = 8, **kwargs) -> np.ndarray:
-        binary_codes = [] 
         sentences = [(doc["title"] + self.sep + doc["text"]).strip() for doc in corpus]
         embs = self.doc_model.encode(sentences, batch_size=batch_size, convert_to_tensor=True, **kwargs)
         embs = self._convert_embedding_to_binary_code(embs).cpu().numpy()

@@ -67,6 +67,7 @@ class DenseRetrievalFaissSearch:
         corpus_ids = list(corpus.keys())
         self._create_mapping_ids(corpus_ids)
         corpus = [corpus[cid] for cid in corpus_ids]
+        normalize_embeddings = True if score_function == "cos_sim" else False
 
         itr = range(0, len(corpus), self.corpus_chunk_size)
 
@@ -77,8 +78,9 @@ class DenseRetrievalFaissSearch:
             #Encode chunk of corpus    
             sub_corpus_embeddings = self.model.encode_corpus(
                 corpus[corpus_start_idx:corpus_end_idx],
+                batch_size=self.batch_size,
                 show_progress_bar=True, 
-                batch_size=self.batch_size)
+                normalize_embeddings=normalize_embeddings)
             
             if not batch_num: 
                 corpus_embeddings = sub_corpus_embeddings
@@ -87,8 +89,6 @@ class DenseRetrievalFaissSearch:
         
         #Index chunk of corpus into faiss index
         logger.info("Indexing Passages into Faiss...") 
-
-        if score_function == "cos_sim": corpus_embeddings = normalize(corpus_embeddings)
         
         faiss_ids = [self.mapping.get(corpus_id) for corpus_id in corpus_ids]
         self.dim_size = corpus_embeddings.shape[1]

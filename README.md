@@ -29,6 +29,7 @@ For more information, checkout our publications:
 - [Datasets](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
     - [Download a preprocessed dataset](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
     - [Available Datasets](https://github.com/UKPLab/beir#beers-available-datasets)
+    - [Multilingual Datasets](https://github.com/UKPLab/beir#beers-multilingual-datasets)
 - [Models](https://github.com/UKPLab/beir#beers-evaluate-a-model)
     - [Evaluate a model](https://github.com/UKPLab/beir#beers-evaluate-a-model)
     - [Available Models](https://github.com/UKPLab/beir#beers-available-models)
@@ -187,7 +188,12 @@ For other datasets, just use one of the datasets names, mention below.
 | Climate-FEVER| [Homepage](http://climatefever.ai) | ``climate-fever``|  1,535     |  5.42M |  3.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/climate-fever.zip)  | ``8b66f0a9126c521bae2bde127b4dc99d`` |
 | SciFact| [Homepage](https://github.com/allenai/scifact) | ``scifact``|  300     |  5K    |  1.1 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip)  | ``5f7d1de60b170fc8027bb7898e2efca1`` |
 | Robust04 | [Homepage](https://trec.nist.gov/data/robust/04.guidelines.html) | ``robust04``|  249  |  528K  |  69.9 |  No  |  [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/dataset#3-robust04)  |
-| GermanQuAD | [Homepage](https://deepset.ai/germanquad) | ``germanquad``|  2044  |  2.80M  |  1.0 |  [Link](https://dpr-german.s3.eu-west-1.amazonaws.com/germanquad.zip)  | ``e7dedd97c26128a31493ef3e5fe2becf`` |
+
+## :beers: Multilingual Datasets
+
+| Dataset   | Website| BEIR-Name | Queries  | Corpus | Rel D/Q | Down-load | md5 |
+| -------- | -----| ---------| ----------- | ---------| ---------| :----------: | :------:|
+| GermanQuAD | [Homepage](https://deepset.ai/germanquad) | ``germanquad``|  2044  |  2.80M  |  1.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/germanquad.zip)  | ``95a581c3162d10915a418609bcce851b`` |
 
 Otherwise, you can load a custom preprocessed dataset in the following way:
 

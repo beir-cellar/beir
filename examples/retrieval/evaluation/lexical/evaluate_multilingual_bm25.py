@@ -53,8 +53,8 @@ corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 #### We use default ES settings for retrieval
 #### https://www.elastic.co/
 
-hostname = "desktop-158.ukp.informatik.tu-darmstadt.de:9200" #localhost
-index_name = "germanquad" # scifact
+hostname = "your-hostname" #localhost
+index_name = "your-index-name" # germanquad
 
 #### Intialize #### 
 # (1) True - Delete existing index and re-index all documents from scratch 
@@ -68,7 +68,6 @@ language = "german" # Please provide full names in lowercase for eg. english, hi
 
 #### Sharding ####
 # (1) For datasets with small corpus (datasets ~ < 5k docs) => limit shards = 1 
-# SciFact is a relatively small dataset! (limit shards to 1)
 number_of_shards = 1
 model = BM25(index_name=index_name, hostname=hostname, language=language, initialize=initialize, number_of_shards=number_of_shards)
 

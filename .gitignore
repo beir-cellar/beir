@@ -1,6 +1,8 @@
 # Custom added
 examples/**/datasets/
 examples/**/output/
+examples/**/DeepCT/
+examples/**/models/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

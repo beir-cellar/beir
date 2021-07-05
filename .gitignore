@@ -3,6 +3,7 @@ examples/**/datasets/
 examples/**/output/
 examples/**/DeepCT/
 examples/**/models/
+examples/**/faiss-index/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

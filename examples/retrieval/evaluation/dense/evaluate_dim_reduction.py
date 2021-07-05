@@ -77,7 +77,7 @@ output_path = os.path.join(output_dir, "my-index.pca")
 PCA.save(output_path=output_path)
 
 #### Loading already saved PCA Matrix.
-# output_dimension = 96
+# output_dimension = 128
 # PCA = models.PCA(model=model, output_dim=output_dimension)
 # if os.path.exists(output_path):
 #     PCA.load(output_path)

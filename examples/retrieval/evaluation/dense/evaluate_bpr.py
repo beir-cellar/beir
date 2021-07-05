@@ -1,3 +1,43 @@
+"""
+The pre-trained models produce embeddings of size 512 - 1024. However, when storing a large
+number of embeddings, this requires quite a lot of memory / storage.
+
+In this example, we convert float embeddings to binary hashes using binary passage retriever (BPR).
+This significantly reduces the required memory / storage while maintaining nearly the same performance.
+
+For more information, please refer to the publication by Yamada et al. in ACL 2021 -
+Efficient Passage Retrieval with Hashing for Open-domain Question Answering, (https://arxiv.org/abs/2106.00882)
+
+For computing binary hashes, we need to train a model with bpr loss function (Margin Ranking Loss + Cross Entropy Loss).
+For more details on training, check train_msmarco_v3_bpr.py on how to train a binary retriever model.
+
+BPR model encoders vectors to 768 dimensions of binary values {1,0} of 768 dim. We pack 8 bits into bytes, this
+further allows a 768 dim (bit) vector to 96 dim byte (int-8) vector. 
+for more details on packing refer here: https://numpy.org/doc/stable/reference/generated/numpy.packbits.html
+
+Hence, the new BPR model will produce directly binary hash embeddings without further changes needed. And we 
+evaluate the BPR model using BinaryFlat Index in faiss, which computes hamming distance between bits to find top-k
+similarity results. We also rerank top-1000 retrieved from faiss documents with the original query embedding (float)!
+
+The Reranking step is very efficient and fast (as reranking is done by a bi-encoder), hence we advise to rerank 
+with top-1000 docs retrieved by hamming distance to decrease the loss in performance!
+
+'''
+model = models.BinarySentenceBERT("msmarco-distilbert-base-tas-b")
+test_corpus = [{"title": "", "text": "Python is a programming language"}]
+print(model.encode_corpus(test_corpus))
+
+>> [[195  86 160 203 135  39 155 173  89 100 107 159 112  94 144  60  57 148
+  205  15 204 221 181 132 183 242 122  48 108 200  74 221  48 250  12   4
+  182 165  36  72 101 169 137 227 192 109 136  18 145   5 104   5 221 195
+   45 254 226 235 109   3 209 156  75 238 143  56  52 227  39   1 144 214
+  142 120 181 204 166 221 179  88 142 223 110 255 105  44 108  88  47  67
+  124 126 117 159  37 217]]
+'''
+
+Usage: python evaluate_bpr.py
+"""
+
 from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader

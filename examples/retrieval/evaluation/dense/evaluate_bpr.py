@@ -2,7 +2,7 @@ from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
-from beir.retrieval.search.dense import DenseRetrievalBinaryCodeSearch as DRBCS
+from beir.retrieval.search.dense import BinaryFaissSearch
 
 import logging
 import pathlib, os
@@ -35,20 +35,47 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 # The model was fine-tuned using CLS Pooling and dot-product!
 # Open-sourced binary code SBERT model trained on MSMARCO to be made available soon!
 
-model_path = "distilbert-base-uncased" # To be coming soon! 
-model = DRBCS(models.BinarySentenceBERT(model_path), batch_size=16)
-retriever = EvaluateRetrieval(model)
+model = models.BinarySentenceBERT("msmarco-distilbert-base-tas-b") # Proxy for now, soon coming up BPR models trained on MSMARCO!
+faiss_search = BinaryFaissSearch(model, batch_size=128)
 
-# BPR first retrieves binary_k (default 1000) documents based on query hash and document hash similarity with hamming distance.
-# The hamming distance similarity is constructed using IndexBinaryHash in Faiss: https://faiss.ai/cpp_api/struct/structfaiss_1_1IndexBinaryHash.html
-# BPR then reranks with similarity b/w query embedding and the documents hashes for these binary_k documents.
-# Reranking is advised as its quite fast, efficient and leads to decent performances.
+#### Load faiss index from file or disk ####
+# We need two files to be present within the input_dir!
+# 1. input_dir/my-index.bin.faiss ({prefix}.{ext}.faiss) which loads the faiss index.
+# 2. input_dir/my-index.bin.tsv ({prefix}.{ext}.faiss) which loads mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
+
+prefix = "my-index"       # (default value)
+ext = "bin"               # bin for binary (default value)
+input_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
+
+if os.path.isdir(input_dir):
+    faiss_search.load(input_dir=input_dir, prefix=prefix, ext=ext)
+
+# BPR first retrieves binary_k (default 1000) documents based on query hash and document hash similarity with hamming distance!
+# The hamming distance similarity is constructed using IndexBinaryFlat in Faiss.
+# BPR then reranks with dot similarity b/w query embedding and the documents hashes for these binary_k documents.
+# Please Note, Reranking here is done with a bi-encoder which is quite faster compared to cross-encoders.
+# Reranking is advised by the original paper as its quite fast, efficient and leads to decent performances.
+
+score_function = "dot" # or cos_sim for cosine similarity
+retriever = EvaluateRetrieval(faiss_search, score_function=score_function)
 
 rerank = True                       # False would only retrieve top-k documents based on hamming distance.
 binary_k = 1000                     # binary_k value denotes documents reranked for each query.
-index = True                        # True would index all documents first to faiss (faiss::IndexBinaryHash).
 
-results = retriever.retrieve(corpus, queries, rerank=rerank, binary_k=binary_k, index=index)
+results = retriever.retrieve(corpus, queries, rerank=rerank, binary_k=binary_k)
+
+### Save faiss index into file or disk ####
+# Unfortunately faiss only supports integer doc-ids!
+# This will mean we need save two files in your output_dir path =>
+# 1. output_dir/my-index.bin.faiss ({prefix}.{ext}.faiss) which saves the faiss index.
+# 2. output_dir/my-index.bin.tsv ({prefix}.{ext}.faiss) which saves mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
+
+prefix = "my-index"
+ext = "bin"
+output_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
+
+os.makedirs(output_dir, exist_ok=True)
+faiss_search.save(output_dir=output_dir, prefix=prefix, ext=ext)
 
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 

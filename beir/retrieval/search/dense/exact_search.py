@@ -23,7 +23,8 @@ class DenseRetrievalExactSearch:
                corpus: Dict[str, Dict[str, str]], 
                queries: Dict[str, str], 
                top_k: List[int], 
-               score_function: str, **kwargs) -> Dict[str, Dict[str, float]]:
+               score_function: str,
+               return_sorted: bool = False, **kwargs) -> Dict[str, Dict[str, float]]:
         #Create embeddings for all queries using model.encode_queries()
         #Runs semantic search against the corpus embeddings
         #Returns a ranked list with the corpus ids
@@ -60,7 +61,7 @@ class DenseRetrievalExactSearch:
             cos_scores[torch.isnan(cos_scores)] = -1
 
             #Get top-k values
-            cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(top_k+1, len(cos_scores[0])), dim=1, largest=True, sorted=False)
+            cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(top_k+1, len(cos_scores[0])), dim=1, largest=True, sorted=return_sorted)
             cos_scores_top_k_values = cos_scores_top_k_values.cpu().tolist()
             cos_scores_top_k_idx = cos_scores_top_k_idx.cpu().tolist()
             

@@ -1,5 +1,9 @@
 """
-This example show how to evaluate BM25 model (Elasticsearch) in BEIR.
+This example show how to evaluate BM25 model (Elasticsearch) in BEIR for German.
+This script can be used to any evaluate any language by just changing language name.
+To find languages supported by Elasticsearch, please refer below:
+https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html
+
 To be able to run Elasticsearch, you should have it installed locally (on your desktop) along with ``pip install beir``.
 Depending on your OS, you would be able to find how to download Elasticsearch. I like this guide for Ubuntu 18.04 -
 https://linuxize.com/post/how-to-install-elasticsearch-on-ubuntu-18-04/ 
@@ -11,7 +15,7 @@ If unable to get it running locally, you could try the Google Colab Demo, where 
 https://colab.research.google.com/drive/1HfutiEhHMJLXiWGT8pcipxT5L2TpYEdt?usp=sharing#scrollTo=nqotyXuIBPt6
 
 
-Usage: python evaluate_bm25.py
+Usage: python evaluate_multilingual_bm25.py
 """
 
 from beir import util, LoggingHandler
@@ -30,7 +34,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 #### /print debug information to stdout
 
 #### Download scifact.zip dataset and unzip the dataset
-dataset = "scifact"
+dataset = "germanquad"
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
@@ -50,18 +54,22 @@ corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 #### https://www.elastic.co/
 
 hostname = "your-hostname" #localhost
-index_name = "your-index-name" # scifact
+index_name = "your-index-name" # germanquad
 
 #### Intialize #### 
 # (1) True - Delete existing index and re-index all documents from scratch 
 # (2) False - Load existing index
 initialize = True # False
 
+#### Language ####
+# For languages supported by Elasticsearch by default, check here ->
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html
+language = "german" # Please provide full names in lowercase for eg. english, hindi ...
+
 #### Sharding ####
 # (1) For datasets with small corpus (datasets ~ < 5k docs) => limit shards = 1 
-# SciFact is a relatively small dataset! (limit shards to 1)
 number_of_shards = 1
-model = BM25(index_name=index_name, hostname=hostname, initialize=initialize, number_of_shards=number_of_shards)
+model = BM25(index_name=index_name, hostname=hostname, language=language, initialize=initialize, number_of_shards=number_of_shards)
 
 # (2) For datasets with big corpus ==> keep default configuration
 # model = BM25(index_name=index_name, hostname=hostname, initialize=initialize)

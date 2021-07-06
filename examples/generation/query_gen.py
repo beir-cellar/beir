@@ -45,4 +45,6 @@ ques_per_passage = 3
 #### 1. datasets/scifact/gen-3-queries.jsonl
 #### 2. datasets/scifact/gen-3-qrels/train.tsv
 
-generator.generate(corpus, output_dir=data_path, ques_per_passage=ques_per_passage, prefix=prefix)
+batch_size = 64
+
+generator.generate(corpus, output_dir=data_path, ques_per_passage=ques_per_passage, prefix=prefix, batch_size=batch_size)

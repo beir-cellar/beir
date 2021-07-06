@@ -17,6 +17,16 @@ class ElasticSearch(object):
         self.index_name = es_credentials["index_name"]
         self.check_index_name()
 
+        # https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html
+        self.languages = ["arabic", "armenian", "basque", "bengali", "brazilian", "bulgarian", "catalan", 
+                          "cjk", "czech", "danish", "dutch", "english","estonian","finnish","french", 
+                          "galician", "german", "greek", "hindi", "hungarian", "indonesian", "irish", 
+                          "italian", "latvian", "lithuanian", "norwegian", "persian", "portuguese", 
+                          "romanian", "russian", "sorani", "spanish", "swedish", "turkish", "thai"]
+        
+        self.language = es_credentials["language"]
+        self.check_language_supported()
+
         self.text_key = es_credentials["keys"]["body"]
         self.title_key = es_credentials["keys"]["title"]
         self.number_of_shards = es_credentials["number_of_shards"]
@@ -26,9 +36,16 @@ class ElasticSearch(object):
             timeout=es_credentials["timeout"], 
             retry_on_timeout=es_credentials["retry_on_timeout"], 
             maxsize=es_credentials["maxsize"])
-        
+
+    def check_language_supported(self):
+        """Check Language Supported in Elasticsearch
+        """
+        print(self.language)
+        if self.language.lower() not in self.languages:
+            raise ValueError("Invalid Language: {}, not supported by Elasticsearch. Languages Supported: \
+            {}".format(self.language, self.languages))
     
-    def check_index_name(self, valid: bool = True):
+    def check_index_name(self):
         """Check Elasticsearch Index Name"""
         # https://stackoverflow.com/questions/41585392/what-are-the-rules-for-index-names-in-elastic-search
         # Check 1: Must not contain the characters ===> #:\/*?"<>|,
@@ -51,9 +68,6 @@ class ElasticSearch(object):
     
     def create_index(self):
         """Create Elasticsearch Index
-
-        Args:
-            dims (int): dimension of dense vector
         """
         logging.info("Creating fresh Elasticsearch-Index named - {}".format(self.index_name))
         
@@ -62,8 +76,8 @@ class ElasticSearch(object):
                 mapping = {
                     "mappings" : {
                         "properties" : {
-                            self.title_key: {"type": "text"},
-                            self.text_key: {"type": "text"}
+                            self.title_key: {"type": "text", "analyzer": self.language},
+                            self.text_key: {"type": "text", "analyzer": self.language}
                         }}}
             else:
                 mapping = {
@@ -72,8 +86,8 @@ class ElasticSearch(object):
                     },
                     "mappings" : {
                         "properties" : {
-                            self.title_key: {"type": "text"},
-                            self.text_key: {"type": "text"}
+                            self.title_key: {"type": "text", "analyzer": self.language},
+                            self.text_key: {"type": "text", "analyzer": self.language}
                         }}}
                 
             self.es.indices.create(index=self.index_name, body=mapping, ignore=[400]) #400: IndexAlreadyExistsException

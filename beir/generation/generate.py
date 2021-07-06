@@ -37,8 +37,12 @@ class QueryGenerator:
                  batch_size: int = 32, 
                  save_after: int = 100000):
         
-        logger.info("Starting to Generate {} Questions Per Passage...".format(ques_per_passage))
-        logger.info("Batch Size: --- {} ---".format(batch_size))
+        logger.info("Starting to Generate {} Questions Per Passage using top-p (nucleus) sampling...".format(ques_per_passage))
+        logger.info("Params: top_p = {}".format(top_p))
+        logger.info("Params: top_k = {}".format(top_k))
+        logger.info("Params: max_length = {}".format(max_length))
+        logger.info("Params: ques_per_passage = {}".format(ques_per_passage))
+        logger.info("Params: batch size = {}".format(batch_size))
         
         count = 0
         corpus_ids = list(corpus.keys())
@@ -74,6 +78,58 @@ class QueryGenerator:
                     self.queries[query_id] = query
                     self.qrels[query_id] = {corpus_id: 1}
         
+        # Saving finally all the questions
+        logger.info("Saving {} Generated Queries...".format(len(self.queries)))
+        self.save(output_dir, self.queries, self.qrels, prefix)
+    
+    def generate_multi_process(self, 
+                 corpus: Dict[str, Dict[str, str]], 
+                 pool:  Dict[str, object],
+                 output_dir: str, 
+                 top_p: int = 0.95, 
+                 top_k: int = 25, 
+                 max_length: int = 64,
+                 ques_per_passage: int = 1, 
+                 prefix: str = "gen", 
+                 batch_size: int = 32,
+                 chunk_size: int = None):
+        
+        logger.info("Starting to Generate {} Questions Per Passage using top-p (nucleus) sampling...".format(ques_per_passage))
+        logger.info("Params: top_p = {}".format(top_p))
+        logger.info("Params: top_k = {}".format(top_k))
+        logger.info("Params: max_length = {}".format(max_length))
+        logger.info("Params: ques_per_passage = {}".format(ques_per_passage))
+        logger.info("Params: batch size = {}".format(batch_size))
+        
+        count = 0
+        corpus_ids = list(corpus.keys())
+        corpus = [corpus[doc_id] for doc_id in corpus_ids]
+
+        queries = self.model.generate_multi_process(
+                            corpus=corpus, 
+                            pool=pool,
+                            ques_per_passage=ques_per_passage,
+                            max_length=max_length,
+                            top_p=top_p,
+                            top_k=top_k,
+                            chunk_size=chunk_size,
+                            batch_size=batch_size,
+                            )
+
+        assert len(queries) == len(corpus) * ques_per_passage
+
+        for idx in range(len(corpus)):      
+            corpus_id = corpus_ids[idx]
+            start_id = idx * ques_per_passage
+            end_id = start_id + ques_per_passage
+            query_set = set([q.strip() for q in queries[start_id:end_id]])
+
+            for query in query_set:
+                count += 1
+                query_id = "genQ" + str(count)
+                self.queries[query_id] = query
+                self.qrels[query_id] = {corpus_id: 1}
+    
         # Saving finally all the questions
         logger.info("Saving {} Generated Queries...".format(len(self.queries)))
         self.save(output_dir, self.queries, self.qrels, prefix)

@@ -4,7 +4,7 @@ import time
 from typing import List, Dict
 
 class BM25Search:
-    def __init__(self, index_name: str, hostname: str = "localhost", keys: Dict[str, str] = {"title": "title", "body": "txt"}, 
+    def __init__(self, index_name: str, hostname: str = "localhost", keys: Dict[str, str] = {"title": "title", "body": "txt"}, language: str = "english",
                  batch_size: int = 128, timeout: int = 100, retry_on_timeout: bool = True, maxsize: int = 24, number_of_shards: int = "default", initialize: bool = True):
         self.results = {}
         self.batch_size = batch_size
@@ -16,7 +16,8 @@ class BM25Search:
             "timeout": timeout,
             "retry_on_timeout": retry_on_timeout,
             "maxsize": maxsize,
-            "number_of_shards": number_of_shards
+            "number_of_shards": number_of_shards,
+            "language": language
         }
         self.es = ElasticSearch(self.config)
         if self.initialize:

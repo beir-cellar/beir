@@ -1,8 +1,48 @@
+"""
+The pre-trained models produce embeddings of size 512 - 1024. However, when storing a large
+number of embeddings, this requires quite a lot of memory / storage.
+
+In this example, we convert float embeddings to binary hashes using binary passage retriever (BPR).
+This significantly reduces the required memory / storage while maintaining nearly the same performance.
+
+For more information, please refer to the publication by Yamada et al. in ACL 2021 -
+Efficient Passage Retrieval with Hashing for Open-domain Question Answering, (https://arxiv.org/abs/2106.00882)
+
+For computing binary hashes, we need to train a model with bpr loss function (Margin Ranking Loss + Cross Entropy Loss).
+For more details on training, check train_msmarco_v3_bpr.py on how to train a binary retriever model.
+
+BPR model encoders vectors to 768 dimensions of binary values {1,0} of 768 dim. We pack 8 bits into bytes, this
+further allows a 768 dim (bit) vector to 96 dim byte (int-8) vector. 
+for more details on packing refer here: https://numpy.org/doc/stable/reference/generated/numpy.packbits.html
+
+Hence, the new BPR model will produce directly binary hash embeddings without further changes needed. And we 
+evaluate the BPR model using BinaryFlat Index in faiss, which computes hamming distance between bits to find top-k
+similarity results. We also rerank top-1000 retrieved from faiss documents with the original query embedding (float)!
+
+The Reranking step is very efficient and fast (as reranking is done by a bi-encoder), hence we advise to rerank 
+with top-1000 docs retrieved by hamming distance to decrease the loss in performance!
+
+'''
+model = models.BinarySentenceBERT("msmarco-distilbert-base-tas-b")
+test_corpus = [{"title": "", "text": "Python is a programming language"}]
+print(model.encode_corpus(test_corpus))
+
+>> [[195  86 160 203 135  39 155 173  89 100 107 159 112  94 144  60  57 148
+  205  15 204 221 181 132 183 242 122  48 108 200  74 221  48 250  12   4
+  182 165  36  72 101 169 137 227 192 109 136  18 145   5 104   5 221 195
+   45 254 226 235 109   3 209 156  75 238 143  56  52 227  39   1 144 214
+  142 120 181 204 166 221 179  88 142 223 110 255 105  44 108  88  47  67
+  124 126 117 159  37 217]]
+'''
+
+Usage: python evaluate_bpr.py
+"""
+
 from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
-from beir.retrieval.search.dense import DenseRetrievalBinaryCodeSearch as DRBCS
+from beir.retrieval.search.dense import BinaryFaissSearch
 
 import logging
 import pathlib, os
@@ -35,20 +75,47 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 # The model was fine-tuned using CLS Pooling and dot-product!
 # Open-sourced binary code SBERT model trained on MSMARCO to be made available soon!
 
-model_path = "distilbert-base-uncased" # To be coming soon! 
-model = DRBCS(models.BinarySentenceBERT(model_path), batch_size=16)
-retriever = EvaluateRetrieval(model)
+model = models.BinarySentenceBERT("msmarco-distilbert-base-tas-b") # Proxy for now, soon coming up BPR models trained on MSMARCO!
+faiss_search = BinaryFaissSearch(model, batch_size=128)
 
-# BPR first retrieves binary_k (default 1000) documents based on query hash and document hash similarity with hamming distance.
-# The hamming distance similarity is constructed using IndexBinaryHash in Faiss: https://faiss.ai/cpp_api/struct/structfaiss_1_1IndexBinaryHash.html
-# BPR then reranks with similarity b/w query embedding and the documents hashes for these binary_k documents.
-# Reranking is advised as its quite fast, efficient and leads to decent performances.
+#### Load faiss index from file or disk ####
+# We need two files to be present within the input_dir!
+# 1. input_dir/my-index.bin.faiss ({prefix}.{ext}.faiss) which loads the faiss index.
+# 2. input_dir/my-index.bin.tsv ({prefix}.{ext}.faiss) which loads mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
+
+prefix = "my-index"       # (default value)
+ext = "bin"               # bin for binary (default value)
+input_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
+
+if os.path.isdir(input_dir):
+    faiss_search.load(input_dir=input_dir, prefix=prefix, ext=ext)
+
+# BPR first retrieves binary_k (default 1000) documents based on query hash and document hash similarity with hamming distance!
+# The hamming distance similarity is constructed using IndexBinaryFlat in Faiss.
+# BPR then reranks with dot similarity b/w query embedding and the documents hashes for these binary_k documents.
+# Please Note, Reranking here is done with a bi-encoder which is quite faster compared to cross-encoders.
+# Reranking is advised by the original paper as its quite fast, efficient and leads to decent performances.
+
+score_function = "dot" # or cos_sim for cosine similarity
+retriever = EvaluateRetrieval(faiss_search, score_function=score_function)
 
 rerank = True                       # False would only retrieve top-k documents based on hamming distance.
 binary_k = 1000                     # binary_k value denotes documents reranked for each query.
-index = True                        # True would index all documents first to faiss (faiss::IndexBinaryHash).
 
-results = retriever.retrieve(corpus, queries, rerank=rerank, binary_k=binary_k, index=index)
+results = retriever.retrieve(corpus, queries, rerank=rerank, binary_k=binary_k)
+
+### Save faiss index into file or disk ####
+# Unfortunately faiss only supports integer doc-ids!
+# This will mean we need save two files in your output_dir path =>
+# 1. output_dir/my-index.bin.faiss ({prefix}.{ext}.faiss) which saves the faiss index.
+# 2. output_dir/my-index.bin.tsv ({prefix}.{ext}.faiss) which saves mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
+
+prefix = "my-index"
+ext = "bin"
+output_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
+
+os.makedirs(output_dir, exist_ok=True)
+faiss_search.save(output_dir=output_dir, prefix=prefix, ext=ext)
 
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 

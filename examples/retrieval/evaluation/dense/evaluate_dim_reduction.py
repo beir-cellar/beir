@@ -1,28 +1,32 @@
 """
-In this example, we show how to utilize different faiss indexes for evaluation in BEIR. We currently support 
-IndexFlatIP, IndexPQ and IndexHNSW from faiss indexes. Faiss indexes are stored and retrieved using the CPU.
+The pre-trained models produce embeddings of size 512 - 1024. However, when storing a large
+number of embeddings, this requires quite a lot of memory / storage.
 
-Some good notes for information on different faiss indexes can be found here:
-1. https://github.com/facebookresearch/faiss/wiki/Faiss-indexes#supported-operations
-2. https://github.com/facebookresearch/faiss/wiki/Faiss-building-blocks:-clustering,-PCA,-quantization 
+In this example, we reduce the dimensionality of the embeddings to e.g. 128 dimensions. This significantly
+reduces the required memory / storage while maintaining nearly the same performance.
 
-For more information, please refer here: https://github.com/facebookresearch/faiss/wiki
+For dimensionality reduction, we compute embeddings for a large set of (representative) sentence. Then,
+we use PCA to find e.g. 128 principle components of our vector space. This allows us to maintain
+us much information as possible with only 128 dimensions.
 
-PS: You can also save/load your corpus embeddings as a faiss index! Instead of exact search, use FlatIPFaissSearch
-which implements exhaustive search using a faiss index.
+PCA gives us a matrix that down-projects vectors to 128 dimensions. We use this matrix
+and extend our original SentenceTransformer model with this linear downproject. Hence,
+the new SentenceTransformer model will produce directly embeddings with 128 dimensions
+without further changes needed. 
 
-Usage: python evaluate_faiss_dense.py
+Usage: python evaluate_dim_reduction.py
 """
 
 from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
-from beir.retrieval.search.dense import PQFaissSearch, HNSWFaissSearch, FlatIPFaissSearch
+from beir.retrieval.search.dense import PCAFaissSearch
 
 import logging
 import pathlib, os
 import random
+import faiss
 
 #### Just some code to print debug information to stdout
 logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -31,7 +35,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-dataset = "nfcorpus"
+dataset = "scifact"
 
 #### Download nfcorpus.zip dataset and unzip the dataset
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
@@ -52,31 +56,33 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 model_path = "msmarco-distilbert-base-tas-b"
 model = models.SentenceBERT(model_path)
 
-########################################################
-#### FLATIP: Flat Inner Product (Exhaustive Search) ####
-########################################################
+###############################################################
+#### PCA: Principal Component Analysis (Exhaustive Search) ####
+###############################################################
+# Reduce Input Dimension (768) to output dimension of (128)
 
-faiss_search = FlatIPFaissSearch(model, 
-                                 batch_size=128)
+output_dimension = 128
+base_index = faiss.IndexFlatIP(output_dimension)
+faiss_search = PCAFaissSearch(model,
+                              base_index=base_index,
+                              output_dimension=output_dimension,
+                              batch_size=128)
 
-######################################################
-#### PQ: Product Quantization (Exhaustive Search) ####
-######################################################
+#######################################################################
+#### PCA: Principal Component Analysis (with Product Quantization) ####
+#######################################################################
+# Reduce Input Dimension (768) to output dimension of (96)
 
-# faiss_search = PQFaissSearch(model, 
-#                              batch_size=128, 
-#                              num_of_centroids=96, 
-#                              code_size=8)
-
-#####################################################
-#### HNSW: Approximate Nearest Neighbours Search ####
-#####################################################
-
-# faiss_search = HNSWFaissSearch(model, 
-#                                batch_size=128, 
-#                                hnsw_store_n=512, 
-#                                hnsw_ef_search=128,
-#                                hnsw_ef_construction=200)
+# output_dimension = 96
+# base_index = faiss.IndexPQ(output_dimension,               # output dimension
+#                              96,                           # number of centroids
+#                              8,                            # code size
+#                              faiss.METRIC_INNER_PRODUCT)   # similarity function
+                            
+# faiss_search = PCAFaissSearch(model,
+#                               base_index=base_index,
+#                               output_dimension=output_dimension,
+#                               batch_size=128)
 
 #### Load faiss index from file or disk ####
 # We need two files to be present within the input_dir!
@@ -84,7 +90,8 @@ faiss_search = FlatIPFaissSearch(model,
 # 2. input_dir/{prefix}.{ext}.faiss => which loads mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
 
 prefix = "my-index"       # (default value)
-ext = "flat"              # or "pq", "hnsw"
+ext = "pca"               # extension
+
 input_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
 
 if os.path.exists(os.path.join(input_dir, "{}.{}.faiss".format(prefix, ext))):
@@ -99,8 +106,9 @@ results = retriever.retrieve(corpus, queries)
 # 1. output_dir/{prefix}.{ext}.faiss => which saves the faiss index.
 # 2. output_dir/{prefix}.{ext}.faiss => which saves mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
 
-prefix = "my-index"      # (default value)
-ext = "flat"             # or "pq", "hnsw" 
+prefix = "my-index"     # (default value)
+ext = "pca"             # extension
+
 output_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
 os.makedirs(output_dir, exist_ok=True)
 

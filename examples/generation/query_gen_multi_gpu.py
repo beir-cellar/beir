@@ -7,7 +7,7 @@ Then we chunk our big corpus into multiple smaller corpus and generate simultane
 
 Important to use the code within the __main__ module!
 
-Usage: python query_gen_multi_gpu.py
+Usage: CUDA_VISIBLE_DEVICES=0,1 python query_gen_multi_gpu.py
 """
 
 from beir import util, LoggingHandler

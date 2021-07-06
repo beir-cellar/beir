@@ -88,24 +88,69 @@ If you are new to Information Retrieval and wish to understand and learn more ab
 
 To easily understand and get your hands dirty with BEIR, we invite you to try our tutorials out :rocket: :rocket:
 
+### :beers: Google Colab
+
 |                          Name                |     Link     |
 | -------------------------------------------  |  ----------  |
 | How to evaluate pre-trained models on BEIR datasets | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HfutiEhHMJLXiWGT8pcipxT5L2TpYEdt?usp=sharing) |
-| Retrieval using (lexical) BM25 with Elasticsearch  | [evaluate_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_bm25.py) |
-| Retrieval using Anserini-BM25 (Pyserini) with Docker  | [evaluate_anserini_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_anserini_bm25.py) |
+
+### :beers: Lexical Retrieval (Evaluation)
+
+|                          Name                |     Link     |
+| -------------------------------------------  |  ----------  |
+| BM25 Retrieval with Elasticsearch  | [evaluate_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_bm25.py) |
+| Anserini-BM25 (Pyserini) Retrieval with Docker  | [evaluate_anserini_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_anserini_bm25.py) |
+| Multilingual BM25 Retrieval with Elasticsearch :new: | [evaluate_multilingual_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_multilingual_bm25.py) |
+
+### :beers: Dense Retrieval (Evaluation)
+
+|                          Name                |     Link     |
+| -------------------------------------------  |  ----------  |
 | Exact-search retrieval using (dense) Sentence-BERT | [evaluate_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_sbert.py) |
-| Exact-search retrieval using (dense) ANCE          | [evaluate_ance.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_ance.py) |
+| Exact-search retrieval using (dense) ANCE | [evaluate_ance.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_ance.py) |
 | Exact-search retrieval using (dense) DPR | [evaluate_dpr.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_dpr.py) |
-| Exact-search retrieval using (dense) USE-QA  | [evaluate_useqa.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_useqa.py) |
+| Exact-search retrieval using (dense) USE-QA | [evaluate_useqa.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_useqa.py) |
+| ANN and Exact-search using Faiss :new: | [evaluate_faiss_dense.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_faiss_dense.py) |
+| Retrieval using Binary Passage Retriver (BPR) :new: | [evaluate_bpr.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_bpr.py) |
+| Dimension Reduction using PCA :new: | [evaluate_pca.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_pca.py) |
+
+### :beers: Sparse Retrieval (Evaluation)
+
+|                          Name                |     Link     |
+| -------------------------------------------  |  ----------  |
 | Hybrid sparse retrieval using SPARTA | [evaluate_sparta.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_sparta.py) |
 | Sparse retrieval using docT5query and Pyserini | [evaluate_anserini_docT5query.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_anserini_docT5query.py) |
+| Sparse retrieval using DeepCT and Pyserini :new: | [evaluate_deepct.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_deepct.py) |
+
+### :beers: Reranking (Evaluation)
+
+|                          Name                |     Link     |
+| -------------------------------------------  |  ----------  |
 | Reranking top-100 BM25 results with SBERT CE | [evaluate_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_ce_reranking.py) |
 | Reranking top-100 BM25 results with Dense Retriever | [evaluate_bm25_sbert_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_sbert_reranking.py) |
+
+### :beers: Dense Retrieval (Training)
+
+|                          Name                |     Link     |
+| -------------------------------------------  |  ----------  |
 | Train SBERT with Inbatch negatives| [train_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert.py) |
-| Train SBERT with BM25 hard negatives| [train_sbert_triplets.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert_triplets.py) |
-| Train SBERT with MSMARCO triplets | [train_msmarco_triplets.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_triplets.py) |
+| Train SBERT with BM25 hard negatives| [train_sbert_BM25_hardnegs.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert_BM25_hardnegs.py) |
+| Train MSMARCO SBERT with BM25 Negatives | [train_msmarco_v2.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v2.py) |
+| Train (SOTA) MSMARCO SBERT with Mined Hard Negatives :new: | [train_msmarco_v3.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v3.py) |
+| Train (SOTA) MSMARCO BPR with Mined Hard Negatives :new: | [train_msmarco_v3_bpr.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v3_bpr.py) |
+
+### :beers: Question Generation
+
+|                          Name                |     Link     |
+| -------------------------------------------  |  ----------  |
 | Synthetic Query Generation using T5-model | [query_gen.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen.py) |
 | (GenQ) Synthetic QG using T5-model + fine-tuning SBERT | [query_gen_and_train.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py) |
+| Synthetic Query Generation using Multiple GPU and T5 :new: | [query_gen_multi_gpu.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_multi_gpu.py) |
+
+### :beers: Benchmarking (Evaluation)
+
+|                          Name                |     Link     |
+| -------------------------------------------  |  ----------  |
 | Benchmark BM25 (Inference speed) | [benchmark_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_bm25.py) |
 | Benchmark Cross-Encoder Reranking (Inference speed) | [benchmark_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_bm25_ce_reranking.py) |
 | Benchmark Dense Retriever (Inference speed) | [benchmark_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_sbert.py) |

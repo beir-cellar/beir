@@ -1,3 +1,19 @@
+"""
+In this example, we show how to utilize different faiss indexes for evaluation in BEIR. We currently support 
+IndexFlatIP, IndexPQ and IndexHNSW from faiss indexes. Faiss indexes are stored and retrieved using the CPU.
+
+Some good notes for information on different faiss indexes can be found here:
+1. https://github.com/facebookresearch/faiss/wiki/Faiss-indexes#supported-operations
+2. https://github.com/facebookresearch/faiss/wiki/Faiss-building-blocks:-clustering,-PCA,-quantization 
+
+For more information, please refer here: https://github.com/facebookresearch/faiss/wiki
+
+PS: You can also save/load your corpus embeddings as a faiss index! Instead of exact search, use FlatIPFaissSearch
+which implements exhaustive search using a faiss index.
+
+Usage: python evaluate_faiss_dense.py
+"""
+
 from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
@@ -71,7 +87,7 @@ prefix = "my-index"       # (default value)
 ext = "flat"              # or "pq", "hnsw"
 input_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
 
-if os.path.isdir(input_dir):
+if os.path.exists(os.path.join(input_dir, "{}.{}.faiss".format(prefix, ext))):
     faiss_search.load(input_dir=input_dir, prefix=prefix, ext=ext)
 
 #### Retrieve dense results (format of results is identical to qrels)
@@ -86,9 +102,10 @@ results = retriever.retrieve(corpus, queries)
 prefix = "my-index"      # (default value)
 ext = "flat"             # or "pq", "hnsw" 
 output_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
-
 os.makedirs(output_dir, exist_ok=True)
-faiss_search.save(output_dir=output_dir, prefix=prefix, ext=ext)
+
+if not os.path.exists(os.path.join(output_dir, "{}.{}.faiss".format(prefix, ext))):
+    faiss_search.save(output_dir=output_dir, prefix=prefix, ext=ext)
 
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 

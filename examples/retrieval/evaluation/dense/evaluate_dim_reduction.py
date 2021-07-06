@@ -21,11 +21,12 @@ from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
-from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+from beir.retrieval.search.dense import PCAFaissSearch
 
 import logging
 import pathlib, os
 import random
+import faiss
 
 #### Just some code to print debug information to stdout
 logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -49,42 +50,70 @@ data_path = util.download_and_unzip(url, out_dir)
 
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
-#### Dense Retrieval using SBERT (Sentence-BERT) ####
-#### Provide any pretrained sentence-transformers model
-#### The model was fine-tuned using cosine-similarity.
-#### Complete list - https://www.sbert.net/docs/pretrained_models.html
+# Dense Retrieval using Different Faiss Indexes (Flat or ANN) ####
+# Provide any Sentence-Transformer or Dense Retriever model.
 
-model = models.SentenceBERT("msmarco-distilbert-base-v3")
+model_path = "msmarco-distilbert-base-tas-b"
+model = models.SentenceBERT(model_path)
 
-
-#########################################################################
-#### Principal Component Analysis (PCA) for Dimensionality Reduction ####
-#########################################################################
-
+###############################################################
+#### PCA: Principal Component Analysis (Exhaustive Search) ####
+###############################################################
 # Reduce Input Dimension (768) to output dimension of (128)
 
 output_dimension = 128
-PCA = models.PCA(model=model, output_dim=output_dimension)
+base_index = faiss.IndexFlatIP(output_dimension)
+faiss_search = PCAFaissSearch(model,
+                              base_index=base_index,
+                              output_dimension=output_dimension,
+                              batch_size=128)
 
-#### Now Train the PCA model using the all corpus embeddings
-PCA.train(corpus=corpus)
+#######################################################################
+#### PCA: Principal Component Analysis (with Product Quantization) ####
+#######################################################################
+# Reduce Input Dimension (768) to output dimension of (96)
 
-#### Save existing PCA Matrix which you have trained.
-output_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
-os.makedirs(output_dir, exist_ok=True)
-output_path = os.path.join(output_dir, "my-index.pca")
+# output_dimension = 96
+# base_index = faiss.IndexPQ(output_dimension,               # output dimension
+#                              96,                           # number of centroids
+#                              8,                            # code size
+#                              faiss.METRIC_INNER_PRODUCT)   # similarity function
+                            
+# faiss_search = PCAFaissSearch(model,
+#                               base_index=base_index,
+#                               output_dimension=output_dimension,
+#                               batch_size=128)
 
-PCA.save(output_path=output_path)
+#### Load faiss index from file or disk ####
+# We need two files to be present within the input_dir!
+# 1. input_dir/{prefix}.{ext}.faiss => which loads the faiss index.
+# 2. input_dir/{prefix}.{ext}.faiss => which loads mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
 
-#### Loading already saved PCA Matrix.
-# output_dimension = 128
-# PCA = models.PCA(model=model, output_dim=output_dimension)
-# if os.path.exists(output_path):
-#     PCA.load(output_path)
+prefix = "my-index"       # (default value)
+ext = "pca"               # extension
+
+input_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
+
+if os.path.exists(os.path.join(input_dir, "{}.{}.faiss".format(prefix, ext))):
+    faiss_search.load(input_dir=input_dir, prefix=prefix, ext=ext)
 
 #### Retrieve dense results (format of results is identical to qrels)
-retriever = EvaluateRetrieval(DRES(PCA, batch_size=128), score_function="cos_sim")
+retriever = EvaluateRetrieval(faiss_search, score_function="dot") # or "cos_sim"
 results = retriever.retrieve(corpus, queries)
+
+### Save faiss index into file or disk ####
+# Unfortunately faiss only supports integer doc-ids, We need save two files in output_dir.
+# 1. output_dir/{prefix}.{ext}.faiss => which saves the faiss index.
+# 2. output_dir/{prefix}.{ext}.faiss => which saves mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
+
+prefix = "my-index"     # (default value)
+ext = "pca"             # extension
+
+output_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
+os.makedirs(output_dir, exist_ok=True)
+
+if not os.path.exists(os.path.join(output_dir, "{}.{}.faiss".format(prefix, ext))):
+    faiss_search.save(output_dir=output_dir, prefix=prefix, ext=ext)
 
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 

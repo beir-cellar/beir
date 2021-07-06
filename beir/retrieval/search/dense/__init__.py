@@ -1,2 +1,2 @@
 from .exact_search import DenseRetrievalExactSearch
-from .faiss_search import DenseRetrievalFaissSearch, BinaryFaissSearch, PQFaissSearch, HNSWFaissSearch, FlatIPFaissSearch
+from .faiss_search import DenseRetrievalFaissSearch, BinaryFaissSearch, PQFaissSearch, HNSWFaissSearch, FlatIPFaissSearch, PCAFaissSearch

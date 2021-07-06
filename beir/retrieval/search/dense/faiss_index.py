@@ -95,6 +95,25 @@ class FaissPQIndex(FaissIndex):
         index.train(passage_embeddings)
         return super().build(passage_ids, passage_embeddings, index, buffer_size)
 
+class FaissPCAIndex(FaissIndex):
+    def search(self, query_embeddings: np.ndarray, k: int, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+        return super().search(query_embeddings, k)
+    
+    def save(self, output_path: str):
+        super().save(output_path)
+
+    @classmethod
+    def build(
+        cls,
+        passage_ids: List[int],
+        passage_embeddings: np.ndarray,
+        index: Optional[faiss.Index] = None,
+        buffer_size: int = 50000,
+    ):
+        index.train(passage_embeddings)
+        return super().build(passage_ids, passage_embeddings, index, buffer_size)
+
+
 class FaissBinaryIndex(FaissIndex):
     def __init__(self, index: faiss.Index, passage_ids: List[int] = None, passage_embeddings: np.ndarray = None):
         self.index = index

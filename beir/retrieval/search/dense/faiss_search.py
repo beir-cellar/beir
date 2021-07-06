@@ -1,5 +1,5 @@
 from .util import cos_sim, dot_score, normalize, save_dict_to_tsv, load_tsv_to_dict
-from .faiss_index import FaissBinaryIndex, FaissPQIndex, FaissHNSWIndex, FaissIndex
+from .faiss_index import FaissBinaryIndex, FaissPQIndex, FaissHNSWIndex, FaissPCAIndex, FaissIndex
 import logging
 import sys
 import torch
@@ -48,8 +48,6 @@ class DenseRetrievalFaissSearch:
 
     def save(self, output_dir: str, prefix: str, ext: str):
         
-        logger.info("Saving Faiss Index to path: {}".format(output_dir))
-
         # Save BEIR -> Faiss ids mappings
         save_mappings_path = os.path.join(output_dir, "{}.{}.tsv".format(prefix, ext))
         logger.info("Saving Faiss ID-mappings to path: {}".format(save_mappings_path))
@@ -238,6 +236,37 @@ class FlatIPFaissSearch(DenseRetrievalFaissSearch):
         self.faiss_index = FaissIndex.build(faiss_ids, corpus_embeddings, base_index)
 
     def save(self, output_dir: str, prefix: str = "my-index", ext: str = "flat"):
+        super().save(output_dir, prefix, ext)
+    
+    def search(self, 
+            corpus: Dict[str, Dict[str, str]],
+            queries: Dict[str, str], 
+            top_k: int,
+            score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
+        
+        return super().search(corpus, queries, top_k, score_function, **kwargs)
+
+class PCAFaissSearch(DenseRetrievalFaissSearch):
+    def __init__(self, model, base_index: faiss.Index, output_dimension: int, batch_size: int = 128, 
+                corpus_chunk_size: int = 50000, **kwargs):
+        super(PCAFaissSearch, self).__init__(model, batch_size, corpus_chunk_size, **kwargs)
+        self.base_index = base_index
+        self.output_dim = output_dimension
+
+    def load(self, input_dir: str, prefix: str = "my-index", ext: str = "pca"):
+        input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
+        base_index = faiss.read_index(input_faiss_path)
+        self.faiss_index = FaissPCAIndex(base_index, passage_ids)
+
+    def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
+        faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
+        logger.info("Creating PCA Matrix...")
+        logger.info("Input Dimension: {}, Output Dimension: {}".format(self.dim_size, self.output_dim))
+        pca_matrix = faiss.PCAMatrix(self.dim_size, self.output_dim, 0, True)
+        final_index = faiss.IndexPreTransform(pca_matrix, self.base_index)
+        self.faiss_index = FaissPCAIndex.build(faiss_ids, corpus_embeddings, final_index)
+
+    def save(self, output_dir: str, prefix: str = "my-index", ext: str = "pca"):
         super().save(output_dir, prefix, ext)
     
     def search(self, 

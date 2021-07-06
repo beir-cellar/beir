@@ -112,7 +112,7 @@ To easily understand and get your hands dirty with BEIR, we invite you to try ou
 | Exact-search retrieval using (dense) USE-QA | [evaluate_useqa.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_useqa.py) |
 | ANN and Exact-search using Faiss :new: | [evaluate_faiss_dense.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_faiss_dense.py) |
 | Retrieval using Binary Passage Retriver (BPR) :new: | [evaluate_bpr.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_bpr.py) |
-| Dimension Reduction using PCA :new: | [evaluate_pca.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_pca.py) |
+| Dimension Reduction using PCA :new: | [evaluate_dim_reduction.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_dim_reduction.py) |
 
 ### :beers: Sparse Retrieval (Evaluation)
 

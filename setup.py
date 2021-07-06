@@ -5,15 +5,15 @@ with open("README.md", mode="r", encoding="utf-8") as readme_file:
 
 setup(
     name="beir",
-    version="0.1.8",
+    version="0.2.0",
     author="Nandan Thakur",
     author_email="nandant@gmail.com",
     description="A Heterogeneous Benchmark for Information Retrieval",
     long_description=readme,
     long_description_content_type="text/markdown",
     license="Apache License 2.0",
-    url="https://github.com/beir-nlp/beir",
-    download_url="https://github.com/beir-nlp/beir/archive/v0.1.8.zip",
+    url="https://github.com/UKPLab/beir",
+    download_url="https://github.com/UKPLab/beir/archive/v0.2.0.zip",
     packages=find_packages(),
     python_requires='>=3.6',
     install_requires=[

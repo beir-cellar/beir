@@ -179,7 +179,7 @@ def main():
     parser.add_argument('--dataset', required=True, help=f"The dataset to use. Example: scifact")
     parser.add_argument('--model-id',
                         default=DEFAULT_MODEL_ID, help=f"The model ID to use. Default: {DEFAULT_MODEL_ID}")
-    parser.add_argument('--cpu-procs', default=None,
+    parser.add_argument('--cpu-procs', default=None, type=int,
                         help=f"Use CPUs instead of GPUs and use this number of cores. Leaving this unset (default) "
                              "will use all available GPUs. Default: None")
     args = parser.parse_args()

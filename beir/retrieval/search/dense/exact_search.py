@@ -14,6 +14,7 @@ class DenseRetrievalExactSearch:
         self.model = model
         self.batch_size = batch_size
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
+        self.score_function_desc = {'cos_sim': "Cosine Similarity", 'dot': "Dot Product"}
         self.corpus_chunk_size = corpus_chunk_size
         self.show_progress_bar = True #TODO: implement no progress bar if false
         self.convert_to_tensor = True
@@ -38,9 +39,13 @@ class DenseRetrievalExactSearch:
         query_embeddings = self.model.encode_queries(
             queries, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
           
-        logger.info("Encoding Corpus in batches... Warning: This might take a while!")
-        corpus_ids = list(corpus.keys())
+        logger.info("Sorting Corpus by document length (Longest first)...")
+
+        corpus_ids = sorted(corpus, key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")), reverse=True)
         corpus = [corpus[cid] for cid in corpus_ids]
+
+        logger.info("Encoding Corpus in batches... Warning: This might take a while!")
+        logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
 
         itr = range(0, len(corpus), self.corpus_chunk_size)
 

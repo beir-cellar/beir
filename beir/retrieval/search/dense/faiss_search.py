@@ -1,5 +1,5 @@
 from .util import cos_sim, dot_score, normalize, save_dict_to_tsv, load_tsv_to_dict
-from .faiss_index import FaissBinaryIndex, FaissPQIndex, FaissHNSWIndex, FaissPCAIndex, FaissIndex
+from .faiss_index import FaissBinaryIndex, FaissTrainIndex, FaissHNSWIndex, FaissIndex
 import logging
 import sys
 import torch
@@ -137,6 +137,7 @@ class BinaryFaissSearch(DenseRetrievalFaissSearch):
     def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None):
         faiss_ids, corpus_embeddings = super()._index(corpus, score_function)
         logger.info("Using Binary Hashing in Flat Mode!")
+        logger.info("Output Dimension: {}".format(self.dim_size))
         base_index = faiss.IndexBinaryFlat(self.dim_size * 8)
         self.faiss_index = FaissBinaryIndex.build(faiss_ids, corpus_embeddings, base_index)
 
@@ -154,25 +155,34 @@ class BinaryFaissSearch(DenseRetrievalFaissSearch):
 
 class PQFaissSearch(DenseRetrievalFaissSearch):
     def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, num_of_centroids: int = 96, 
-                 code_size: int = 8, similarity_metric=faiss.METRIC_INNER_PRODUCT, **kwargs):
+                 code_size: int = 8, similarity_metric=faiss.METRIC_INNER_PRODUCT, use_rotation: bool = False, **kwargs):
         super(PQFaissSearch, self).__init__(model, batch_size, corpus_chunk_size, **kwargs)
         self.num_of_centroids = num_of_centroids
         self.code_size = code_size
         self.similarity_metric = similarity_metric
+        self.use_rotation = use_rotation
     
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "pq"):
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
         base_index = faiss.read_index(input_faiss_path)
-        self.faiss_index = FaissPQIndex(base_index, passage_ids)
+        self.faiss_index = FaissTrainIndex(base_index, passage_ids)
 
     def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
-        faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)            
+        faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)  
+
         logger.info("Using Product Quantization (PQ) in Flat mode!")
         logger.info("Parameters Used: num_of_centroids: {} ".format(self.num_of_centroids))
-        logger.info("Parameters Used: code_size: {}".format(self.code_size))
-
+        logger.info("Parameters Used: code_size: {}".format(self.code_size))          
+        
         base_index = faiss.IndexPQ(self.dim_size, self.num_of_centroids, self.code_size, self.similarity_metric)
-        self.faiss_index = FaissPQIndex.build(faiss_ids, corpus_embeddings, base_index)
+
+        if self.use_rotation:
+            logger.info("Rotating data before encoding it with a product quantizer...")
+            logger.info("Creating OPQ Matrix...")
+            opq_matrix = faiss.OPQMatrix(self.dim_size, self.code_size)
+            base_index = faiss.IndexPreTransform(opq_matrix, base_index)
+
+        self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, base_index)
 
     def save(self, output_dir: str, prefix: str = "my-index", ext: str = "pq"):
         super().save(output_dir, prefix, ext)
@@ -256,7 +266,7 @@ class PCAFaissSearch(DenseRetrievalFaissSearch):
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "pca"):
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
         base_index = faiss.read_index(input_faiss_path)
-        self.faiss_index = FaissPCAIndex(base_index, passage_ids)
+        self.faiss_index = FaissTrainIndex(base_index, passage_ids)
 
     def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
         faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
@@ -264,9 +274,41 @@ class PCAFaissSearch(DenseRetrievalFaissSearch):
         logger.info("Input Dimension: {}, Output Dimension: {}".format(self.dim_size, self.output_dim))
         pca_matrix = faiss.PCAMatrix(self.dim_size, self.output_dim, 0, True)
         final_index = faiss.IndexPreTransform(pca_matrix, self.base_index)
-        self.faiss_index = FaissPCAIndex.build(faiss_ids, corpus_embeddings, final_index)
+        self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, final_index)
 
     def save(self, output_dir: str, prefix: str = "my-index", ext: str = "pca"):
+        super().save(output_dir, prefix, ext)
+    
+    def search(self, 
+            corpus: Dict[str, Dict[str, str]],
+            queries: Dict[str, str], 
+            top_k: int,
+            score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
+        
+        return super().search(corpus, queries, top_k, score_function, **kwargs)
+
+class SQFaissSearch(DenseRetrievalFaissSearch):
+    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, 
+                similarity_metric=faiss.METRIC_INNER_PRODUCT, quantizer_type: str = "QT_fp16", **kwargs):
+        super(PCAFaissSearch, self).__init__(model, batch_size, corpus_chunk_size, **kwargs)
+        self.similarity_metric = similarity_metric
+        self.qtype = quantizer_type
+
+    def load(self, input_dir: str, prefix: str = "my-index", ext: str = "sq"):
+        input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
+        base_index = faiss.read_index(input_faiss_path)
+        self.faiss_index = FaissTrainIndex(base_index, passage_ids)
+
+    def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
+        faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
+
+        logger.info("Using Scalar Quantizer in Flat Mode!")
+        logger.info("Parameters Used: quantizer_type: {}".format(self.qtype))
+
+        base_index = faiss.IndexScalarQuantizer(self.dim_size, self.qtype, self.similarity_metric)
+        self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, base_index)
+
+    def save(self, output_dir: str, prefix: str = "my-index", ext: str = "sq"):
         super().save(output_dir, prefix, ext)
     
     def search(self, 

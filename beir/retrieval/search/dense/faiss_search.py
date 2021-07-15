@@ -61,11 +61,13 @@ class DenseRetrievalFaissSearch:
     
     def _index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None):
         
-        logger.info("Encoding Corpus in batches... Warning: This might take a while!")
-        corpus_ids = list(corpus.keys())
+        logger.info("Sorting Corpus by document length (Longest first)...")
+        corpus_ids = sorted(corpus, key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")), reverse=True)
         self._create_mapping_ids(corpus_ids)
         corpus = [corpus[cid] for cid in corpus_ids]
         normalize_embeddings = True if score_function == "cos_sim" else False
+
+        logger.info("Encoding Corpus in batches... Warning: This might take a while!")
 
         itr = range(0, len(corpus), self.corpus_chunk_size)
 
@@ -290,9 +292,9 @@ class PCAFaissSearch(DenseRetrievalFaissSearch):
 class SQFaissSearch(DenseRetrievalFaissSearch):
     def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, 
                 similarity_metric=faiss.METRIC_INNER_PRODUCT, quantizer_type: str = "QT_fp16", **kwargs):
-        super(PCAFaissSearch, self).__init__(model, batch_size, corpus_chunk_size, **kwargs)
+        super(SQFaissSearch, self).__init__(model, batch_size, corpus_chunk_size, **kwargs)
         self.similarity_metric = similarity_metric
-        self.qtype = quantizer_type
+        self.qname = quantizer_type
 
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "sq"):
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
@@ -303,9 +305,10 @@ class SQFaissSearch(DenseRetrievalFaissSearch):
         faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
 
         logger.info("Using Scalar Quantizer in Flat Mode!")
-        logger.info("Parameters Used: quantizer_type: {}".format(self.qtype))
+        logger.info("Parameters Used: quantizer_type: {}".format(self.qname))
 
-        base_index = faiss.IndexScalarQuantizer(self.dim_size, self.qtype, self.similarity_metric)
+        qtype = getattr(faiss.ScalarQuantizer, self.qname)
+        base_index = faiss.IndexScalarQuantizer(self.dim_size, qtype, self.similarity_metric)
         self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, base_index)
 
     def save(self, output_dir: str, prefix: str = "my-index", ext: str = "sq"):

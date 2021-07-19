@@ -9,6 +9,7 @@ from tqdm.autonotebook import trange
 from typing import Dict, Type, List, Callable, Iterable, Tuple
 import logging
 import time
+import difflib
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +30,12 @@ class TrainRetriever:
             for query_id in query_ids_batch:
                 for corpus_id, score in qrels[query_id].items():
                     if score >= 1: # if score = 0, we don't consider for training
-                        s1 = queries[query_id]
-                        s2 = corpus[corpus_id].get("title") + " " + corpus[corpus_id].get("text") 
-                        train_samples.append(InputExample(guid=idx, texts=[s1, s2], label=1))
+                        try:
+                            s1 = queries[query_id]
+                            s2 = corpus[corpus_id].get("title") + " " + corpus[corpus_id].get("text") 
+                            train_samples.append(InputExample(guid=idx, texts=[s1, s2], label=1))
+                        except KeyError:
+                            logging.error("Error: Key {} not present in corpus!".format(corpus_id))
 
         logger.info("Loaded {} training pairs.".format(len(train_samples)))
         return train_samples

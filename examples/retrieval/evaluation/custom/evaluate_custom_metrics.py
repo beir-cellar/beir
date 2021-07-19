@@ -50,6 +50,7 @@ ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_v
 mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
 recall_cap = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="recall_cap")
 hole = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="hole")
+top_k_accuracy = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="top_k_accuracy")
 
 #### Print top-k documents retrieved ####
 top_k = 10

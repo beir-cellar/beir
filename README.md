@@ -120,6 +120,7 @@ To easily understand and get your hands dirty with BEIR, we invite you to try ou
 | -------------------------------------------  |  ----------  |
 | Hybrid sparse retrieval using SPARTA | [evaluate_sparta.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_sparta.py) |
 | Sparse retrieval using docT5query and Pyserini | [evaluate_anserini_docT5query.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_anserini_docT5query.py) |
+| Sparse retrieval using docT5query (MultiGPU) and Pyserini | [evaluate_anserini_docT5query_parallel.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_anserini_docT5query_parallel.py) :new: |
 | Sparse retrieval using DeepCT and Pyserini :new: | [evaluate_deepct.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_deepct.py) |
 
 ### :beers: Reranking (Evaluation)
@@ -429,6 +430,7 @@ We also include custom-metrics now which can be used for evaluation, please refe
 - MRR (``MRR@k``)
 - Capped Recall (``R_cap@k``)
 - Hole (``Hole@k``): % of top-k docs retrieved unseen by annotators
+- Top-K Accuracy (``Accuracy@k``): % of relevant docs present in top-k results
 
 ## :beers: Citing & Authors
 

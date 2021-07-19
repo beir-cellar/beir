@@ -213,6 +213,8 @@ For other datasets, just use one of the datasets names, mention below.
 
 ## :beers: Available Datasets
 
+Command to generate md5hash using Terminal:  ``md5hash filename.zip``.
+
 | Dataset   | Website| BEIR-Name | Queries  | Corpus | Rel D/Q | Down-load | md5 |
 | -------- | -----| ---------| ----------- | ---------| ---------| :----------: | :------:|
 | MSMARCO    | [Homepage](https://microsoft.github.io/msmarco/)| ``msmarco`` |  6,980   |  8.84M     |    1.1 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip) | ``444067daf65d982533ea17ebd59501e4`` |
@@ -230,7 +232,7 @@ For other datasets, just use one of the datasets names, mention below.
 | Quora| [Homepage](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs) | ``quora``|  10,000     |  523K    |  1.6 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/quora.zip) | ``18fb154900ba42a600f84b839c173167`` |
 | DBPedia | [Homepage](https://github.com/iai-group/DBpedia-Entity/) | ``dbpedia-entity``| 400    |  4.63M    |  38.2 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/dbpedia-entity.zip) | ``c2a39eb420a3164af735795df012ac2c`` |
 | SCIDOCS| [Homepage](https://allenai.org/data/scidocs) | ``scidocs``|  1,000     |  25K    |  4.9 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scidocs.zip) | ``38121350fc3a4d2f48850f6aff52e4a9`` |
-| FEVER| [Homepage](http://fever.ai) | ``fever``|  6,666     |  5.42M    |  1.2|  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/fever.zip)  | ``88591ef8eb2913126d0c93ecbde6285f`` |
+| FEVER | [Homepage](http://fever.ai) | ``fever``|  6,666     |  5.42M    |  1.2|  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/fever.zip)  | ``5a818580227bfb4b35bb6fa46d9b6c03`` |
 | Climate-FEVER| [Homepage](http://climatefever.ai) | ``climate-fever``|  1,535     |  5.42M |  3.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/climate-fever.zip)  | ``8b66f0a9126c521bae2bde127b4dc99d`` |
 | SciFact| [Homepage](https://github.com/allenai/scifact) | ``scifact``|  300     |  5K    |  1.1 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip)  | ``5f7d1de60b170fc8027bb7898e2efca1`` |
 | Robust04 | [Homepage](https://trec.nist.gov/data/robust/04.guidelines.html) | ``robust04``|  249  |  528K  |  69.9 |  No  |  [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/dataset#3-robust04)  |

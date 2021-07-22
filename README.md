@@ -139,6 +139,7 @@ To easily understand and get your hands dirty with BEIR, we invite you to try ou
 | Train MSMARCO SBERT with BM25 Negatives | [train_msmarco_v2.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v2.py) |
 | Train (SOTA) MSMARCO SBERT with Mined Hard Negatives :new: | [train_msmarco_v3.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v3.py) |
 | Train (SOTA) MSMARCO BPR with Mined Hard Negatives :new: | [train_msmarco_v3_bpr.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v3_bpr.py) |
+| Train (SOTA) MSMARCO SBERT with Mined Hard Negatives (Margin-MSE) :new: | [train_msmarco_v3_margin_MSE.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v3_margin_MSE.py) |
 
 ### :beers: Question Generation
 

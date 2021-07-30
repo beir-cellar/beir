@@ -40,7 +40,6 @@ class ElasticSearch(object):
     def check_language_supported(self):
         """Check Language Supported in Elasticsearch
         """
-        print(self.language)
         if self.language.lower() not in self.languages:
             raise ValueError("Invalid Language: {}, not supported by Elasticsearch. Languages Supported: \
             {}".format(self.language, self.languages))

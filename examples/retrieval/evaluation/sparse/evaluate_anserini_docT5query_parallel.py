@@ -40,10 +40,10 @@ CHUNK_SIZE_MP = 100
 CHUNK_SIZE_GPU = 64  # memory-bound, this should work for most GPUs
 DEVICE_CPU = 'cpu'
 DEVICE_GPU = 'cuda'
-NUM_QUERIES_PER_PASSAGE = 3
+NUM_QUERIES_PER_PASSAGE = 5
 PYSERINI_URL = "http://127.0.0.1:8000"
 
-DEFAULT_MODEL_ID = 'castorini/doc2query-t5-base-msmarco'
+DEFAULT_MODEL_ID = 'BeIR/query-gen-msmarco-t5-base-v1' # https://huggingface.co/BeIR/query-gen-msmarco-t5-base-v1
 DEFAULT_DEVICE = DEVICE_GPU
 
 # noinspection PyArgumentList
@@ -64,7 +64,7 @@ def init_process(device, model_id):
         proc_id = int(mp.current_process().name.split('-')[1]) - 1
         device = f'{DEVICE_GPU}:{proc_id}'
 
-    model = QGenModel(model_id, use_fast=False, device=device)
+    model = QGenModel(model_id, use_fast=True, device=device)
 
 
 def _decide_device(cpu_procs):
@@ -96,7 +96,7 @@ def _generate_query(corpus_list):
     generated_queries = model.generate(corpus=documents,
                                        ques_per_passage=NUM_QUERIES_PER_PASSAGE,
                                        max_length=64,
-                                       top_p=0.95,
+                                       temperature=1,
                                        top_k=10)
 
     for i, (_, document) in enumerate(corpus_list):

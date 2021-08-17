@@ -70,27 +70,28 @@ checkpoint_dir = util.download_and_unzip(model_url, out_dir)
 # We cannot use the original Repo (https://github.com/AdeDZY/DeepCT) as it only runs with TF 1.15.
 # We reformatted the code (https://github.com/NThakur20/DeepCT) and made it working with latest TF 2.X!
 
-################################
-#### Command-Line Arugments ####
-################################
-run_deepct.FLAGS.task_name = "beir"                                                     # Defined a seperate BEIR task in DeepCT. Check out run_deepct.
-run_deepct.FLAGS.do_train = False                                                       # We only want to use the code for inference.
-run_deepct.FLAGS.do_eval = False                                                        # No evaluation.
-run_deepct.FLAGS.do_predict = True                                                      # True, as we would use DeepCT model for only prediction.
-run_deepct.FLAGS.data_dir = os.path.join(data_path, "corpus.jsonl")                     # Provide original path to corpus data, follow beir format.
-run_deepct.FLAGS.vocab_file = os.path.join(bert_base_dir, "vocab.txt")                  # Provide bert-base-uncased model vocabulary.
-run_deepct.FLAGS.bert_config_file = os.path.join(bert_base_dir, "bert_config.json")     # Provide bert-base-uncased config.json file.
-run_deepct.FLAGS.init_checkpoint = os.path.join(checkpoint_dir, "model.ckpt-65816")     # Provide DeepCT MSMARCO model (bert-base-uncased) checkpoint file.
-run_deepct.FLAGS.max_seq_length = 350                                                   # Provide Max Sequence Length used for consideration. (Max: 512)
-run_deepct.FLAGS.train_batch_size = 128                                                 # Inference batch size, Larger more Memory but faster!
-run_deepct.FLAGS.output_dir = data_path                                                 # Output directory, this will contain two files: deepct.jsonl (output-file) and predict.tf_record
-run_deepct.FLAGS.output_file = "deepct.jsonl"                                           # Output file for storing final DeepCT produced corpus.
-run_deepct.FLAGS.m = 100                                                                # Scaling parameter for DeepCT weights: scaling parameter > 0, recommend 100
-run_deepct.FLAGS.smoothing = "sqrt"                                                     # Use sqrt to smooth weights. DeepCT Paper uses None.
-run_deepct.FLAGS.keep_all_terms = True                                                  # Do not allow DeepCT to delete terms.
+if not os.path.isfile(os.path.join(data_path, "deepct.jsonl")):
+    ################################
+    #### Command-Line Arugments ####
+    ################################
+    run_deepct.FLAGS.task_name = "beir"                                                     # Defined a seperate BEIR task in DeepCT. Check out run_deepct.
+    run_deepct.FLAGS.do_train = False                                                       # We only want to use the code for inference.
+    run_deepct.FLAGS.do_eval = False                                                        # No evaluation.
+    run_deepct.FLAGS.do_predict = True                                                      # True, as we would use DeepCT model for only prediction.
+    run_deepct.FLAGS.data_dir = os.path.join(data_path, "corpus.jsonl")                     # Provide original path to corpus data, follow beir format.
+    run_deepct.FLAGS.vocab_file = os.path.join(bert_base_dir, "vocab.txt")                  # Provide bert-base-uncased model vocabulary.
+    run_deepct.FLAGS.bert_config_file = os.path.join(bert_base_dir, "bert_config.json")     # Provide bert-base-uncased config.json file.
+    run_deepct.FLAGS.init_checkpoint = os.path.join(checkpoint_dir, "model.ckpt-65816")     # Provide DeepCT MSMARCO model (bert-base-uncased) checkpoint file.
+    run_deepct.FLAGS.max_seq_length = 350                                                   # Provide Max Sequence Length used for consideration. (Max: 512)
+    run_deepct.FLAGS.train_batch_size = 128                                                 # Inference batch size, Larger more Memory but faster!
+    run_deepct.FLAGS.output_dir = data_path                                                 # Output directory, this will contain two files: deepct.jsonl (output-file) and predict.tf_record
+    run_deepct.FLAGS.output_file = "deepct.jsonl"                                           # Output file for storing final DeepCT produced corpus.
+    run_deepct.FLAGS.m = 100                                                                # Scaling parameter for DeepCT weights: scaling parameter > 0, recommend 100
+    run_deepct.FLAGS.smoothing = "sqrt"                                                     # Use sqrt to smooth weights. DeepCT Paper uses None.
+    run_deepct.FLAGS.keep_all_terms = True                                                  # Do not allow DeepCT to delete terms.
 
-# Runs DeepCT model on the corpus.jsonl
-run_deepct.main()
+    # Runs DeepCT model on the corpus.jsonl
+    run_deepct.main()
 
 #### Download Docker Image beir/pyserini-fastapi ####
 #### Locally run the docker Image + FastAPI ####

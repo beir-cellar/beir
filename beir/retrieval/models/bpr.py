@@ -4,8 +4,9 @@ from typing import List, Dict, Union, Tuple
 import numpy as np
 
 class BinarySentenceBERT:
-    def __init__(self, model_path: Union[str, Tuple] = None, sep: str = " ", **kwargs):
+    def __init__(self, model_path: Union[str, Tuple] = None, sep: str = " ", threshold: Union[float, Tensor] = 0, **kwargs):
         self.sep = sep
+        self.threshold = threshold
         
         if isinstance(model_path, str):
             self.q_model = SentenceTransformer(model_path)
@@ -16,7 +17,7 @@ class BinarySentenceBERT:
             self.doc_model = SentenceTransformer(model_path[1])
     
     def _convert_embedding_to_binary_code(self, embeddings: List[Tensor]) -> List[Tensor]:
-        return embeddings.new_ones(embeddings.size()).masked_fill_(embeddings < 0, -1.0)
+        return embeddings.new_ones(embeddings.size()).masked_fill_(embeddings < self.threshold, -1.0)
     
     def encode_queries(self, queries: List[str], batch_size: int = 16, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
         return self.q_model.encode(queries, batch_size=batch_size, **kwargs)

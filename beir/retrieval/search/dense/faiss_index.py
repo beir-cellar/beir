@@ -1,5 +1,5 @@
 from .util import normalize
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 from tqdm.autonotebook import trange
 import numpy as np
 
@@ -107,10 +107,10 @@ class FaissBinaryIndex(FaissIndex):
             self._passage_embeddings = passage_embeddings
 
     def search(self, query_embeddings: np.ndarray, k: int, binary_k: int = 1000, rerank: bool = True, 
-               score_function: str = "dot", **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+               score_function: str = "dot", threshold: Union[int, np.ndarray] = 0, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         start_time = time.time()
         num_queries = query_embeddings.shape[0]
-        bin_query_embeddings = np.packbits(np.where(query_embeddings > 0, 1, 0)).reshape(num_queries, -1)
+        bin_query_embeddings = np.packbits(np.where(query_embeddings > threshold, 1, 0)).reshape(num_queries, -1)
 
         if not rerank:
             scores_arr, ids_arr = self.index.search(bin_query_embeddings, k)

@@ -16,7 +16,7 @@ class QGenModel:
         logger.info("Use pytorch device: {}".format(self.device))
         self.model = self.model.to(self.device)
     
-    def generate(self, corpus: List[Dict[str, str]], ques_per_passage: int, top_p: float, top_k: int, max_length: int) -> List[str]:
+    def generate(self, corpus: List[Dict[str, str]], ques_per_passage: int, top_k: int, max_length: int, top_p: float = None, temperature: float = None) -> List[str]:
         
         texts = [(self.gen_prefix + doc["title"] + " " + doc["text"]) for doc in corpus]
         encodings = self.tokenizer(texts, padding=True, truncation=True, return_tensors="pt")
@@ -24,15 +24,25 @@ class QGenModel:
         # Top-p nucleus sampling
         # https://huggingface.co/blog/how-to-generate
         with torch.no_grad():
-            outs = self.model.generate(
-                input_ids=encodings['input_ids'].to(self.device), 
-                do_sample=True,
-                max_length=max_length,  # 64
-                top_k=top_k,  # 25
-                top_p=top_p,  # 0.95
-                num_return_sequences=ques_per_passage  # 1
-                )
-        
+            if not temperature:
+                outs = self.model.generate(
+                    input_ids=encodings['input_ids'].to(self.device), 
+                    do_sample=True,
+                    max_length=max_length,  # 64
+                    top_k=top_k,  # 25
+                    top_p=top_p,  # 0.95
+                    num_return_sequences=ques_per_passage  # 1
+                    )
+            else:
+                outs = self.model.generate(
+                    input_ids=encodings['input_ids'].to(self.device), 
+                    do_sample=True,
+                    max_length=max_length,  # 64
+                    top_k=top_k,  # 25
+                    temperature=temperature,
+                    num_return_sequences=ques_per_passage  # 1
+                    )
+
         return self.tokenizer.batch_decode(outs, skip_special_tokens=True)
     
     def start_multi_process_pool(self, target_devices: List[str] = None):

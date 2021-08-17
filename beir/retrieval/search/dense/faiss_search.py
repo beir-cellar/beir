@@ -7,6 +7,7 @@ import faiss
 import numpy as np
 import os
 from typing import Dict, List
+from tqdm.autonotebook import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -129,11 +130,13 @@ class DenseRetrievalFaissSearch:
 class BinaryFaissSearch(DenseRetrievalFaissSearch):
 
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "bin"):
+        passage_embeddings = []
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
         base_index = faiss.read_index_binary(input_faiss_path)
-        passage_embeddings = base_index.reconstruct(0)
-        for idx in range(1, len(passage_ids)):
-            passage_embeddings = np.vstack((passage_embeddings, base_index.reconstruct(idx)))            
+        logger.info("Reconstructing passage_embeddings back in Memory from Index...")
+        for idx in tqdm(range(0, len(passage_ids)), total=len(passage_ids)):
+            passage_embeddings.append(base_index.reconstruct(idx))            
+        passage_embeddings = np.vstack(passage_embeddings)
         self.faiss_index = FaissBinaryIndex(base_index, passage_ids, passage_embeddings)
 
     def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None):

@@ -76,10 +76,11 @@ Find below Google Sheets for BEIR Leaderboard. Unfortunately with Markdown the t
 
 If you are new to Information Retrieval and wish to understand and learn more about classical or neural IR, we suggest you to look at the open-sourced courses below. 
 
-|      Course         |  University   |  Instructor            |   Link   |  Available |
-| -----------------   |  ------------ |  --------------------- | ---------|  --------- |
-| Intro to Advanced IR|  TU Wien'21   |  Sebastian Hofstaetter | [Link](https://github.com/sebastian-hofstaetter/teaching) | Videos + Slides |
-| CS224U NLU + IR     |  Stanford'21  |  Omar Khattab          | [Link](http://web.stanford.edu/class/cs224u/) | Slides |
+|      Course          |  University   |  Instructor            |   Link   |  Available |
+| -----------------    |  ------------ |  --------------------- | ---------|  --------- |
+| BEIR: Benchmarking IR|  UKP Lab      |  Nandan Thakur         | [Link](https://www.youtube.com/watch?v=e9nNr4ugNAo&ab_channel=deepset) | Video + Slides |
+| Intro to Advanced IR |  TU Wien'21   |  Sebastian Hofstaetter | [Link](https://github.com/sebastian-hofstaetter/teaching) | Videos + Slides |
+| CS224U NLU + IR      |  Stanford'21  |  Omar Khattab          | [Link](http://web.stanford.edu/class/cs224u/) | Slides |
 | Pretrained Transformers for Text Ranking: BERT and Beyond    |  MPI, Waterloo'21  |  Andrew Yates, Rodrigo Nogueira, Jimmy Lin | [Link](https://arxiv.org/abs/2010.06467) | PDF |
 | BoF Session on IR | NAACL'21 | Sean MacAvaney, Luca Soldaini | [Link](https://docs.google.com/presentation/d/1BkGGnlLLtU-THbqbD60NDZPcPVRSeKxZSy73DKX1u-M/edit) |  Slides |
 

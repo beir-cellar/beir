@@ -220,6 +220,7 @@ Command to generate md5hash using Terminal:  ``md5hash filename.zip``.
 | Dataset   | Website| BEIR-Name | Type | Queries  | Corpus | Rel D/Q | Down-load | md5 |
 | -------- | -----| ---------| --------- | ----------- | ---------| ---------| :----------: | :------:|
 | MSMARCO    | [Homepage](https://microsoft.github.io/msmarco/)| ``msmarco`` | ``train``<br>``dev``<br>``test``|  6,980   |  8.84M     |    1.1 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip) | ``444067daf65d982533ea17ebd59501e4`` |
+| MSMARCO v2 | [Homepage](https://microsoft.github.io/msmarco/TREC-Deep-Learning.html)| ``msmarco-v2`` | ``train``<br>``dev1``<br>``dev2``|  4,552<br>4,702   |  138M    |   | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco-v2.zip) | ``ba6238b403f0b345683885cc9390fff5`` |
 | TREC-COVID |  [Homepage](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| ``test``| 50|  171K| 493.5 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/trec-covid.zip) | ``ce62140cb23feb9becf6270d0d1fe6d1`` |
 | NFCorpus   | [Homepage](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/) | ``nfcorpus`` | ``train``<br>``dev``<br>``test``|  323     |  3.6K     |  38.2 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/nfcorpus.zip) | ``a89dba18a62ef92f7d323ec890a0d38d`` |
 | BioASQ     | [Homepage](http://bioasq.org) | ``bioasq``|  ``train``<br>``test`` | 500    |  14.91M    |  8.05 | No | [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/dataset#2-bioasq) |
@@ -241,9 +242,33 @@ Command to generate md5hash using Terminal:  ``md5hash filename.zip``.
 
 ## :beers: Multilingual Datasets
 
-| Dataset   | Website| BEIR-Name | Type | Queries  | Corpus | Rel D/Q | Down-load | md5 |
-| -------- | -----| ---------| -------- | ----------- | ---------| ---------| :----------: | :------:|
-| GermanQuAD | [Homepage](https://deepset.ai/germanquad) | ``germanquad``| ``test``| 2044  |  2.80M  |  1.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/germanquad.zip)  | ``95a581c3162d10915a418609bcce851b`` |
+| Language | Dataset   | Website| BEIR-Name | Type | Queries  | Corpus | Rel D/Q | Down-load | md5 |
+| -------- |  -------- | -----| ---------| -------- | ----------- | ---------| ---------| :----------: | :------:|
+|  German  | GermanQuAD | [Homepage](https://deepset.ai/germanquad) | ``germanquad``| ``test``| 2,044  |  2.80M  |  1.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/germanquad.zip)  | ``95a581c3162d10915a418609bcce851b`` |
+|  Arabic    | Mr.TyDI | [Homepage](https://github.com/castorini/mr.tydi) | ``mrtydi/arabic``| ``train``<br>``dev``<br>``test``| 1,081  | 2.1M  |  1.2 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mrtydi.zip)  | ``17072d0e1610bd8461d962b8ac560fc5`` |
+|  Bengali   | Mr.TyDI | [Homepage](https://github.com/castorini/mr.tydi) | ``mrtydi/bengali``| ``train``<br>``dev``<br>``test``| 111  |  304K  |  1.2 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mrtydi.zip)  | ``17072d0e1610bd8461d962b8ac560fc5`` |
+|  Finnish   | Mr.TyDI | [Homepage](https://github.com/castorini/mr.tydi) | ``mrtydi/finnish``| ``train``<br>``dev``<br>``test``| 1,254 |  1.9M  |  1.2 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mrtydi.zip)  | ``17072d0e1610bd8461d962b8ac560fc5`` |
+|Indonesian  | Mr.TyDI | [Homepage](https://github.com/castorini/mr.tydi) | ``mrtydi/indonesian``| ``train``<br>``dev``<br>``test``| 829  |  1.47M  |  1.2 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mrtydi.zip)  | ``17072d0e1610bd8461d962b8ac560fc5`` |
+| Japanese   | Mr.TyDI | [Homepage](https://github.com/castorini/mr.tydi) | ``mrtydi/japanese``| ``train``<br>``dev``<br>``test``| 720  |  7M  |  1.3 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mrtydi.zip)  | ``17072d0e1610bd8461d962b8ac560fc5`` |
+|  Korean    | Mr.TyDI | [Homepage](https://github.com/castorini/mr.tydi) | ``mrtydi/korean`` | ``train``<br>``dev``<br>``test``| 421  |  1.5M  |  1.2 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mrtydi.zip)  | ``17072d0e1610bd8461d962b8ac560fc5`` |
+|  Russian   | Mr.TyDI | [Homepage](https://github.com/castorini/mr.tydi) | ``mrtydi/russian``| ``train``<br>``dev``<br>``test``| 995  |  9.6M  |  1.2 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mrtydi.zip)  | ``17072d0e1610bd8461d962b8ac560fc5`` |
+|  Swahili  | Mr.TyDI | [Homepage](https://github.com/castorini/mr.tydi) | ``mrtydi/swahili``| ``train``<br>``dev``<br>``test``| 670  |  136K  |  1.1 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mrtydi.zip)  | ``17072d0e1610bd8461d962b8ac560fc5`` |
+|  Telugu  | Mr.TyDI | [Homepage](https://github.com/castorini/mr.tydi) | ``mrtydi/telugu``| ``train``<br>``dev``<br>``test``| 646  |  548K  |  1.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mrtydi.zip)  | ``17072d0e1610bd8461d962b8ac560fc5`` |
+|  Thai  | Mr.TyDI | [Homepage](https://github.com/castorini/mr.tydi) | ``mrtydi/thai``| ``train``<br>``dev``<br>``test``| 1,190  | 568K  |  1.1 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mrtydi.zip)  | ``17072d0e1610bd8461d962b8ac560fc5`` |
+
+## :beers: Translated (Multilingual) Datasets
+
+| Language | Dataset   | Website| BEIR-Name | Type | Queries  | Corpus | Rel D/Q | Down-load | md5 |
+| -------- |  -------- | -----| ---------| -------- | ----------- | ---------| ---------| :----------: | :------:|
+| Spanish  | mMARCO    | [Homepage](https://github.com/unicamp-dl/mMARCO) | ``mmarco/spanish``| ``train``<br>``dev`` | 6,980 |  8.84M  |  1.1   |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mmarco.zip)  | ``b727dbec65315a76bceaff56ad77d2c7`` |
+| French  | mMARCO    | [Homepage](https://github.com/unicamp-dl/mMARCO) | ``mmarco/french``| ``train``<br>``dev`` | 6,980 |  8.84M  |  1.1   |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mmarco.zip)  | ``b727dbec65315a76bceaff56ad77d2c7`` |
+| Portuguese  | mMARCO    | [Homepage](https://github.com/unicamp-dl/mMARCO) | ``mmarco/portuguese``| ``train``<br>``dev`` | 6,980 |  8.84M  |  1.1   |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mmarco.zip)  | ``b727dbec65315a76bceaff56ad77d2c7`` |
+| Italian  | mMARCO    | [Homepage](https://github.com/unicamp-dl/mMARCO) | ``mmarco/italian``| ``train``<br>``dev`` | 6,980 |  8.84M  |  1.1   |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mmarco.zip)  | ``b727dbec65315a76bceaff56ad77d2c7`` |
+| Indonesian  | mMARCO    | [Homepage](https://github.com/unicamp-dl/mMARCO) | ``mmarco/indonesian``| ``train``<br>``dev`` | 6,980 |  8.84M  |  1.1   |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mmarco.zip)  | ``b727dbec65315a76bceaff56ad77d2c7`` |
+| German  | mMARCO    | [Homepage](https://github.com/unicamp-dl/mMARCO) | ``mmarco/german``| ``train``<br>``dev`` | 6,980 |  8.84M  |  1.1   |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mmarco.zip)  | ``b727dbec65315a76bceaff56ad77d2c7`` |
+| Russian  | mMARCO    | [Homepage](https://github.com/unicamp-dl/mMARCO) | ``mmarco/russian``| ``train``<br>``dev`` | 6,980 |  8.84M  |  1.1   |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mmarco.zip)  | ``b727dbec65315a76bceaff56ad77d2c7`` |
+| Chinese  | mMARCO    | [Homepage](https://github.com/unicamp-dl/mMARCO) | ``mmarco/chinese``| ``train``<br>``dev`` | 6,980 |  8.84M  |  1.1   |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/mmarco.zip)  | ``b727dbec65315a76bceaff56ad77d2c7`` |
+
 
 Otherwise, you can load a custom preprocessed dataset in the following way:
 

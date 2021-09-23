@@ -5,11 +5,8 @@ Since Anserini uses Java-11, we would advise you to use docker for running Pyser
 To be able to run the code below you must have docker locally installed in your machine.
 To install docker on your local machine, please refer here: https://docs.docker.com/get-docker/
 
-After docker installation, please follow the steps below to get docker container up and running:
-
-1. docker pull docker pull beir/pyserini-fastapi
-2. docker build -t pyserini-fastapi .
-3. docker run -p 8000:8000 -it --rm pyserini-fastapi
+After docker installation, you can start the needed docker container with the following command:
+docker run -p 8000:8000 -it --rm beir/pyserini-fastapi
 
 Once the docker container is up and running in local, now run the code below.
 

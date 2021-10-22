@@ -100,7 +100,7 @@ def top_k_accuracy(
     logging.info("\n")
     
     for query_id, doc_scores in results.items():
-        top_hits[query_id] = sorted(doc_scores.keys(), key=lambda item: item[1], reverse=True)[0:k_max]   
+        top_hits[query_id] = [item[0] for item in sorted(doc_scores.items(), key=lambda item: item[1], reverse=True)[0:k_max]]
     
     for query_id in qrels:
         query_relevant_docs = set([doc_id for doc_id in qrels[query_id] if qrels[query_id][doc_id] > 0])

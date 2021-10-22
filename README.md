@@ -15,7 +15,7 @@
 
 For more information, checkout our publications:
 
-- [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://arxiv.org/abs/2104.08663) (arXiv 2021)
+- [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://openreview.net/forum?id=wCu6T5xFjeJ) (NeurIPS 2021, Datasets and Benchmarks Track)
 
 
 ## :beers: Table Of Contents
@@ -78,6 +78,7 @@ If you are new to Information Retrieval and wish to understand and learn more ab
 
 |      Course          |  University   |  Instructor            |   Link   |  Available |
 | -----------------    |  ------------ |  --------------------- | ---------|  --------- |
+| Training SOTA Neural Search Models |  Hugging Face |  Nils Reimers          | [Link](https://www.youtube.com/watch?v=XHY-3FzaLGc) | Video |
 | BEIR: Benchmarking IR|  UKP Lab      |  Nandan Thakur         | [Link](https://www.youtube.com/watch?v=e9nNr4ugNAo&ab_channel=deepset) | Video + Slides |
 | Intro to Advanced IR |  TU Wien'21   |  Sebastian Hofstaetter | [Link](https://github.com/sebastian-hofstaetter/teaching) | Videos + Slides |
 | CS224U NLU + IR      |  Stanford'21  |  Omar Khattab          | [Link](http://web.stanford.edu/class/cs224u/) | Slides |
@@ -466,13 +467,13 @@ We also include custom-metrics now which can be used for evaluation, please refe
 If you find this repository helpful, feel free to cite our publication [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://arxiv.org/abs/2104.08663):
 
 ```
-@article{thakur2021beir,
-    title = "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
-    author = "Thakur, Nandan and Reimers, Nils and Rücklé, Andreas and Srivastava, Abhishek and Gurevych, Iryna", 
-    journal= "arXiv preprint arXiv:2104.08663",
-    month = "4",
-    year = "2021",
-    url = "https://arxiv.org/abs/2104.08663",
+@inproceedings{
+    thakur2021beir,
+    title={{BEIR}: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models},
+    author={Nandan Thakur and Nils Reimers and Andreas R{\"u}ckl{\'e} and Abhishek Srivastava and Iryna Gurevych},
+    booktitle={Thirty-fifth Conference on Neural Information Processing Systems Datasets and Benchmarks Track (Round 2)},
+    year={2021},
+    url={https://openreview.net/forum?id=wCu6T5xFjeJ}
 }
 ```
 

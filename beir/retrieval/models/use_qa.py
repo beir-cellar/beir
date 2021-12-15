@@ -1,10 +1,12 @@
-import tensorflow as tf
-import tensorflow_hub as hub
 import numpy as np
-import tensorflow_text
+import importlib.util
 from typing import List, Dict
 from tqdm.autonotebook import trange
 
+if importlib.util.find_spec("tensorflow") is not None:
+    import tensorflow as tf
+    import tensorflow_hub as hub
+    import tensorflow_text
 
 class UseQA:
     def __init__(self, hub_url=None, **kwargs):

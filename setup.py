@@ -3,9 +3,13 @@ from setuptools import setup, find_packages
 with open("README.md", mode="r", encoding="utf-8") as readme_file:
     readme = readme_file.read()
 
+optional_packages = {
+    "tf" : ['tensorflow>=2.2.0', 'tensorflow-text', 'tensorflow-hub']
+}
+
 setup(
     name="beir",
-    version="0.2.3",
+    version="0.2.2",
     author="Nandan Thakur",
     author_email="nandant@gmail.com",
     description="A Heterogeneous Benchmark for Information Retrieval",
@@ -13,18 +17,16 @@ setup(
     long_description_content_type="text/markdown",
     license="Apache License 2.0",
     url="https://github.com/UKPLab/beir",
-    download_url="https://github.com/UKPLab/beir/archive/v0.2.3.zip",
+    download_url="https://github.com/UKPLab/beir/archive/v0.2.2.zip",
     packages=find_packages(),
     python_requires='>=3.6',
     install_requires=[
         'sentence-transformers',
         'pytrec_eval',
         'faiss_cpu',
-        'elasticsearch',
-        'tensorflow>=2.2.0',
-        'tensorflow-text',
-        'tensorflow-hub'
+        'elasticsearch'
     ],
+    extras_require = optional_packages,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",

@@ -24,7 +24,7 @@ setup(
         'sentence-transformers',
         'pytrec_eval',
         'faiss_cpu',
-        'elasticsearch'
+        'elasticsearch==7.9.1'
     ],
     extras_require = optional_packages,
     classifiers=[

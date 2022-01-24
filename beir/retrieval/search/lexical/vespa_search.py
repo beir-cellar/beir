@@ -1,8 +1,9 @@
+import shutil
 from typing import Dict, Optional
 from vespa.application import Vespa
 from vespa.package import ApplicationPackage, Field, FieldSet, RankProfile, QueryField
 from vespa.query import QueryModel, OR, RankProfile as Ranking, WeakAnd
-from vespa.deployment import VespaDocker, VespaCloud
+from vespa.deployment import VespaDocker
 
 
 class VespaLexicalSearch:
@@ -11,7 +12,6 @@ class VespaLexicalSearch:
         application_name: str,
         match_phase: str = "or",
         rank_phase: str = "bm25",
-        deployment_type: str = "docker",
         deployment_parameters: Optional[Dict] = None,
         initialize: bool = True,
     ):
@@ -27,13 +27,9 @@ class VespaLexicalSearch:
             "native_rank",
         ], "'rank_phase' should be either 'bm25' or 'native_rank'"
         self.rank_phase = rank_phase
-        assert deployment_type in [
-            "docker",
-            "cloud",
-        ], "deployment_type should be either 'docker' or 'cloud'"
-        self.deployment_type = deployment_type
         self.deployment_parameters = deployment_parameters
         self.initialize = initialize
+        self.vespa_docker = None
         if self.initialize:
             self.app = self.initialise()
             assert (
@@ -86,49 +82,23 @@ class VespaLexicalSearch:
         #
         # Deploy application
         #
-        if self.deployment_type == "docker":
-            if not self.deployment_parameters:
-                self.deployment_parameters = {"port": 8089}
-            vespa_docker = VespaDocker(**self.deployment_parameters)
-            app = vespa_docker.deploy(application_package=app_package)
-            app.delete_all_docs(
-                content_cluster_name=self.application_name + "_content",
-                schema=self.application_name,
-            )
-            return app
-        elif self.deployment_type == "cloud":
-            assert self.deployment_parameters is not None and all(
-                [
-                    x
-                    in [
-                        "tenant_name",
-                        "application_name",
-                        "user_key_path",
-                        "instance_name",
-                    ]
-                    for x in self.deployment_parameters.keys()
-                ]
-            ), (
-                "'deployment_parameters' should be a dict containing the following keys: "
-                "['tenant_name', 'application_name', 'user_key_path', 'instance_name']"
-            )
-            # Cloud
-            vespa_cloud = VespaCloud(
-                tenant=self.deployment_parameters["tenant_name"],
-                application=self.deployment_parameters["application_name"],
-                application_package=app_package,
-                key_location=self.deployment_parameters["user_key_path"],
-            )
-            app = vespa_cloud.deploy(
-                instance=self.deployment_parameters["instance_name"]
-            )
-            app.delete_all_docs(
-                content_cluster_name=self.application_name + "_content",
-                schema=self.application_name,
-            )
-            return app
-        else:
-            ValueError("deployment_type should be either 'docker' or 'cloud'")
+        if not self.deployment_parameters:
+            self.deployment_parameters = {"port": 8089}
+        self.vespa_docker = VespaDocker(**self.deployment_parameters)
+        app = self.vespa_docker.deploy(application_package=app_package)
+        app.delete_all_docs(
+            content_cluster_name=self.application_name + "_content",
+            schema=self.application_name,
+        )
+        return app
+
+    def remove_app(self):
+        if self.vespa_docker:
+            shutil.rmtree(
+                self.application_name, ignore_errors=True
+            )  # remove application package folder
+            self.vespa_docker.container.stop()  # stop docker container
+            self.vespa_docker.container.remove()  # stop docker container
 
     def search(
         self,
@@ -165,10 +135,7 @@ class VespaLexicalSearch:
         for query_id, query in zip(query_ids, queries):
             scores = {}
             query_result = self.app.query(
-                query=query,
-                query_model=query_model,
-                hits=top_k,
-                timeout="10 s"
+                query=query, query_model=query_model, hits=top_k, timeout="10 s"
             )
             for hit in query_result.hits:
                 scores[hit["fields"]["id"]] = hit["relevance"]

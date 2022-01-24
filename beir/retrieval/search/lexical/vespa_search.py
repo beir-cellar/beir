@@ -168,6 +168,7 @@ class VespaLexicalSearch:
                 query=query,
                 query_model=query_model,
                 hits=top_k,
+                timeout="10 s"
             )
             for hit in query_result.hits:
                 scores[hit["fields"]["id"]] = hit["relevance"]

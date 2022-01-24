@@ -36,6 +36,7 @@ class VespaLexicalSearch:
                 self.app.get_application_status().status_code == 200
             ), "Application status different than 200."
         else:
+            self.vespa_docker = VespaDocker.from_container_name_or_id(self.application_name)
             assert self.deployment_parameters is not None, (
                 "if 'initialize' is set to false, 'deployment_parameters' should contain Vespa "
                 "connection parameters such as 'url' and 'port'"

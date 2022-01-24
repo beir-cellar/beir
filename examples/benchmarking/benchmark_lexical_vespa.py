@@ -54,6 +54,7 @@ def get_search_results(dataset_name, corpus, queries, qrels):
             metric.update(recall)
             metric.update(precision)
             metrics.append(metric)
+    model.remove_app()
     return metrics
 
 

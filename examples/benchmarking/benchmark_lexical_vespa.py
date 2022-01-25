@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+import shutil
 from beir import util
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.search.lexical.vespa_search import VespaLexicalSearch
@@ -80,12 +81,32 @@ def benchmark_vespa_lexical(data_dir, dataset_names):
             )
         print(metrics)
         result.extend(metrics)
+        shutil.rmtree(os.path.join(data_dir, dataset_name))
+        os.remove(os.path.join(data_dir, dataset_name + ".zip"))
     return result
 
 
 if __name__ == "__main__":
 
-    data_dir = "/Users/tmartins/projects/sw/beir/data"
-    dataset_names = ["scifact", "nfcorpus"]
-
+    data_dir = "~/beir/data"
+    dataset_names = [
+        "msmarco",
+        "trec-covid",
+        "nfcorpus",
+        "bioasq",
+        "nq",
+        "hotpotqa",
+        "figa",
+        "signallm",
+        "trec-news",
+        "arguana",
+        "webis-touche2020",
+        "cqadupstack",
+        "quora",
+        "dbpedia-entity",
+        "scidocs",
+        "fever",
+        "climate-fever",
+        "scifact",
+    ]
     result = benchmark_vespa_lexical(data_dir=data_dir, dataset_names=dataset_names)

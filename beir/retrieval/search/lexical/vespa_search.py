@@ -36,7 +36,9 @@ class VespaLexicalSearch:
                 self.app.get_application_status().status_code == 200
             ), "Application status different than 200."
         else:
-            self.vespa_docker = VespaDocker.from_container_name_or_id(self.application_name)
+            self.vespa_docker = VespaDocker.from_container_name_or_id(
+                self.application_name
+            )
             assert self.deployment_parameters is not None, (
                 "if 'initialize' is set to false, 'deployment_parameters' should contain Vespa "
                 "connection parameters such as 'url' and 'port'"
@@ -84,7 +86,7 @@ class VespaLexicalSearch:
         # Deploy application
         #
         if not self.deployment_parameters:
-            self.deployment_parameters = {"port": 8089}
+            self.deployment_parameters = {"port": 8089, "container_memory": "12G"}
         self.vespa_docker = VespaDocker(**self.deployment_parameters)
         app = self.vespa_docker.deploy(application_package=app_package)
         app.delete_all_docs(
@@ -133,7 +135,17 @@ class VespaLexicalSearch:
             rank_profile=Ranking(name=self.rank_phase, list_features=False),
         )
 
-        for query_id, query in zip(query_ids, queries):
+        for idx, (query_id, query) in enumerate(zip(query_ids, queries)):
+            if (idx % 1000) == 0:
+                print(
+                    "{}, {}, {}: {}/{}".format(
+                        self.application_name,
+                        match_phase,
+                        self.rank_phase,
+                        idx,
+                        len(query_ids),
+                    )
+                )
             scores = {}
             query_result = self.app.query(
                 query=query, query_model=query_model, hits=top_k, timeout="10 s"

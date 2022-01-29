@@ -5,6 +5,55 @@ import logging, os
 
 logger = logging.getLogger(__name__)
 
+class PassageExpansion:
+    def __init__(self, model, **kwargs):
+        self.model = model
+        self.corpus_exp = {}
+    
+    @staticmethod
+    def save(output_dir: str, corpus: Dict[str, str], prefix: str):
+        os.makedirs(output_dir, exist_ok=True)
+        
+        corpus_file = os.path.join(output_dir, prefix + "-corpus.jsonl")
+        
+        logger.info("Saving expanded passages to {}".format(corpus_file))
+        write_to_json(output_file=corpus_file, data=corpus)
+
+    def expand(self, 
+                 corpus: Dict[str, Dict[str, str]], 
+                 output_dir: str, 
+                 top_k: int = 200, 
+                 max_length: int = 350,
+                 prefix: str = "gen", 
+                 batch_size: int = 32,
+                 sep: str = " "):
+        
+        logger.info("Starting to expand Passages with {} tokens chosen...".format(top_k))
+        logger.info("Params: top_k = {}".format(top_k))
+        logger.info("Params: passage max_length = {}".format(max_length))
+        logger.info("Params: batch size = {}".format(batch_size))
+
+        corpus_ids = list(corpus.keys())
+        corpus_list = [corpus[doc_id] for doc_id in corpus_ids]
+
+        for start_idx in trange(0, len(corpus_list), batch_size, desc='pas'):
+            expansions = self.model.generate(
+                corpus=corpus_list[start_idx:start_idx + batch_size], 
+                max_length=max_length,
+                top_k=top_k)
+            
+            for idx in range(len(expansions)):
+                doc_id = corpus_ids[start_idx + idx]
+                self.corpus_exp[doc_id] = {
+                    "title": corpus[doc_id]["title"],
+                    "text": corpus[doc_id]["text"] + sep + expansions[idx],
+                }
+        
+        # Saving finally all the questions
+        logger.info("Saving {} Expanded Passages...".format(len(self.corpus_exp)))
+        self.save(output_dir, self.corpus_exp, prefix)
+
+
 class QueryGenerator:
     def __init__(self, model, **kwargs):
         self.model = model
@@ -34,7 +83,8 @@ class QueryGenerator:
                  max_length: int = 64,
                  ques_per_passage: int = 1, 
                  prefix: str = "gen", 
-                 batch_size: int = 32, 
+                 batch_size: int = 32,
+                 save: bool = True, 
                  save_after: int = 100000):
         
         logger.info("Starting to Generate {} Questions Per Passage using top-p (nucleus) sampling...".format(ques_per_passage))

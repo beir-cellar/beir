@@ -4,6 +4,7 @@ from vespa.application import Vespa
 from vespa.package import ApplicationPackage, Field, FieldSet, RankProfile, QueryField
 from vespa.query import QueryModel, OR, RankProfile as Ranking, WeakAnd
 from vespa.deployment import VespaDocker
+from tenacity import retry, wait_exponential, stop_after_attempt, RetryError
 
 
 class VespaLexicalSearch:
@@ -16,7 +17,7 @@ class VespaLexicalSearch:
         initialize: bool = True,
     ):
         self.results = {}
-        self.application_name = application_name
+        self.application_name = application_name.replace("-", "")
         assert match_phase in [
             "or",
             "weak_and",
@@ -58,13 +59,13 @@ class VespaLexicalSearch:
             Field(
                 name="title",
                 type="string",
-                indexing=["index", "summary"],
+                indexing=["index"],
                 index="enable-bm25",
             ),
             Field(
                 name="body",
                 type="string",
-                indexing=["index", "summary"],
+                indexing=["index"],
                 index="enable-bm25",
             ),
         )
@@ -100,8 +101,18 @@ class VespaLexicalSearch:
             shutil.rmtree(
                 self.application_name, ignore_errors=True
             )  # remove application package folder
-            self.vespa_docker.container.stop()  # stop docker container
-            self.vespa_docker.container.remove()  # stop docker container
+            self.vespa_docker.container.stop(timeout=600)  # stop docker container
+            self.vespa_docker.container.remove()  # rm docker container
+
+    @retry(wait=wait_exponential(multiplier=1), stop=stop_after_attempt(3))
+    def send_query(self, query, query_model, hits, timeout="10 s"):
+        scores = {}
+        query_result = self.app.query(
+            query=query, query_model=query_model, hits=hits, timeout=timeout
+        )
+        for hit in query_result.hits:
+            scores[hit["fields"]["id"]] = hit["relevance"]
+        return scores
 
     def search(
         self,
@@ -140,18 +151,18 @@ class VespaLexicalSearch:
                 print(
                     "{}, {}, {}: {}/{}".format(
                         self.application_name,
-                        match_phase,
+                        self.match_phase,
                         self.rank_phase,
                         idx,
                         len(query_ids),
                     )
                 )
-            scores = {}
-            query_result = self.app.query(
-                query=query, query_model=query_model, hits=top_k, timeout="10 s"
-            )
-            for hit in query_result.hits:
-                scores[hit["fields"]["id"]] = hit["relevance"]
+            try:
+                scores = self.send_query(
+                    query=query, query_model=query_model, hits=top_k, timeout="10 s"
+                )
+            except RetryError:
+                continue
             self.results[query_id] = scores
         return self.results
 

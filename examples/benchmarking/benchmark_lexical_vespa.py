@@ -55,7 +55,10 @@ def get_search_results(dataset_name, corpus, queries, qrels):
             metric.update(recall)
             metric.update(precision)
             metrics.append(metric)
-    model.remove_app()
+    try:
+        model.remove_app()
+    except: # todo: could not find how to increase container.remove() timeout
+        pass
     return metrics
 
 
@@ -88,25 +91,22 @@ def benchmark_vespa_lexical(data_dir, dataset_names):
 
 if __name__ == "__main__":
 
-    data_dir = "~/beir/data"
+    data_dir = os.environ["DATA_DIR"]
     dataset_names = [
-        "msmarco",
+        "scifact",
         "trec-covid",
         "nfcorpus",
-        "bioasq",
         "nq",
-        "hotpotqa",
-        "figa",
-        "signallm",
-        "trec-news",
+        "fiqa",
         "arguana",
         "webis-touche2020",
-        "cqadupstack",
+        "cqadupstack", 
         "quora",
         "dbpedia-entity",
         "scidocs",
         "fever",
         "climate-fever",
-        "scifact",
+        "msmarco",
+        "hotpotqa",
     ]
     result = benchmark_vespa_lexical(data_dir=data_dir, dataset_names=dataset_names)

@@ -31,7 +31,7 @@ class SparseSearch:
             #Get the candidate passages
             scores = np.asarray(self.sparse_matrix[query_tokens, :].sum(axis=0)).squeeze(0)
             top_k_ind = np.argpartition(scores, -top_k)[-top_k:]
-            self.results[qid] = {doc_ids[pid]: float(scores[pid]) for pid in top_k_ind}
+            self.results[qid] = {doc_ids[pid]: float(scores[pid]) for pid in top_k_ind if doc_ids[pid] != qid}
         
         return self.results
 

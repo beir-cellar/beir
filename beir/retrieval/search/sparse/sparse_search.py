@@ -25,7 +25,7 @@ class SparseSearch:
         self.sparse_matrix = self.model.encode_corpus(documents, batch_size=self.batch_size)
         
         logging.info("Starting to Retrieve...")
-        for start_idx in trange(0, len(queries), self.batch_size, desc='query'):
+        for start_idx in trange(0, len(queries), desc='query'):
             qid = query_ids[start_idx]
             query_tokens = self.model.encode_query(queries[qid])
             #Get the candidate passages

@@ -2,6 +2,7 @@ from tqdm.autonotebook import trange
 from typing import List, Dict, Union, Tuple
 import logging
 import numpy as np
+import torch
 
 logger = logging.getLogger(__name__)
 
@@ -22,16 +23,17 @@ class SparseSearch:
         query_ids = list(queries.keys())
         documents = [corpus[doc_id] for doc_id in doc_ids]
         logging.info("Computing document embeddings and creating sparse matrix")
-        self.sparse_matrix = self.model.encode_corpus(documents, batch_size=self.batch_size)
-        
+        self.sparse_matrix = self.model.encode_corpus(documents, batch_size=self.batch_size)  # [n_doc, n_voc]
         logging.info("Starting to Retrieve...")
         for start_idx in trange(0, len(queries), desc='query'):
             qid = query_ids[start_idx]
-            query_tokens = self.model.encode_query(queries[qid])
-            #Get the candidate passages
-            scores = np.asarray(self.sparse_matrix[query_tokens, :].sum(axis=0)).squeeze(0)
-            top_k_ind = np.argpartition(scores, -top_k)[-top_k:]
-            self.results[qid] = {doc_ids[pid]: float(scores[pid]) for pid in top_k_ind if doc_ids[pid] != qid}
+            query_vector = self.model.encode_query(queries[qid]) # [1, n_voc]
+            scores = self.sparse_matrix.dot(query_vector.transpose()).todense()
+            scores = torch.from_numpy(scores).squeeze()
+            top_k_values, top_k_indices = torch.topk(scores, top_k, sorted=False)
+            top_k_values = top_k_values.squeeze().tolist()
+            top_k_indices = top_k_indices.squeeze().tolist()
+            self.results[qid] = {doc_ids[pid]: score for pid, score in zip(top_k_indices, top_k_values) if doc_ids[pid] != qid}
         
         return self.results
 

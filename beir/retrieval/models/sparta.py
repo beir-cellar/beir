@@ -54,8 +54,11 @@ class SPARTA:
         return sparse_embeddings
     
     def encode_query(self, query: str, **kwargs):
-        return self.tokenizer(query, add_special_tokens=False)['input_ids']
-    
+        col = self.tokenizer(query, add_special_tokens=False)['input_ids']
+        row = [0]*len(col)
+        data = [1]*len(col) 
+        return csr_matrix((data, (row, col)), shape=(1, len(self.bert_input_embeddings)), dtype=np.float)
+
     def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int = 16, **kwargs):
         
         sentences = [(doc["title"] + self.sep + doc["text"]).strip() for doc in corpus]
@@ -69,9 +72,9 @@ class SPARTA:
             doc_embs = self._compute_sparse_embeddings(sentences[start_idx: start_idx + batch_size])
             for doc_id, emb in enumerate(doc_embs):
                 for tid, score in emb:
-                    col[sparse_idx] = start_idx+doc_id
-                    row[sparse_idx] = tid
+                    col[sparse_idx] = tid
+                    row[sparse_idx] = start_idx+doc_id
                     values[sparse_idx] = score
                     sparse_idx += 1
                     
-        return csr_matrix((values, (row, col)), shape=(len(self.bert_input_embeddings), len(sentences)), dtype=np.float)
+        return csr_matrix((values, (row, col)), shape=(len(sentences), len(self.bert_input_embeddings)), dtype=np.float)

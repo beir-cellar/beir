@@ -16,7 +16,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-dataset = "scifact"
+dataset = "arguana"
 
 #### Download scifact dataset and unzip the dataset
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
@@ -32,11 +32,11 @@ data_path = util.download_and_unzip(url, out_dir)
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
 #### Sparse Retrieval using SPLADE ####
-url = "https://download-de.europe.naverlabs.com/Splade_Release_Jan22/splade_distil_CoCodenser_large.tar.gz" 
+url = "https://download-de.europe.naverlabs.com/Splade_Release_Jan22/distilsplade_max.tar.gz" 
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "weights")
 os.makedirs(out_dir, exist_ok=True)
 filename = os.path.join(out_dir, "splade.tar.gz")
-model_dir = os.path.join(out_dir, "splade_distil_CoCodenser_large")
+model_dir = os.path.join(out_dir, "distilsplade_max")
 if not os.path.exists(model_dir):
     util.download_url(url, filename)
     shutil.unpack_archive(filename, out_dir)

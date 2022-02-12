@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-
+import array
 import tqdm
 import torch
 import numpy as np
@@ -29,18 +29,26 @@ class SPLADE:
         """ returns a csr_matrix of shape [1, n_vocab] """
         output = self.encode(query)
         return sparse.csr_matrix(output)
-        
-    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int, **kwargs) -> sparse.csr_matrix:
+       
+    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int, is_queries=False, **kwargs) -> sparse.csr_matrix:
         """ returns a csr_matrix of shape [n_documents, n_vocab] """
-        data, row, col = [], [], []
+        # https://maciejkula.github.io/2015/02/22/incremental-construction-of-sparse-matrices/
+        indices = array.array("i")
+        indptr = array.array("i")
+        data = array.array("f")
         sentences = [(doc["title"] + " " + doc["text"]).strip() for doc in corpus]
+        indptr.append(0)
+        last_indptr = 0
         for i in tqdm.tqdm(range(0, len(sentences), batch_size), desc="encode_corpus"):
             batch = sentences[i:i+batch_size]
             dense = self.encode(batch)
-            sparse_mat = sparse.coo_matrix(dense)
-            data.extend(sparse_mat.data)
-            row.extend(sparse_mat.row + i)
-            col.extend(sparse_mat.col)
-        shape = (max(row)+1, self.model.config.vocab_size)
-        results = sparse.csr_matrix((data, (row, col)), shape=shape, dtype=np.float)
+            nz_rows, nz_cols = np.nonzero(dense)
+            nz_values = dense[(nz_rows, nz_cols)]
+            data.extend(nz_values)
+            local_indptr = np.bincount(nz_rows).cumsum() + last_indptr
+            indptr.extend(local_indptr)
+            indices.extend(nz_cols)
+            last_indptr = local_indptr[-1]
+        shape = (len(corpus), self.model.config.vocab_size)
+        results = sparse.csr_matrix((data, indices, indptr), shape=shape, dtype=np.float)
         return results

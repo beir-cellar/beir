@@ -40,7 +40,7 @@ model_dir = os.path.join(out_dir, "distilsplade_max")
 if not os.path.exists(model_dir):
     util.download_url(url, filename)
     shutil.unpack_archive(filename, out_dir)
-sparse_model = SparseSearch(models.SPLADE(model_dir, max_length=256), batch_size=24)
+sparse_model = SparseSearch(models.SPLADE(model_dir, max_length=256), batch_size=48)
 retriever = EvaluateRetrieval(sparse_model)
 
 #### Retrieve dense results (format of results is identical to qrels)
@@ -58,7 +58,7 @@ query_id, ranking_scores = random.choice(list(results.items()))
 scores_sorted = sorted(ranking_scores.items(), key=lambda item: item[1], reverse=True)
 logging.info("Query : %s\n" % queries[query_id])
 
-for rank in range(top_k):
-    doc_id = scores_sorted[rank][0]
-    # Format: Rank x: ID [Title] Body
-    logging.info("Rank %d: %s [%s] - %s\n" % (rank+1, doc_id, corpus[doc_id].get("title"), corpus[doc_id].get("text")))
+# for rank in range(top_k):
+#     doc_id = scores_sorted[rank][0]
+#     # Format: Rank x: ID [Title] Body
+#     logging.info("Rank %d: %s [%s] - %s\n" % (rank+1, doc_id, corpus[doc_id].get("title"), corpus[doc_id].get("text")))

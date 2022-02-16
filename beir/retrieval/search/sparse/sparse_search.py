@@ -25,13 +25,13 @@ class SparseSearch:
         self.sparse_matrix = self.model.encode_corpus(documents, batch_size=self.batch_size)
         
         logging.info("Starting to Retrieve...")
-        for start_idx in trange(0, len(queries), self.batch_size, desc='query'):
+        for start_idx in trange(0, len(queries), desc='query'):
             qid = query_ids[start_idx]
             query_tokens = self.model.encode_query(queries[qid])
             #Get the candidate passages
             scores = np.asarray(self.sparse_matrix[query_tokens, :].sum(axis=0)).squeeze(0)
             top_k_ind = np.argpartition(scores, -top_k)[-top_k:]
-            self.results[qid] = {doc_ids[pid]: float(scores[pid]) for pid in top_k_ind}
+            self.results[qid] = {doc_ids[pid]: float(scores[pid]) for pid in top_k_ind if doc_ids[pid] != qid}
         
         return self.results
 

@@ -104,15 +104,56 @@ class VespaLexicalSearch:
             self.vespa_docker.container.stop(timeout=600)  # stop docker container
             self.vespa_docker.container.remove()  # rm docker container
 
-    @retry(wait=wait_exponential(multiplier=1), stop=stop_after_attempt(3))
-    def send_query(self, query, query_model, hits, timeout="10 s"):
-        scores = {}
-        query_result = self.app.query(
-            query=query, query_model=query_model, hits=hits, timeout=timeout
+    @retry(wait=wait_exponential(multiplier=1), stop=stop_after_attempt(10))
+    def send_query_batch(self, query_batch, query_model, hits, timeout="100 s"):
+        query_results = self.app.query_batch(
+            query_batch=query_batch,
+            query_model=query_model,
+            hits=hits,
+            **{"timeout": timeout, "ranking.softtimeout.enable": "false"}
         )
-        for hit in query_result.hits:
-            scores[hit["fields"]["id"]] = hit["relevance"]
-        return scores
+        return query_results
+
+    def process_queries(
+        self, query_ids, queries, query_model, hits, batch_size, timeout="100 s"
+    ):
+        results = {}
+        assert len(query_ids) == len(
+            queries
+        ), "There must be one query_id for each query."
+        query_id_batches = [
+            query_ids[i : i + batch_size] for i in range(0, len(query_ids), batch_size)
+        ]
+        query_batches = [
+            queries[i : i + batch_size] for i in range(0, len(queries), batch_size)
+        ]
+        for idx, (query_id_batch, query_batch) in enumerate(
+            zip(query_id_batches, query_batches)
+        ):
+            print(
+                "{}, {}, {}: {}/{}".format(
+                    self.application_name,
+                    self.match_phase,
+                    self.rank_phase,
+                    idx,
+                    len(query_batches),
+                )
+            )
+            try:
+                query_results = self.send_query_batch(
+                    query_batch=query_batch,
+                    query_model=query_model,
+                    hits=hits,
+                    timeout="100 s",
+                )
+            except RetryError:
+                continue
+            for (query_id, query_result) in zip(query_id_batch, query_results):
+                scores = {}
+                for hit in query_result.hits:
+                    scores[hit["fields"]["id"]] = hit["relevance"]
+                results[query_id] = scores
+        return results
 
     def search(
         self,
@@ -146,24 +187,14 @@ class VespaLexicalSearch:
             rank_profile=Ranking(name=self.rank_phase, list_features=False),
         )
 
-        for idx, (query_id, query) in enumerate(zip(query_ids, queries)):
-            if (idx % 1000) == 0:
-                print(
-                    "{}, {}, {}: {}/{}".format(
-                        self.application_name,
-                        self.match_phase,
-                        self.rank_phase,
-                        idx,
-                        len(query_ids),
-                    )
-                )
-            try:
-                scores = self.send_query(
-                    query=query, query_model=query_model, hits=top_k, timeout="10 s"
-                )
-            except RetryError:
-                continue
-            self.results[query_id] = scores
+        self.results = self.process_queries(
+            query_ids=query_ids,
+            queries=queries,
+            query_model=query_model,
+            hits=top_k,
+            batch_size=1000,
+            timeout="100 s",
+        )
         return self.results
 
     def index(self, corpus: Dict[str, Dict[str, str]]):

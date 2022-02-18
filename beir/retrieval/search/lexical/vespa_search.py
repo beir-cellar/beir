@@ -1,10 +1,50 @@
 import shutil
+import re
+from collections import Counter
 from typing import Dict, Optional
 from vespa.application import Vespa
 from vespa.package import ApplicationPackage, Field, FieldSet, RankProfile, QueryField
 from vespa.query import QueryModel, OR, RankProfile as Ranking, WeakAnd
 from vespa.deployment import VespaDocker
 from tenacity import retry, wait_exponential, stop_after_attempt, RetryError
+
+QUOTES = [
+    "\u0022",  # quotation mark (")
+    "\u0027",  # apostrophe (')
+    "\u00ab",  # left-pointing double-angle quotation mark
+    "\u00bb",  # right-pointing double-angle quotation mark
+    "\u2018",  # left single quotation mark
+    "\u2019",  # right single quotation mark
+    "\u201a",  # single low-9 quotation mark
+    "\u201b",  # single high-reversed-9 quotation mark
+    "\u201c",  # left double quotation mark
+    "\u201d",  # right double quotation mark
+    "\u201e",  # double low-9 quotation mark
+    "\u201f",  # double high-reversed-9 quotation mark
+    "\u2039",  # single left-pointing angle quotation mark
+    "\u203a",  # single right-pointing angle quotation mark
+    "\u300c",  # left corner bracket
+    "\u300d",  # right corner bracket
+    "\u300e",  # left white corner bracket
+    "\u300f",  # right white corner bracket
+    "\u301d",  # reversed double prime quotation mark
+    "\u301e",  # double prime quotation mark
+    "\u301f",  # low double prime quotation mark
+    "\ufe41",  # presentation form for vertical left corner bracket
+    "\ufe42",  # presentation form for vertical right corner bracket
+    "\ufe43",  # presentation form for vertical left corner white bracket
+    "\ufe44",  # presentation form for vertical right corner white bracket
+    "\uff02",  # fullwidth quotation mark
+    "\uff07",  # fullwidth apostrophe
+    "\uff62",  # halfwidth left corner bracket
+    "\uff63",  # halfwidth right corner bracket
+]
+
+
+def replace_quotes(x):
+    for symbol in QUOTES:
+        x = x.replace(symbol, "")
+    return x
 
 
 class VespaLexicalSearch:
@@ -146,6 +186,12 @@ class VespaLexicalSearch:
                     hits=hits,
                     timeout="100 s",
                 )
+                status_code_summary = Counter([x.status_code for x in query_results])
+                print(
+                    "Sucessfull queries: {}/{}".format(
+                        status_code_summary[200], len(query_batch)
+                    )
+                )
             except RetryError:
                 continue
             for (query_id, query_result) in zip(query_id_batch, query_results):
@@ -171,6 +217,10 @@ class VespaLexicalSearch:
         query_ids = list(queries.keys())
         queries = [queries[qid] for qid in query_ids]
 
+        queries = [
+            re.sub(" +", " ", replace_quotes(x)).strip() for x in queries
+        ]  # remove quotes and double spaces from queries
+
         if self.match_phase == "or":
             match_phase = OR()
         elif self.match_phase == "weak_and":
@@ -182,7 +232,7 @@ class VespaLexicalSearch:
             ValueError("'rank_phase' should be either 'bm25' or 'native_rank'")
 
         query_model = QueryModel(
-            name=self.match_phase + "_bm25",
+            name=self.match_phase + "_" + self.rank_phase,
             match_phase=match_phase,
             rank_profile=Ranking(name=self.rank_phase, list_features=False),
         )

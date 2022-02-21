@@ -1,10 +1,53 @@
 import shutil
+import re
+from statistics import mean, median
+from collections import Counter
 from typing import Dict, Optional
 from vespa.application import Vespa
 from vespa.package import ApplicationPackage, Field, FieldSet, RankProfile, QueryField
 from vespa.query import QueryModel, OR, RankProfile as Ranking, WeakAnd
 from vespa.deployment import VespaDocker
 from tenacity import retry, wait_exponential, stop_after_attempt, RetryError
+
+REPLACE_SYMBOLS = ["(", ")", " -", " +"]
+QUOTES = [
+    "\u0022",  # quotation mark (")
+    "\u0027",  # apostrophe (')
+    "\u00ab",  # left-pointing double-angle quotation mark
+    "\u00bb",  # right-pointing double-angle quotation mark
+    "\u2018",  # left single quotation mark
+    "\u2019",  # right single quotation mark
+    "\u201a",  # single low-9 quotation mark
+    "\u201b",  # single high-reversed-9 quotation mark
+    "\u201c",  # left double quotation mark
+    "\u201d",  # right double quotation mark
+    "\u201e",  # double low-9 quotation mark
+    "\u201f",  # double high-reversed-9 quotation mark
+    "\u2039",  # single left-pointing angle quotation mark
+    "\u203a",  # single right-pointing angle quotation mark
+    "\u300c",  # left corner bracket
+    "\u300d",  # right corner bracket
+    "\u300e",  # left white corner bracket
+    "\u300f",  # right white corner bracket
+    "\u301d",  # reversed double prime quotation mark
+    "\u301e",  # double prime quotation mark
+    "\u301f",  # low double prime quotation mark
+    "\ufe41",  # presentation form for vertical left corner bracket
+    "\ufe42",  # presentation form for vertical right corner bracket
+    "\ufe43",  # presentation form for vertical left corner white bracket
+    "\ufe44",  # presentation form for vertical right corner white bracket
+    "\uff02",  # fullwidth quotation mark
+    "\uff07",  # fullwidth apostrophe
+    "\uff62",  # halfwidth left corner bracket
+    "\uff63",  # halfwidth right corner bracket
+]
+REPLACE_SYMBOLS.extend(QUOTES)
+
+
+def replace_symbols(x):
+    for symbol in REPLACE_SYMBOLS:
+        x = x.replace(symbol, "")
+    return x
 
 
 class VespaLexicalSearch:
@@ -104,15 +147,68 @@ class VespaLexicalSearch:
             self.vespa_docker.container.stop(timeout=600)  # stop docker container
             self.vespa_docker.container.remove()  # rm docker container
 
-    @retry(wait=wait_exponential(multiplier=1), stop=stop_after_attempt(3))
-    def send_query(self, query, query_model, hits, timeout="10 s"):
-        scores = {}
-        query_result = self.app.query(
-            query=query, query_model=query_model, hits=hits, timeout=timeout
+    @retry(wait=wait_exponential(multiplier=1), stop=stop_after_attempt(10))
+    def send_query_batch(self, query_batch, query_model, hits, timeout="100 s"):
+        query_results = self.app.query_batch(
+            query_batch=query_batch,
+            query_model=query_model,
+            hits=hits,
+            **{"timeout": timeout, "ranking.softtimeout.enable": "false"}
         )
-        for hit in query_result.hits:
-            scores[hit["fields"]["id"]] = hit["relevance"]
-        return scores
+        return query_results
+
+    def process_queries(
+        self, query_ids, queries, query_model, hits, batch_size, timeout="100 s"
+    ):
+        results = {}
+        assert len(query_ids) == len(
+            queries
+        ), "There must be one query_id for each query."
+        query_id_batches = [
+            query_ids[i : i + batch_size] for i in range(0, len(query_ids), batch_size)
+        ]
+        query_batches = [
+            queries[i : i + batch_size] for i in range(0, len(queries), batch_size)
+        ]
+        for idx, (query_id_batch, query_batch) in enumerate(
+            zip(query_id_batches, query_batches)
+        ):
+            print(
+                "{}, {}, {}: {}/{}".format(
+                    self.application_name,
+                    self.match_phase,
+                    self.rank_phase,
+                    idx,
+                    len(query_batches),
+                )
+            )
+            try:
+                query_results = self.send_query_batch(
+                    query_batch=query_batch,
+                    query_model=query_model,
+                    hits=hits,
+                    timeout="100 s",
+                )
+                number_hits = [x.number_documents_retrieved for x in query_results]
+                status_code_summary = Counter([x.status_code for x in query_results])
+                print(
+                    "Sucessfull queries: {}/{}\nDocuments retrieved. Min: {}, Max: {}, Mean: {}, Median: {}.".format(
+                        status_code_summary[200],
+                        len(query_batch),
+                        min(number_hits),
+                        max(number_hits),
+                        round(mean(number_hits), 2),
+                        round(median(number_hits), 2),
+                    )
+                )
+            except RetryError:
+                continue
+            for (query_id, query_result) in zip(query_id_batch, query_results):
+                scores = {}
+                for hit in query_result.hits:
+                    scores[hit["fields"]["id"]] = hit["relevance"]
+                results[query_id] = scores
+        return results
 
     def search(
         self,
@@ -130,6 +226,10 @@ class VespaLexicalSearch:
         query_ids = list(queries.keys())
         queries = [queries[qid] for qid in query_ids]
 
+        queries = [
+            re.sub(" +", " ", replace_symbols(x)).strip() for x in queries
+        ]  # remove quotes and double spaces from queries
+
         if self.match_phase == "or":
             match_phase = OR()
         elif self.match_phase == "weak_and":
@@ -141,32 +241,29 @@ class VespaLexicalSearch:
             ValueError("'rank_phase' should be either 'bm25' or 'native_rank'")
 
         query_model = QueryModel(
-            name=self.match_phase + "_bm25",
+            name=self.match_phase + "_" + self.rank_phase,
             match_phase=match_phase,
             rank_profile=Ranking(name=self.rank_phase, list_features=False),
         )
 
-        for idx, (query_id, query) in enumerate(zip(query_ids, queries)):
-            if (idx % 1000) == 0:
-                print(
-                    "{}, {}, {}: {}/{}".format(
-                        self.application_name,
-                        self.match_phase,
-                        self.rank_phase,
-                        idx,
-                        len(query_ids),
-                    )
-                )
-            try:
-                scores = self.send_query(
-                    query=query, query_model=query_model, hits=top_k, timeout="10 s"
-                )
-            except RetryError:
-                continue
-            self.results[query_id] = scores
+        self.results = self.process_queries(
+            query_ids=query_ids,
+            queries=queries,
+            query_model=query_model,
+            hits=top_k,
+            batch_size=1000,
+            timeout="100 s",
+        )
         return self.results
 
-    def index(self, corpus: Dict[str, Dict[str, str]]):
+    @retry(wait=wait_exponential(multiplier=1), stop=stop_after_attempt(10))
+    def send_feed_batch(self, feed_batch, total_timeout=10000):
+        feed_results = self.app.feed_batch(
+            batch=feed_batch, total_timeout=total_timeout
+        )
+        return feed_results
+
+    def index(self, corpus: Dict[str, Dict[str, str]], batch_size=1000):
         batch_feed = [
             {
                 "id": idx,
@@ -178,4 +275,16 @@ class VespaLexicalSearch:
             }
             for idx in list(corpus.keys())
         ]
-        return self.app.feed_batch(batch=batch_feed)
+        mini_batches = [
+            batch_feed[i : i + batch_size]
+            for i in range(0, len(batch_feed), batch_size)
+        ]
+        for idx, feed_batch in enumerate(mini_batches):
+            feed_results = self.send_feed_batch(feed_batch=feed_batch)
+            status_code_summary = Counter([x.status_code for x in feed_results])
+            print(
+                "Successful documents fed: {}/{}.\nBatch progress: {}/{}.".format(
+                    status_code_summary[200], len(feed_batch), idx, len(mini_batches)
+                )
+            )
+        return 0

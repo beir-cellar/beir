@@ -57,7 +57,7 @@ def get_search_results(dataset_name, corpus, queries, qrels):
             metrics.append(metric)
     try:
         model.remove_app()
-    except: # todo: could not find how to increase container.remove() timeout
+    except: # todo: could not find how to increase container.remove() timeout (https://github.com/docker/docker-py/issues/2951)
         pass
     return metrics
 

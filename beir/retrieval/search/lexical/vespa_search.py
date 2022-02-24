@@ -206,7 +206,9 @@ class VespaLexicalSearch:
             for (query_id, query_result) in zip(query_id_batch, query_results):
                 scores = {}
                 for hit in query_result.hits:
-                    scores[hit["fields"]["id"]] = hit["relevance"]
+                    corpus_id = hit["fields"]["id"]
+                    if corpus_id != query_id:  # See https://github.com/UKPLab/beir/issues/72
+                        scores[corpus_id] = hit["relevance"]
                 results[query_id] = scores
         return results
 

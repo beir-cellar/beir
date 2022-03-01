@@ -25,7 +25,7 @@ def prepare_data(data_path):
     return corpus, queries, qrels
 
 
-def get_search_results(dataset_name, corpus, queries, qrels):
+def get_search_results(dataset_name, corpus, queries, qrels, remove_app=True):
     initialize = True
     deployment_parameters = None
     metrics = []
@@ -55,14 +55,17 @@ def get_search_results(dataset_name, corpus, queries, qrels):
             metric.update(recall)
             metric.update(precision)
             metrics.append(metric)
-    try:
-        model.remove_app()
-    except: # todo: could not find how to increase container.remove() timeout (https://github.com/docker/docker-py/issues/2951)
-        pass
+    if remove_app:
+        try:
+            model.remove_app()
+        except:  # todo: could not find how to increase container.remove() timeout (https://github.com/docker/docker-py/issues/2951)
+            pass
     return metrics
 
 
-def benchmark_vespa_lexical(data_dir, dataset_names):
+def benchmark_vespa_lexical(
+    data_dir, dataset_names, remove_dataset=True, remove_app=True
+):
     result = []
     for dataset_name in dataset_names:
         print("Dataset: {}".format(dataset_name))
@@ -71,7 +74,11 @@ def benchmark_vespa_lexical(data_dir, dataset_names):
         )
         corpus, queries, qrels = prepare_data(data_path=data_path)
         metrics = get_search_results(
-            dataset_name=dataset_name, corpus=corpus, queries=queries, qrels=qrels
+            dataset_name=dataset_name,
+            corpus=corpus,
+            queries=queries,
+            qrels=qrels,
+            remove_app=remove_app,
         )
         output_file = os.path.join(data_dir, "metrics.csv")
         if os.path.isfile(output_file):
@@ -84,8 +91,9 @@ def benchmark_vespa_lexical(data_dir, dataset_names):
             )
         print(metrics)
         result.extend(metrics)
-        shutil.rmtree(os.path.join(data_dir, dataset_name))
-        os.remove(os.path.join(data_dir, dataset_name + ".zip"))
+        if remove_dataset:
+            shutil.rmtree(os.path.join(data_dir, dataset_name))
+            os.remove(os.path.join(data_dir, dataset_name + ".zip"))
     return result
 
 
@@ -100,7 +108,7 @@ if __name__ == "__main__":
         "fiqa",
         "arguana",
         "webis-touche2020",
-        "cqadupstack", 
+        "cqadupstack",
         "quora",
         "dbpedia-entity",
         "scidocs",

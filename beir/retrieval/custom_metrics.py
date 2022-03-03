@@ -16,7 +16,7 @@ def mrr(qrels: Dict[str, Dict[str, int]],
     for query_id, doc_scores in results.items():
         top_hits[query_id] = sorted(doc_scores.items(), key=lambda item: item[1], reverse=True)[0:k_max]   
     
-    for query_id in qrels:
+    for query_id in top_hits:
         query_relevant_docs = set([doc_id for doc_id in qrels[query_id] if qrels[query_id][doc_id] > 0])    
         for k in k_values:
             for rank, hit in enumerate(top_hits[query_id][0:k]):
@@ -51,7 +51,7 @@ def recall_cap(qrels: Dict[str, Dict[str, int]],
             capped_recall[f"R_cap@{k}"] += (len(retrieved_docs) / denominator)
 
     for k in k_values:
-        capped_recall[f"R_cap@{k}"] = round(capped_recall[f"R_cap@{k}"]/len(results), 5)
+        capped_recall[f"R_cap@{k}"] = round(capped_recall[f"R_cap@{k}"]/len(qrels), 5)
         logging.info("R_cap@{}: {:.4f}".format(k, capped_recall[f"R_cap@{k}"]))
 
     return capped_recall
@@ -81,7 +81,7 @@ def hole(qrels: Dict[str, Dict[str, int]],
             Hole[f"Hole@{k}"] += len(hole_docs) / k
 
     for k in k_values:
-        Hole[f"Hole@{k}"] = round(Hole[f"Hole@{k}"]/len(results), 5)
+        Hole[f"Hole@{k}"] = round(Hole[f"Hole@{k}"]/len(qrels), 5)
         logging.info("Hole@{}: {:.4f}".format(k, Hole[f"Hole@{k}"]))
 
     return Hole
@@ -102,7 +102,7 @@ def top_k_accuracy(
     for query_id, doc_scores in results.items():
         top_hits[query_id] = [item[0] for item in sorted(doc_scores.items(), key=lambda item: item[1], reverse=True)[0:k_max]]
     
-    for query_id in qrels:
+    for query_id in top_hits:
         query_relevant_docs = set([doc_id for doc_id in qrels[query_id] if qrels[query_id][doc_id] > 0])
         for k in k_values:
             for relevant_doc_id in query_relevant_docs:

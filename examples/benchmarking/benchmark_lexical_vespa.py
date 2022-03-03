@@ -27,16 +27,17 @@ def download_and_unzip_dataset(data_dir: str, dataset_name: str) -> str:
     return data_path
 
 
-def prepare_data(data_path: str) -> Tuple:
+def prepare_data(data_path: str, split_type: str = "test") -> Tuple:
     """
     Extract corpus, queries and qrels from the test dataset.
 
     :param data_path: Folder path that contains the unzipped dataset files.
+    :param split_type: One of 'train', 'dev' or 'test' set.
 
     :return: a tuple containing 'corpus', 'queries' and 'qrels'.
     """
     corpus, queries, qrels = GenericDataLoader(data_path).load(
-        split="test"
+        split=split_type
     )  # or split = "train" or "dev"
     return corpus, queries, qrels
 
@@ -97,7 +98,7 @@ def get_search_results(
     :param dataset_name: Name of the dataset according to BEIR benchmark
     :param corpus: Corpus used to feed the app.
     :param queries: Queries used to query the app.
-    :param qrels: Labeled data used to evaluate the query rresults.
+    :param qrels: Labeled data used to evaluate the query results.
     :param match_phase: An optional list of match phase types to use in the experiments.
         Currently supported types are 'weak_and' and 'or'. By default the experiments will use
         'weak_and'.
@@ -107,7 +108,10 @@ def get_search_results(
     :param initialize: Deploy and feed the app on the first run of the experiments. Default to True.
     :param remove_app: Stop and remove the app after the experiments are run. Default to True.
     """
-    deployment_parameters = {"url": "http://localhost", "port": 8089}
+    if initialize:
+        deployment_parameters = None
+    else:
+        deployment_parameters = {"url": "http://localhost", "port": 8089}
     match_phase_list = parse_match_phase_argument(match_phase=match_phase)
     rank_phase_list = parse_rank_phase_argument(rank_phase=rank_phase)
     metrics = []
@@ -121,6 +125,7 @@ def get_search_results(
                 deployment_parameters=deployment_parameters,
             )
             initialize = False  # only initialize the first run
+            deployment_parameters = {"url": "http://localhost", "port": 8089}
             retriever = EvaluateRetrieval(model)
             results = retriever.retrieve(corpus, queries)
             ndcg, _map, recall, precision = retriever.evaluate(
@@ -147,6 +152,7 @@ def get_search_results(
 def benchmark_vespa_lexical(
     data_dir: str,
     dataset_names: List[str],
+    split_type: str = "test",
     match_phase: Optional[List[str]] = None,
     rank_phase: Optional[List[str]] = None,
     initialize: bool = True,
@@ -156,10 +162,11 @@ def benchmark_vespa_lexical(
     """
     Benchmark Vespa lexical search app against a suite of BEIR datasets.
 
-    A metrics.csv file will be created at 'data_dir' containing the metrics computed in the experimets.
+    A metrics.csv file will be created at 'data_dir' containing the metrics computed in the experiments.
 
     :param data_dir: Folder path to hold the downloaded files
     :param dataset_names: A list of dataset names according to the BEIR benchmark.
+    :param split_type: One of 'train', 'dev' or 'test' set.
     :param match_phase: An optional list of match phase types to use in the experiments.
         Currently supported types are 'weak_and' and 'or'. By default the experiments will use
         'weak_and'.
@@ -176,7 +183,7 @@ def benchmark_vespa_lexical(
         data_path = download_and_unzip_dataset(
             data_dir=data_dir, dataset_name=dataset_name
         )
-        corpus, queries, qrels = prepare_data(data_path=data_path)
+        corpus, queries, qrels = prepare_data(data_path=data_path, split_type=split_type)
         metrics = get_search_results(
             dataset_name=dataset_name,
             corpus=corpus,

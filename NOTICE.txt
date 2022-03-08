@@ -1,10 +1,6 @@
 -------------------------------------------------------------------------------
-Copyright 2021
-Ubiquitous Knowledge Processing (UKP) Lab
-Technische Universität Darmstadt
--------------------------------------------------------------------------------
-
--------------------------------------------------------------------------------
-Copyright 2022 Anserini authors
+Copyright 2020-2022
+BEIR contributors
+Ubiquitous Knowledge Processing (UKP) Lab, Technische Universität Darmstadt
 University of Waterloo
 -------------------------------------------------------------------------------

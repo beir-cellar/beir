@@ -42,6 +42,7 @@ For more information, checkout our publications:
     - [Evaluate your own Model](https://github.com/UKPLab/beir#evaluate-your-own-model)
 - [Available Metrics](https://github.com/UKPLab/beir#beers-available-metrics)
 - [Citing & Authors](https://github.com/UKPLab/beir#beers-citing--authors)
+- [Collaboration](https://github.com/UKPLab/beir#beers-collaboration)
 
 
 ## :beers: Installation
@@ -491,3 +492,10 @@ Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)
 Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
 
 > This repository contains experimental software and is published for the sole purpose of giving additional background details on the respective publication.
+
+## :beers: Collaboration
+
+The BEIR Benchmark has been made possible due to a collaborative effort of the following universities and organizations:
+- [UKP Lab, Technical University of Darmstadt](http://www.ukp.tu-darmstadt.de/)
+- [University of Waterloo](https://uwaterloo.ca/)
+- [HuggingFace](https://huggingface.co/)

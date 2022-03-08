@@ -11,7 +11,7 @@
 
 <h2 style="text-align:center">
 <img style="vertical-align:middle" width="200" height="100" src="./images/ukp.png" />
-<img style="vertical-align:middle" width="300" height="100" src="./images/uwaterloo.png" />
+<img style="vertical-align:middle" width="320" height="100" src="./images/uwaterloo.png" />
 <img style="vertical-align:middle" width="100" height="100" src="./images/HF.png" />
 </h2>
 

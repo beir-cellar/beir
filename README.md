@@ -9,6 +9,14 @@
 [![Downloads](https://pepy.tech/badge/beir)](https://pepy.tech/project/beir)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/benchmarkir/beir/)
 
+## Brought to you by
+
+<h1 style="text-align:center">
+<img style="vertical-align:middle" width="200" height="100" src="./images/ukp.png" />
+<img style="vertical-align:middle" width="300" height="100" src="./images/uwaterloo.png" />
+<img style="vertical-align:middle" width="100" height="100" src="./images/HF.png" />
+</h1>
+
 ## :beers: What is it?
 
 **BEIR** is a **heterogeneous benchmark** containing diverse IR tasks. It also provides a **common and easy framework** for evaluation of your NLP-based retrieval models within the benchmark.
@@ -481,8 +489,6 @@ The main contributors of this repository are:
 - [Nandan Thakur](https://github.com/Nthakur20), Personal Website: [nandan-thakur.com](https://nandan-thakur.com)
 
 Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)
-
-[https://www.ukp.tu-darmstadt.de/](https://www.ukp.tu-darmstadt.de/)
 
 Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
 

@@ -9,13 +9,11 @@
 [![Downloads](https://pepy.tech/badge/beir)](https://pepy.tech/project/beir)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/benchmarkir/beir/)
 
-## Brought to you by
-
-<h1 style="text-align:center">
+<h2 style="text-align:center">
 <img style="vertical-align:middle" width="200" height="100" src="./images/ukp.png" />
 <img style="vertical-align:middle" width="300" height="100" src="./images/uwaterloo.png" />
 <img style="vertical-align:middle" width="100" height="100" src="./images/HF.png" />
-</h1>
+</h2>
 
 ## :beers: What is it?
 

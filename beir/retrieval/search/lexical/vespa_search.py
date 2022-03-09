@@ -148,17 +148,21 @@ class VespaLexicalSearch:
             self.vespa_docker.container.remove()  # rm docker container
 
     @retry(wait=wait_exponential(multiplier=1), stop=stop_after_attempt(10))
-    def send_query_batch(self, query_batch, query_model, hits, timeout="100 s"):
+    def send_query_batch(
+        self, query_batch, query_model, hits, timeout=100, async_connections=50
+    ):
         query_results = self.app.query_batch(
             query_batch=query_batch,
             query_model=query_model,
+            connections=async_connections,
+            total_timeout=timeout * len(query_batch),
             hits=hits,
-            **{"timeout": timeout, "ranking.softtimeout.enable": "false"}
+            **{"timeout": str(timeout) + " s", "ranking.softtimeout.enable": "false"}
         )
         return query_results
 
     def process_queries(
-        self, query_ids, queries, query_model, hits, batch_size, timeout="100 s"
+        self, query_ids, queries, query_model, hits, batch_size, timeout=100, async_connections=50
     ):
         results = {}
         assert len(query_ids) == len(
@@ -187,7 +191,8 @@ class VespaLexicalSearch:
                     query_batch=query_batch,
                     query_model=query_model,
                     hits=hits,
-                    timeout="100 s",
+                    timeout=timeout,
+                    async_connections=async_connections
                 )
                 number_hits = [x.number_documents_retrieved for x in query_results]
                 status_code_summary = Counter([x.status_code for x in query_results])
@@ -205,10 +210,16 @@ class VespaLexicalSearch:
                 continue
             for (query_id, query_result) in zip(query_id_batch, query_results):
                 scores = {}
-                for hit in query_result.hits:
-                    corpus_id = hit["fields"]["id"]
-                    if corpus_id != query_id:  # See https://github.com/UKPLab/beir/issues/72
-                        scores[corpus_id] = hit["relevance"]
+                try:
+                    if query_result.hits:
+                        for hit in query_result.hits:
+                            corpus_id = hit["fields"]["id"]
+                            if (
+                                corpus_id != query_id
+                            ):  # See https://github.com/UKPLab/beir/issues/72
+                                scores[corpus_id] = hit["relevance"]
+                except KeyError:
+                    continue
                 results[query_id] = scores
         return results
 

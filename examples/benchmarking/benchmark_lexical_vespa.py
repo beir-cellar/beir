@@ -183,7 +183,9 @@ def benchmark_vespa_lexical(
         data_path = download_and_unzip_dataset(
             data_dir=data_dir, dataset_name=dataset_name
         )
-        corpus, queries, qrels = prepare_data(data_path=data_path, split_type=split_type)
+        corpus, queries, qrels = prepare_data(
+            data_path=data_path, split_type=split_type
+        )
         metrics = get_search_results(
             dataset_name=dataset_name,
             corpus=corpus,
@@ -228,12 +230,25 @@ if __name__ == "__main__":
         "scidocs",
         "fever",
         "climate-fever",
-        "msmarco",
         "hotpotqa",
     ]
-    result = benchmark_vespa_lexical(
+    _ = benchmark_vespa_lexical(
         data_dir=data_dir,
         dataset_names=dataset_names,
+        split_type="test",
+        match_phase=["weak_and"],
+        rank_phase=["bm25"],
+        initialize=True,
+        remove_dataset=True,
+        remove_app=True,
+    )
+    #
+    # MS MARCO is the only dataset which uses the dev set to compute the metrics
+    #
+    _ = benchmark_vespa_lexical(
+        data_dir=data_dir,
+        dataset_names=["msmarco"],
+        split_type="dev",
         match_phase=["weak_and"],
         rank_phase=["bm25"],
         initialize=True,

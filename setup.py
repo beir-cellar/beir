@@ -21,6 +21,8 @@ setup(
         'pytrec_eval',
         'faiss_cpu',
         'elasticsearch',
+        'pyvespa',
+        'tenacity',
         'tensorflow>=2.2.0',
         'tensorflow-text',
         'tensorflow-hub'

@@ -1,6 +1,11 @@
 -------------------------------------------------------------------------------
-Copyright 2020-2022
-BEIR contributors
-Ubiquitous Knowledge Processing (UKP) Lab, Technische Universität Darmstadt
+Copyright since 2022
 University of Waterloo
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+Copyright since 2020
+Ubiquitous Knowledge Processing (UKP) Lab, Technische Universität Darmstadt
+-------------------------------------------------------------------------------
+
+For individual contributors, please refer to the CONTRIBUTORS file.

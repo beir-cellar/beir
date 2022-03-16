@@ -11,12 +11,15 @@
 
 > The development of BEIR benchmark is supported by:
 
-<h2 style="text-align:center">
-    <a href="http://www.ukp.tu-darmstadt.de"><img style="float: middle; padding: 2px 7px 2px 7px;" width="220" height="100" src="./images/ukp.png" /></a>
+<h3 style="text-align:center">
+    <a href="http://www.ukp.tu-darmstadt.de"><img style="float: left; padding: 2px 7px 2px 7px;" width="220" height="100" src="./images/ukp.png" /></a>
     <a href="https://www.tu-darmstadt.de/"><img style="float: middle; padding: 2px 7px 2px 7px;" width="250" height="100" src="./images/tu-darmstadt.png" /></a>
-    <a href="https://uwaterloo.ca"><img style="float: middle; padding: 2px 7px 2px 7px;" width="320" height="100" src="./images/uwaterloo.png" /></a>
-    <a href="https://huggingface.co/"><img style="float: middle; padding: 2px 7px 2px 7px;" width="350" height="100" src="./images/HF.png" /></a>
-</h2>
+    <a href="https://uwaterloo.ca"><img style="float: right; padding: 2px 7px 2px 7px;" width="320" height="100" src="./images/uwaterloo.png" /></a>
+</h3>
+
+<h3 style="text-align:center">
+    <a href="https://huggingface.co/"><img style="float: middle; padding: 2px 7px 2px 7px;" width="400" height="100" src="./images/HF.png" /></a>
+</h3>
 
 ## :beers: What is it?
 

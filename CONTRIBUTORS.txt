@@ -1,0 +1,7 @@
+Individual Contributors to the BEIR Repository (BEIR contributors) include:
+1. Nandan Thakur
+2. Nils Reimers
+3. Iryna Gurevych
+4. Jimmy Lin
+5. Andreas Rücklé
+6. Abhishek Srivastava 

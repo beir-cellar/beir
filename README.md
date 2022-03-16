@@ -9,10 +9,13 @@
 [![Downloads](https://pepy.tech/badge/beir)](https://pepy.tech/project/beir)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/benchmarkir/beir/)
 
+> The development of BEIR benchmark is supported by:
+
 <h2 style="text-align:center">
-<img style="vertical-align:middle" width="200" height="100" src="./images/ukp.png" />
-<img style="vertical-align:middle" width="320" height="100" src="./images/uwaterloo.png" />
-<img style="vertical-align:middle" width="100" height="100" src="./images/HF.png" />
+    <a href="http://www.ukp.tu-darmstadt.de"><img style="float: middle; padding: 2px 7px 2px 7px;" width="220" height="100" src="./images/ukp.png" /></a>
+    <a href="https://www.tu-darmstadt.de/"><img style="float: middle; padding: 2px 7px 2px 7px;" width="250" height="100" src="./images/tu-darmstadt.png" /></a>
+    <a href="https://uwaterloo.ca"><img style="float: middle; padding: 2px 7px 2px 7px;" width="320" height="100" src="./images/uwaterloo.png" /></a>
+    <a href="https://huggingface.co/"><img style="float: middle; padding: 2px 7px 2px 7px;" width="350" height="100" src="./images/HF.png" /></a>
 </h2>
 
 ## :beers: What is it?
@@ -43,6 +46,7 @@ For more information, checkout our publications:
 - [Available Metrics](https://github.com/UKPLab/beir#beers-available-metrics)
 - [Citing & Authors](https://github.com/UKPLab/beir#beers-citing--authors)
 - [Collaboration](https://github.com/UKPLab/beir#beers-collaboration)
+- [Contributors](https://github.com/UKPLab/beir#beers-contributors)
 
 
 ## :beers: Installation
@@ -499,3 +503,25 @@ The BEIR Benchmark has been made possible due to a collaborative effort of the f
 - [UKP Lab, Technical University of Darmstadt](http://www.ukp.tu-darmstadt.de/)
 - [University of Waterloo](https://uwaterloo.ca/)
 - [HuggingFace](https://huggingface.co/)
+
+## :beers: Contributors
+
+Thanks go to all these wonderful collaborations for their contribution towards the BEIR benchmark:
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://www.nandan-thakur.com"><img src="https://avatars.githubusercontent.com/u/30648040?v=4" width="100px;" alt=""/><br /><sub><b>Nandan Thakur</b></sub></a></td>
+    <td align="center"><a href="https://www.nils-reimers.de/"><img src="https://avatars.githubusercontent.com/u/10706961?v=4" width="100px;" alt=""/><br /><sub><b>Nils Reimers</b></sub></a></td>
+    <td align="center"><a href="https://www.informatik.tu-darmstadt.de/ukp/ukp_home/head_ukp/index.en.jsp"><img src="https://www.informatik.tu-darmstadt.de/media/ukp/pictures_1/people_1/Gurevych_Iryna_500x750_415x415.jpg" width="100px;" alt=""/><br /><sub><b>Iryna Gurevych</b></sub></a></td>
+    <td align="center"><a href="https://cs.uwaterloo.ca/~jimmylin/"><img src="https://avatars.githubusercontent.com/u/313837?v=4" width="100px;" alt=""/><br /><sub><b>Jimmy Lin</b></sub></a></td>
+    <td align="center"><a href="http://rueckle.net"><img src="https://i1.rgstatic.net/ii/profile.image/601126613295104-1520331161365_Q512/Andreas-Rueckle.jpg" width="100px;" alt=""/><br /><sub><b>Andreas Rücklé</b></sub></a></td>
+    <td align="center"><a href="https://www.linkedin.com/in/abhesrivas"><img src="https://avatars.githubusercontent.com/u/19344566?v=4" width="100px;" alt=""/><br /><sub><b>Abhishek Srivastava</b></sub></a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->

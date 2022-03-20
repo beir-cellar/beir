@@ -9,6 +9,18 @@
 [![Downloads](https://pepy.tech/badge/beir)](https://pepy.tech/project/beir)
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/benchmarkir/beir/)
 
+> The development of BEIR benchmark is supported by:
+
+<h3 style="text-align:center">
+    <a href="http://www.ukp.tu-darmstadt.de"><img style="float: left; padding: 2px 7px 2px 7px;" width="220" height="100" src="./images/ukp.png" /></a>
+    <a href="https://www.tu-darmstadt.de/"><img style="float: middle; padding: 2px 7px 2px 7px;" width="250" height="90" src="./images/tu-darmstadt.png" /></a>
+    <a href="https://uwaterloo.ca"><img style="float: right; padding: 2px 7px 2px 7px;" width="320" height="100" src="./images/uwaterloo.png" /></a>
+</h3>
+
+<h3 style="text-align:center">
+    <a href="https://huggingface.co/"><img style="float: middle; padding: 2px 7px 2px 7px;" width="400" height="80" src="./images/HF.png" /></a>
+</h3>
+
 ## :beers: What is it?
 
 **BEIR** is a **heterogeneous benchmark** containing diverse IR tasks. It also provides a **common and easy framework** for evaluation of your NLP-based retrieval models within the benchmark.
@@ -20,22 +32,24 @@ For more information, checkout our publications:
 
 ## :beers: Table Of Contents
 
-- [Installation](https://github.com/UKPLab/beir#beers-installation)
-- [Features](https://github.com/UKPLab/beir#beers-features)
-- [Leaderboard](https://github.com/UKPLab/beir#beers-leaderboard)
-- [Course Material on IR](https://github.com/UKPLab/beir#beers-course-material-on-ir)
-- [Examples and Tutorials](https://github.com/UKPLab/beir#beers-examples-and-tutorials)
-- [Quick Example](https://github.com/UKPLab/beir#beers-quick-example)
-- [Datasets](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
-    - [Download a preprocessed dataset](https://github.com/UKPLab/beir#beers-download-a-preprocessed-dataset)
-    - [Available Datasets](https://github.com/UKPLab/beir#beers-available-datasets)
-    - [Multilingual Datasets](https://github.com/UKPLab/beir#beers-multilingual-datasets)
-- [Models](https://github.com/UKPLab/beir#beers-evaluate-a-model)
-    - [Evaluate a model](https://github.com/UKPLab/beir#beers-evaluate-a-model)
-    - [Available Models](https://github.com/UKPLab/beir#beers-available-models)
-    - [Evaluate your own Model](https://github.com/UKPLab/beir#evaluate-your-own-model)
-- [Available Metrics](https://github.com/UKPLab/beir#beers-available-metrics)
-- [Citing & Authors](https://github.com/UKPLab/beir#beers-citing--authors)
+- [Installation](https://github.com/beir-cellar/beir#beers-installation)
+- [Features](https://github.com/beir-cellar/beir#beers-features)
+- [Leaderboard](https://github.com/beir-cellar/beir#beers-leaderboard)
+- [Course Material on IR](https://github.com/beir-cellar/beir#beers-course-material-on-ir)
+- [Examples and Tutorials](https://github.com/beir-cellar/beir#beers-examples-and-tutorials)
+- [Quick Example](https://github.com/beir-cellar/beir#beers-quick-example)
+- [Datasets](https://github.com/beir-cellar/beir#beers-download-a-preprocessed-dataset)
+    - [Download a preprocessed dataset](https://github.com/beir-cellar/beir#beers-download-a-preprocessed-dataset)
+    - [Available Datasets](https://github.com/beir-cellar/beir#beers-available-datasets)
+    - [Multilingual Datasets](https://github.com/beir-cellar/beir#beers-multilingual-datasets)
+- [Models](https://github.com/beir-cellar/beir#beers-evaluate-a-model)
+    - [Evaluate a model](https://github.com/beir-cellar/beir#beers-evaluate-a-model)
+    - [Available Models](https://github.com/beir-cellar/beir#beers-available-models)
+    - [Evaluate your own Model](https://github.com/beir-cellar/beir#evaluate-your-own-model)
+- [Available Metrics](https://github.com/beir-cellar/beir#beers-available-metrics)
+- [Citing & Authors](https://github.com/beir-cellar/beir#beers-citing--authors)
+- [Collaboration](https://github.com/beir-cellar/beir#beers-collaboration)
+- [Contributors](https://github.com/beir-cellar/beir#beers-contributors)
 
 
 ## :beers: Installation
@@ -100,64 +114,64 @@ To easily understand and get your hands dirty with BEIR, we invite you to try ou
 
 |                          Name                |     Link     |
 | -------------------------------------------  |  ----------  |
-| BM25 Retrieval with Elasticsearch  | [evaluate_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_bm25.py) |
-| Anserini-BM25 (Pyserini) Retrieval with Docker  | [evaluate_anserini_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_anserini_bm25.py) |
-| Multilingual BM25 Retrieval with Elasticsearch :new: | [evaluate_multilingual_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_multilingual_bm25.py) |
+| BM25 Retrieval with Elasticsearch  | [evaluate_bm25.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_bm25.py) |
+| Anserini-BM25 (Pyserini) Retrieval with Docker  | [evaluate_anserini_bm25.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_anserini_bm25.py) |
+| Multilingual BM25 Retrieval with Elasticsearch :new: | [evaluate_multilingual_bm25.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/lexical/evaluate_multilingual_bm25.py) |
 
 ### :beers: Dense Retrieval (Evaluation)
 
 |                          Name                |     Link     |
 | -------------------------------------------  |  ----------  |
-| Exact-search retrieval using (dense) Sentence-BERT | [evaluate_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_sbert.py) |
-| Exact-search retrieval using (dense) ANCE | [evaluate_ance.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_ance.py) |
-| Exact-search retrieval using (dense) DPR | [evaluate_dpr.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_dpr.py) |
-| Exact-search retrieval using (dense) USE-QA | [evaluate_useqa.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_useqa.py) |
-| ANN and Exact-search using Faiss :new: | [evaluate_faiss_dense.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_faiss_dense.py) |
-| Retrieval using Binary Passage Retriver (BPR) :new: | [evaluate_bpr.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_bpr.py) |
-| Dimension Reduction using PCA :new: | [evaluate_dim_reduction.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_dim_reduction.py) |
+| Exact-search retrieval using (dense) Sentence-BERT | [evaluate_sbert.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_sbert.py) |
+| Exact-search retrieval using (dense) ANCE | [evaluate_ance.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_ance.py) |
+| Exact-search retrieval using (dense) DPR | [evaluate_dpr.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_dpr.py) |
+| Exact-search retrieval using (dense) USE-QA | [evaluate_useqa.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_useqa.py) |
+| ANN and Exact-search using Faiss :new: | [evaluate_faiss_dense.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_faiss_dense.py) |
+| Retrieval using Binary Passage Retriver (BPR) :new: | [evaluate_bpr.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_bpr.py) |
+| Dimension Reduction using PCA :new: | [evaluate_dim_reduction.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_dim_reduction.py) |
 
 ### :beers: Sparse Retrieval (Evaluation)
 
 |                          Name                |     Link     |
 | -------------------------------------------  |  ----------  |
-| Hybrid sparse retrieval using SPARTA | [evaluate_sparta.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_sparta.py) |
-| Sparse retrieval using docT5query and Pyserini | [evaluate_anserini_docT5query.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_anserini_docT5query.py) |
-| Sparse retrieval using docT5query (MultiGPU) and Pyserini :new: | [evaluate_anserini_docT5query_parallel.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_anserini_docT5query_parallel.py) |
-| Sparse retrieval using DeepCT and Pyserini :new: | [evaluate_deepct.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_deepct.py) |
+| Hybrid sparse retrieval using SPARTA | [evaluate_sparta.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_sparta.py) |
+| Sparse retrieval using docT5query and Pyserini | [evaluate_anserini_docT5query.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_anserini_docT5query.py) |
+| Sparse retrieval using docT5query (MultiGPU) and Pyserini :new: | [evaluate_anserini_docT5query_parallel.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_anserini_docT5query_parallel.py) |
+| Sparse retrieval using DeepCT and Pyserini :new: | [evaluate_deepct.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/sparse/evaluate_deepct.py) |
 
 ### :beers: Reranking (Evaluation)
 
 |                          Name                |     Link     |
 | -------------------------------------------  |  ----------  |
-| Reranking top-100 BM25 results with SBERT CE | [evaluate_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_ce_reranking.py) |
-| Reranking top-100 BM25 results with Dense Retriever | [evaluate_bm25_sbert_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_sbert_reranking.py) |
+| Reranking top-100 BM25 results with SBERT CE | [evaluate_bm25_ce_reranking.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_ce_reranking.py) |
+| Reranking top-100 BM25 results with Dense Retriever | [evaluate_bm25_sbert_reranking.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/reranking/evaluate_bm25_sbert_reranking.py) |
 
 ### :beers: Dense Retrieval (Training)
 
 |                          Name                |     Link     |
 | -------------------------------------------  |  ----------  |
-| Train SBERT with Inbatch negatives| [train_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert.py) |
-| Train SBERT with BM25 hard negatives| [train_sbert_BM25_hardnegs.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_sbert_BM25_hardnegs.py) |
-| Train MSMARCO SBERT with BM25 Negatives | [train_msmarco_v2.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v2.py) |
-| Train (SOTA) MSMARCO SBERT with Mined Hard Negatives :new: | [train_msmarco_v3.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v3.py) |
-| Train (SOTA) MSMARCO BPR with Mined Hard Negatives :new: | [train_msmarco_v3_bpr.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v3_bpr.py) |
-| Train (SOTA) MSMARCO SBERT with Mined Hard Negatives (Margin-MSE) :new: | [train_msmarco_v3_margin_MSE.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/training/train_msmarco_v3_margin_MSE.py) |
+| Train SBERT with Inbatch negatives| [train_sbert.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/training/train_sbert.py) |
+| Train SBERT with BM25 hard negatives| [train_sbert_BM25_hardnegs.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/training/train_sbert_BM25_hardnegs.py) |
+| Train MSMARCO SBERT with BM25 Negatives | [train_msmarco_v2.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/training/train_msmarco_v2.py) |
+| Train (SOTA) MSMARCO SBERT with Mined Hard Negatives :new: | [train_msmarco_v3.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/training/train_msmarco_v3.py) |
+| Train (SOTA) MSMARCO BPR with Mined Hard Negatives :new: | [train_msmarco_v3_bpr.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/training/train_msmarco_v3_bpr.py) |
+| Train (SOTA) MSMARCO SBERT with Mined Hard Negatives (Margin-MSE) :new: | [train_msmarco_v3_margin_MSE.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/training/train_msmarco_v3_margin_MSE.py) |
 
 ### :beers: Question Generation
 
 |                          Name                |     Link     |
 | -------------------------------------------  |  ----------  |
-| Synthetic Query Generation using T5-model | [query_gen.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen.py) |
-| (GenQ) Synthetic QG using T5-model + fine-tuning SBERT | [query_gen_and_train.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_and_train.py) |
-| Synthetic Query Generation using Multiple GPU and T5 :new: | [query_gen_multi_gpu.py](https://github.com/UKPLab/beir/blob/main/examples/generation/query_gen_multi_gpu.py) |
+| Synthetic Query Generation using T5-model | [query_gen.py](https://github.com/beir-cellar/beir/blob/main/examples/generation/query_gen.py) |
+| (GenQ) Synthetic QG using T5-model + fine-tuning SBERT | [query_gen_and_train.py](https://github.com/beir-cellar/beir/blob/main/examples/generation/query_gen_and_train.py) |
+| Synthetic Query Generation using Multiple GPU and T5 :new: | [query_gen_multi_gpu.py](https://github.com/beir-cellar/beir/blob/main/examples/generation/query_gen_multi_gpu.py) |
 
 ### :beers: Benchmarking (Evaluation)
 
 |                          Name                |     Link     |
 | -------------------------------------------  |  ----------  |
-| Benchmark BM25 (Inference speed) | [benchmark_bm25.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_bm25.py) |
-| Benchmark Cross-Encoder Reranking (Inference speed) | [benchmark_bm25_ce_reranking.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_bm25_ce_reranking.py) |
-| Benchmark Dense Retriever (Inference speed) | [benchmark_sbert.py](https://github.com/UKPLab/beir/blob/main/examples/benchmarking/benchmark_sbert.py) |
+| Benchmark BM25 (Inference speed) | [benchmark_bm25.py](https://github.com/beir-cellar/beir/blob/main/examples/benchmarking/benchmark_bm25.py) |
+| Benchmark Cross-Encoder Reranking (Inference speed) | [benchmark_bm25_ce_reranking.py](https://github.com/beir-cellar/beir/blob/main/examples/benchmarking/benchmark_bm25_ce_reranking.py) |
+| Benchmark Dense Retriever (Inference speed) | [benchmark_sbert.py](https://github.com/beir-cellar/beir/blob/main/examples/benchmarking/benchmark_sbert.py) |
 
 ## :beers: Quick Example
 
@@ -224,12 +238,12 @@ Command to generate md5hash using Terminal:  ``md5hash filename.zip``.
 | MSMARCO v2 | [Homepage](https://microsoft.github.io/msmarco/TREC-Deep-Learning.html)| ``msmarco-v2`` | ``train``<br>``dev1``<br>``dev2``|  4,552<br>4,702   |  138M    |   | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco-v2.zip) | ``ba6238b403f0b345683885cc9390fff5`` |
 | TREC-COVID |  [Homepage](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| ``test``| 50|  171K| 493.5 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/trec-covid.zip) | ``ce62140cb23feb9becf6270d0d1fe6d1`` |
 | NFCorpus   | [Homepage](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/) | ``nfcorpus`` | ``train``<br>``dev``<br>``test``|  323     |  3.6K     |  38.2 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/nfcorpus.zip) | ``a89dba18a62ef92f7d323ec890a0d38d`` |
-| BioASQ     | [Homepage](http://bioasq.org) | ``bioasq``|  ``train``<br>``test`` | 500    |  14.91M    |  8.05 | No | [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/dataset#2-bioasq) |
+| BioASQ     | [Homepage](http://bioasq.org) | ``bioasq``|  ``train``<br>``test`` | 500    |  14.91M    |  8.05 | No | [How to Reproduce?](https://github.com/beir-cellar/beir/blob/main/examples/dataset#2-bioasq) |
 | NQ         | [Homepage](https://ai.google.com/research/NaturalQuestions) | ``nq``| ``train``<br>``test``| 3,452   |  2.68M  |  1.2 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/nq.zip) | ``d4d3d2e48787a744b6f6e691ff534307`` |
 | HotpotQA   | [Homepage](https://hotpotqa.github.io) | ``hotpotqa``| ``train``<br>``dev``<br>``test``|  7,405   |  5.23M  |  2.0 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/hotpotqa.zip)  | ``f412724f78b0d91183a0e86805e16114`` |
 | FiQA-2018  | [Homepage](https://sites.google.com/view/fiqa/) | ``fiqa`` | ``train``<br>``dev``<br>``test``|  648     |  57K    |  2.6 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/fiqa.zip)  | ``17918ed23cd04fb15047f73e6c3bd9d9`` |
-| Signal-1M(RT) | [Homepage](https://research.signal-ai.com/datasets/signal1m-tweetir.html)| ``signal1m`` | ``test``| 97   |  2.86M  |  19.6 | No | [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/dataset#4-signal-1m) |
-| TREC-NEWS  | [Homepage](https://trec.nist.gov/data/news2019.html) | ``trec-news``    | ``test``| 57    |  595K    |  19.6 | No | [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/dataset#1-trec-news) |
+| Signal-1M(RT) | [Homepage](https://research.signal-ai.com/datasets/signal1m-tweetir.html)| ``signal1m`` | ``test``| 97   |  2.86M  |  19.6 | No | [How to Reproduce?](https://github.com/beir-cellar/beir/blob/main/examples/dataset#4-signal-1m) |
+| TREC-NEWS  | [Homepage](https://trec.nist.gov/data/news2019.html) | ``trec-news``    | ``test``| 57    |  595K    |  19.6 | No | [How to Reproduce?](https://github.com/beir-cellar/beir/blob/main/examples/dataset#1-trec-news) |
 | ArguAna    | [Homepage](http://argumentation.bplaced.net/arguana/data) | ``arguana``| ``test`` | 1,406     |  8.67K    |  1.0 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/arguana.zip)  | ``8ad3e3c2a5867cdced806d6503f29b99`` |
 | Touche-2020| [Homepage](https://webis.de/events/touche-20/shared-task-1.html) | ``webis-touche2020``| ``test``| 49     |  382K    |  19.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/webis-touche2020.zip) | ``46f650ba5a527fc69e0a6521c5a23563`` |
 | CQADupstack| [Homepage](http://nlp.cis.unimelb.edu.au/resources/cqadupstack/) | ``cqadupstack``| ``test``| 13,145 |  457K  |  1.4 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/cqadupstack.zip) | ``4e41456d7df8ee7760a7f866133bda78`` |
@@ -239,7 +253,7 @@ Command to generate md5hash using Terminal:  ``md5hash filename.zip``.
 | FEVER | [Homepage](http://fever.ai) | ``fever``| ``train``<br>``dev``<br>``test``|  6,666     |  5.42M    |  1.2|  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/fever.zip)  | ``5a818580227bfb4b35bb6fa46d9b6c03`` |
 | Climate-FEVER| [Homepage](http://climatefever.ai) | ``climate-fever``|``test``|  1,535     |  5.42M |  3.0 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/climate-fever.zip)  | ``8b66f0a9126c521bae2bde127b4dc99d`` |
 | SciFact| [Homepage](https://github.com/allenai/scifact) | ``scifact``| ``train``<br>``test``|  300     |  5K    |  1.1 |  [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip)  | ``5f7d1de60b170fc8027bb7898e2efca1`` |
-| Robust04 | [Homepage](https://trec.nist.gov/data/robust/04.guidelines.html) | ``robust04``| ``test``| 249  |  528K  |  69.9 |  No  |  [How to Reproduce?](https://github.com/UKPLab/beir/blob/main/examples/dataset#3-robust04)  |
+| Robust04 | [Homepage](https://trec.nist.gov/data/robust/04.guidelines.html) | ``robust04``| ``test``| 249  |  528K  |  69.9 |  No  |  [How to Reproduce?](https://github.com/beir-cellar/beir/blob/main/examples/dataset#3-robust04)  |
 
 ## :beers: Multilingual Datasets
 
@@ -455,7 +469,7 @@ We evaluate our models using [pytrec_eval](https://github.com/cvangysel/pytrec_e
 - Recall (``Recall@k``)
 - Precision (``P@k``)
 
-We also include custom-metrics now which can be used for evaluation, please refer here - [evaluate_custom_metrics.py](https://github.com/UKPLab/beir/blob/main/examples/retrieval/evaluation/custom/evaluate_custom_metrics.py)
+We also include custom-metrics now which can be used for evaluation, please refer here - [evaluate_custom_metrics.py](https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/custom/evaluate_custom_metrics.py)
 
 - MRR (``MRR@k``)
 - Capped Recall (``R_cap@k``)
@@ -482,8 +496,35 @@ The main contributors of this repository are:
 
 Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)
 
-[https://www.ukp.tu-darmstadt.de/](https://www.ukp.tu-darmstadt.de/)
-
 Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
 
 > This repository contains experimental software and is published for the sole purpose of giving additional background details on the respective publication.
+
+## :beers: Collaboration
+
+The BEIR Benchmark has been made possible due to a collaborative effort of the following universities and organizations:
+- [UKP Lab, Technical University of Darmstadt](http://www.ukp.tu-darmstadt.de/)
+- [University of Waterloo](https://uwaterloo.ca/)
+- [HuggingFace](https://huggingface.co/)
+
+## :beers: Contributors
+
+Thanks go to all these wonderful collaborations for their contribution towards the BEIR benchmark:
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://www.nandan-thakur.com"><img src="https://avatars.githubusercontent.com/u/30648040?v=4" width="100px;" alt=""/><br /><sub><b>Nandan Thakur</b></sub></a></td>
+    <td align="center"><a href="https://www.nils-reimers.de/"><img src="https://avatars.githubusercontent.com/u/10706961?v=4" width="100px;" alt=""/><br /><sub><b>Nils Reimers</b></sub></a></td>
+    <td align="center"><a href="https://www.informatik.tu-darmstadt.de/ukp/ukp_home/head_ukp/index.en.jsp"><img src="https://www.informatik.tu-darmstadt.de/media/ukp/pictures_1/people_1/Gurevych_Iryna_500x750_415x415.jpg" width="100px;" alt=""/><br /><sub><b>Iryna Gurevych</b></sub></a></td>
+    <td align="center"><a href="https://cs.uwaterloo.ca/~jimmylin/"><img src="https://avatars.githubusercontent.com/u/313837?v=4" width="100px;" alt=""/><br /><sub><b>Jimmy Lin</b></sub></a></td>
+    <td align="center"><a href="http://rueckle.net"><img src="https://i1.rgstatic.net/ii/profile.image/601126613295104-1520331161365_Q512/Andreas-Rueckle.jpg" width="100px;" alt=""/><br /><sub><b>Andreas Rücklé</b></sub></a></td>
+    <td align="center"><a href="https://www.linkedin.com/in/abhesrivas"><img src="https://avatars.githubusercontent.com/u/19344566?v=4" width="100px;" alt=""/><br /><sub><b>Abhishek Srivastava</b></sub></a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->

@@ -205,10 +205,11 @@ class ElasticSearch(object):
         Ref: https://stackoverflow.com/questions/35182403/bulk-update-with-pythons-elasticsearch
         """
         for _id, value in dictionary.items():
-            if not update: 
+            if not update:
                 doc = {
                     "_id": str(_id),
                     "_op_type": "index",
+                    "refresh": "wait_for",
                     self.text_key: value[self.text_key],
                     self.title_key: value[self.title_key],
                 }
@@ -216,6 +217,7 @@ class ElasticSearch(object):
                 doc = {
                     "_id": str(_id),
                     "_op_type": "update",
+                    "refresh": "wait_for",
                     "doc": {
                         self.text_key: value[self.text_key],
                         self.title_key: value[self.title_key],

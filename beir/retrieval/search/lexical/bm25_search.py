@@ -3,12 +3,17 @@ import tqdm
 import time
 from typing import List, Dict
 
+def sleep(seconds):
+    if seconds: time.sleep(seconds) 
+
 class BM25Search:
     def __init__(self, index_name: str, hostname: str = "localhost", keys: Dict[str, str] = {"title": "title", "body": "txt"}, language: str = "english",
-                 batch_size: int = 128, timeout: int = 100, retry_on_timeout: bool = True, maxsize: int = 24, number_of_shards: int = "default", initialize: bool = True):
+                 batch_size: int = 128, timeout: int = 100, retry_on_timeout: bool = True, maxsize: int = 24, number_of_shards: int = "default", 
+                 initialize: bool = True, sleep_for: int = 2):
         self.results = {}
         self.batch_size = batch_size
         self.initialize = initialize
+        self.sleep_for = sleep_for
         self.config = {
             "hostname": hostname, 
             "index_name": index_name,
@@ -25,6 +30,7 @@ class BM25Search:
     
     def initialise(self):
         self.es.delete_index()
+        sleep(self.sleep_for)
         self.es.create_index()
     
     def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int], *args, **kwargs) -> Dict[str, Dict[str, float]]:
@@ -34,7 +40,7 @@ class BM25Search:
         if self.initialize:
             self.index(corpus)
             # Sleep for few seconds so that elastic-search indexes the docs properly
-            if kwargs.get("sleep_for", None): time.sleep(kwargs.get("sleep_for"))
+            sleep(self.sleep_for)
         
         #retrieve results from BM25 
         query_ids = list(queries.keys())

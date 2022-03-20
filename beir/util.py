@@ -95,12 +95,21 @@ def download_and_unzip(url: str, out_dir: str, chunk_size: int = 1024) -> str:
 
 def write_to_json(output_file: str, data: Dict[str, str]):
     with open(output_file, 'w') as fOut:
-        for idx, text in data.items():
-            json.dump({
-                "_id": idx, 
-                "text": text,
-                "metadata": {}
-            }, fOut)
+        for idx, meta in data.items():
+            if type(meta) == str:
+                json.dump({
+                    "_id": idx, 
+                    "text": meta,
+                    "metadata": {}
+                }, fOut)
+            
+            elif type(meta) == dict:
+                json.dump({
+                    "_id": idx, 
+                    "title": meta.get("title", ""),
+                    "text": meta.get("text", ""),
+                    "metadata": {}
+                }, fOut)
             fOut.write('\n')
 
 def write_to_tsv(output_file: str, data: Dict[str, str]):

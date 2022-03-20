@@ -1,1 +1,1 @@
-from .generate import QueryGenerator
+from .generate import QueryGenerator, PassageExpansion

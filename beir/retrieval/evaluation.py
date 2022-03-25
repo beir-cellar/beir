@@ -17,7 +17,7 @@ class EvaluateRetrieval:
     def retrieve(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], **kwargs) -> Dict[str, Dict[str, float]]:
         if not self.retrieval_model:
             raise ValueError("Model/Technique has not been provided!")
-        # score_function here is to stay backwart compatible with previous implementations that did not use the score_function
+        # purpose of score_function here is to ensure backward compatibility with previous extensions that did not use the score_function
         return self.retrieval_model.search(corpus=corpus, queries=queries, top_k=self.top_k, score_function=None, **kwargs)
     
     def rerank(self, 

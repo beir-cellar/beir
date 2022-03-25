@@ -2,7 +2,7 @@ import pytrec_eval
 import logging
 from typing import Type, List, Dict, Union, Tuple
 
-from beir.retrieval.search.base import RetrievalModel
+from beir.retrieval.search import RetrievalModel
 from .custom_metrics import mrr, recall_cap, hole, top_k_accuracy
 
 logger = logging.getLogger(__name__)

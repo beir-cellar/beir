@@ -37,8 +37,8 @@ retriever = EvaluateRetrieval(model)
 results = retriever.retrieve(corpus, queries)
 
 #### Reranking top-100 docs using Dense Retriever model 
-model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=128)
-dense_retriever = EvaluateRetrieval(model, score_function="cos_sim", k_values=[1,3,5,10,100])
+model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=128, score_function="cos_sim")
+dense_retriever = EvaluateRetrieval(model, k_values=[1,3,5,10,100])
 
 #### Retrieve dense results (format of results is identical to qrels)
 rerank_results = dense_retriever.rerank(corpus, queries, results, top_k=100)

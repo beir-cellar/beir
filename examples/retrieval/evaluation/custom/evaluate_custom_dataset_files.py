@@ -54,9 +54,9 @@ corpus, queries, qrels = GenericDataLoader(
 #### Sentence-Transformer ####
 #### Provide any pretrained sentence-transformers model path
 #### Complete list - https://www.sbert.net/docs/pretrained_models.html
-model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"))
+model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), score_function="cos_sim")
 
-retriever = EvaluateRetrieval(model, score_function="cos_sim")
+retriever = EvaluateRetrieval(model)
 
 #### Retrieve dense results (format of results is identical to qrels)
 results = retriever.retrieve(corpus, queries)

@@ -68,7 +68,7 @@ model = BM25(index_name=index_name, hostname=hostname, initialize=initialize, nu
 bm25 = EvaluateRetrieval(model)
 
 #### Index passages into the index (seperately)
-bm25.retriever.index(corpus)
+bm25.retrieval_model.index(corpus)
 
 triplets = []
 qids = list(qrels) 
@@ -79,7 +79,7 @@ for idx in tqdm.tqdm(range(len(qids)), desc="Retrieve Hard Negatives using BM25"
     query_id, query_text = qids[idx], queries[qids[idx]]
     pos_docs = [doc_id for doc_id in qrels[query_id] if qrels[query_id][doc_id] > 0]
     pos_doc_texts = [corpus[doc_id]["title"] + " " + corpus[doc_id]["text"] for doc_id in pos_docs]
-    hits = bm25.retriever.es.lexical_multisearch(texts=pos_doc_texts, top_hits=hard_negatives_max+1)
+    hits = bm25.retrieval_model.es.lexical_multisearch(texts=pos_doc_texts, top_hits=hard_negatives_max+1)
     for (pos_text, hit) in zip(pos_doc_texts, hits):
         for (neg_id, _) in hit.get("hits"):
             if neg_id not in pos_docs:

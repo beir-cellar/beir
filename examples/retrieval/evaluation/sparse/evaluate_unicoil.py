@@ -42,8 +42,8 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 # For more details on how the model works, please refer: (https://arxiv.org/abs/2106.14807)
 
 model_path = "castorini/unicoil-d2q-msmarco-passage"
-model = SparseSearch(models.UniCOIL(model_path=model_path), batch_size=32)
-retriever = EvaluateRetrieval(model, score_function="dot")
+model = SparseSearch(models.UniCOIL(model_path=model_path), batch_size=32, score_function="dot")
+retriever = EvaluateRetrieval(model)
 
 #### Retrieve dense results (format of results is identical to qrels)
 results = retriever.retrieve(corpus, queries, query_weights=True)

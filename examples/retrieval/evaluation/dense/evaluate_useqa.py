@@ -36,8 +36,8 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 # USE-QA implements a two-tower strategy i.e. encoding the query and document seperately.
 # USE-QA provides normalized embeddings, so you can use either dot product or cosine-similarity
 
-model = DRES(models.UseQA("https://tfhub.dev/google/universal-sentence-encoder-qa/3"))
-retriever = EvaluateRetrieval(model, score_function="dot")
+model = DRES(models.UseQA("https://tfhub.dev/google/universal-sentence-encoder-qa/3"), score_function="dot")
+retriever = EvaluateRetrieval(model)
 
 #### Retrieve dense results (format of results is identical to qrels)
 results = retriever.retrieve(corpus, queries)

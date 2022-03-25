@@ -57,7 +57,7 @@ model = models.SentenceBERT(model_path)
 ########################################################
 
 faiss_search = FlatIPFaissSearch(model, 
-                                 batch_size=128)
+                                 batch_size=128, score_function="dot") # or "cos_sim"
 
 ######################################################
 #### PQ: Product Quantization (Exhaustive Search) ####
@@ -91,7 +91,7 @@ if os.path.exists(os.path.join(input_dir, "{}.{}.faiss".format(prefix, ext))):
     faiss_search.load(input_dir=input_dir, prefix=prefix, ext=ext)
 
 #### Retrieve dense results (format of results is identical to qrels)
-retriever = EvaluateRetrieval(faiss_search, score_function="dot") # or "cos_sim"
+retriever = EvaluateRetrieval(faiss_search)
 results = retriever.retrieve(corpus, queries)
 
 ### Save faiss index into file or disk ####

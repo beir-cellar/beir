@@ -202,8 +202,8 @@ data_path = util.download_and_unzip(url, out_dir)
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
 #### Load the SBERT model and retrieve using cosine-similarity
-model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=16)
-retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for dot-product
+model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=16, score_function="cos_sim") # or "dot" for dot-product
+retriever = EvaluateRetrieval(model)
 results = retriever.retrieve(corpus, queries)
 
 #### Evaluate your model with NDCG@k, MAP@K, Recall@K and Precision@K  where k = [1,3,5,10,100,1000] 
@@ -380,8 +380,8 @@ from beir.retrieval import models
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
-model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=16)
-retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for dot-product
+model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=16, score_function="cos_sim") # or "dot" for dot-product
+retriever = EvaluateRetrieval(model)
 ```
 
 ### Reranking using Cross-Encoder model

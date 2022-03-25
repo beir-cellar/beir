@@ -52,7 +52,7 @@ model = BM25(index_name=index_name, hostname=hostname)
 bm25 = EvaluateRetrieval(model)
  
 #### Index 1M passages into the index (seperately)
-bm25.retriever.index(corpus_new)
+bm25.retrieval_model.index(corpus_new)
 
 #### Reranking using Cross-Encoder model
 reranker = CrossEncoder('cross-encoder/ms-marco-electra-base')
@@ -65,7 +65,7 @@ for query_id in query_ids:
     
     #### Measure time to retrieve top-100 BM25 documents using single query latency
     start = datetime.datetime.now()
-    results = bm25.retriever.es.lexical_search(text=query, top_hits=100) 
+    results = bm25.retrieval_model.es.lexical_search(text=query, top_hits=100) 
     
     #### Measure time to rerank top-100 BM25 documents using CE
     sentence_pairs = [[queries[query_id], corpus_texts[hit[0]]] for hit in results["hits"]]

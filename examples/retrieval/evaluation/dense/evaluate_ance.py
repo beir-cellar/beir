@@ -35,8 +35,8 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 # MSMARCO Dev Passage Retrieval ANCE(FirstP) 600K model from ANCE.
 # The ANCE model was fine-tuned using dot-product (dot) function.
 
-model = DRES(models.SentenceBERT("msmarco-roberta-base-ance-firstp"))
-retriever = EvaluateRetrieval(model, score_function="dot")
+model = DRES(models.SentenceBERT("msmarco-roberta-base-ance-firstp"), score_function="dot")
+retriever = EvaluateRetrieval(model)
 
 #### Retrieve dense results (format of results is identical to qrels)
 results = retriever.retrieve(corpus, queries)

@@ -66,7 +66,7 @@ base_index = faiss.IndexFlatIP(output_dimension)
 faiss_search = PCAFaissSearch(model,
                               base_index=base_index,
                               output_dimension=output_dimension,
-                              batch_size=128)
+                              batch_size=128, score_function="dot") # or "cos_sim"
 
 #######################################################################
 #### PCA: Principal Component Analysis (with Product Quantization) ####
@@ -98,7 +98,7 @@ if os.path.exists(os.path.join(input_dir, "{}.{}.faiss".format(prefix, ext))):
     faiss_search.load(input_dir=input_dir, prefix=prefix, ext=ext)
 
 #### Retrieve dense results (format of results is identical to qrels)
-retriever = EvaluateRetrieval(faiss_search, score_function="dot") # or "cos_sim"
+retriever = EvaluateRetrieval(faiss_search)
 results = retriever.retrieve(corpus, queries)
 
 ### Save faiss index into file or disk ####

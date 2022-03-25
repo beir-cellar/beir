@@ -35,8 +35,8 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 #### The model was fine-tuned using cosine-similarity.
 #### Complete list - https://www.sbert.net/docs/pretrained_models.html
 
-model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=16)
-retriever = EvaluateRetrieval(model, score_function="cos_sim")
+model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=16, score_function="cos_sim")
+retriever = EvaluateRetrieval(model)
 
 #### Retrieve dense results (format of results is identical to qrels)
 results = retriever.retrieve(corpus, queries)

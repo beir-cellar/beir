@@ -1,3 +1,4 @@
+from beir.retrieval.search.base import RetrievalModel
 from .util import cos_sim, dot_score, normalize, save_dict_to_tsv, load_tsv_to_dict
 from .faiss_index import FaissBinaryIndex, FaissTrainIndex, FaissHNSWIndex, FaissIndex
 import logging
@@ -12,9 +13,9 @@ from tqdm.autonotebook import tqdm
 logger = logging.getLogger(__name__)
 
 #Parent class for any faiss search
-class DenseRetrievalFaissSearch:
+class DenseRetrievalFaissSearch(RetrievalModel):
     
-    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, **kwargs):
+    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, score_function: str = "cos_sim", **kwargs):
         self.model = model
         self.batch_size = batch_size
         self.corpus_chunk_size = corpus_chunk_size
@@ -25,6 +26,7 @@ class DenseRetrievalFaissSearch:
         self.results = {}
         self.mapping = {}
         self.rev_mapping = {}
+        self.score_function = score_function
     
     def _create_mapping_ids(self, corpus_ids):
         if not all(isinstance(doc_id, int) for doc_id in corpus_ids):
@@ -60,13 +62,13 @@ class DenseRetrievalFaissSearch:
         self.faiss_index.save(save_faiss_path)
         logger.info("Index size: {:.2f}MB".format(os.path.getsize(save_faiss_path)*0.000001))
     
-    def _index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None):
+    def _index(self, corpus: Dict[str, Dict[str, str]]):
         
         logger.info("Sorting Corpus by document length (Longest first)...")
         corpus_ids = sorted(corpus, key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")), reverse=True)
         self._create_mapping_ids(corpus_ids)
         corpus = [corpus[cid] for cid in corpus_ids]
-        normalize_embeddings = True if score_function == "cos_sim" else False
+        normalize_embeddings = True if self.score_function == "cos_sim" else False
 
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
 
@@ -102,11 +104,11 @@ class DenseRetrievalFaissSearch:
                corpus: Dict[str, Dict[str, str]],
                queries: Dict[str, str], 
                top_k: int,
-               score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
+               **kwargs) -> Dict[str, Dict[str, float]]:
         
-        assert score_function in self.score_functions
+        assert self.score_function in self.score_functions
 
-        if not self.faiss_index: self.index(corpus, score_function)
+        if not self.faiss_index: self.index(corpus)
 
         logger.info("Encoding Queries...")
         query_ids = list(queries.keys())
@@ -139,8 +141,8 @@ class BinaryFaissSearch(DenseRetrievalFaissSearch):
         passage_embeddings = np.vstack(passage_embeddings)
         self.faiss_index = FaissBinaryIndex(base_index, passage_ids, passage_embeddings)
 
-    def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None):
-        faiss_ids, corpus_embeddings = super()._index(corpus, score_function)
+    def index(self, corpus: Dict[str, Dict[str, str]]):
+        faiss_ids, corpus_embeddings = super()._index(corpus)
         logger.info("Using Binary Hashing in Flat Mode!")
         logger.info("Output Dimension: {}".format(self.dim_size))
         base_index = faiss.IndexBinaryFlat(self.dim_size * 8)
@@ -153,9 +155,9 @@ class BinaryFaissSearch(DenseRetrievalFaissSearch):
             corpus: Dict[str, Dict[str, str]],
             queries: Dict[str, str], 
             top_k: int,
-            score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
+            **kwargs) -> Dict[str, Dict[str, float]]:
 
-        return super().search(corpus, queries, top_k, score_function, **kwargs)
+        return super().search(corpus, queries, top_k, **kwargs)
     
 
 class PQFaissSearch(DenseRetrievalFaissSearch):
@@ -172,8 +174,8 @@ class PQFaissSearch(DenseRetrievalFaissSearch):
         base_index = faiss.read_index(input_faiss_path)
         self.faiss_index = FaissTrainIndex(base_index, passage_ids)
 
-    def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
-        faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)  
+    def index(self, corpus: Dict[str, Dict[str, str]] **kwargs):
+        faiss_ids, corpus_embeddings = super()._index(corpus, **kwargs)  
 
         logger.info("Using Product Quantization (PQ) in Flat mode!")
         logger.info("Parameters Used: num_of_centroids: {} ".format(self.num_of_centroids))
@@ -196,9 +198,9 @@ class PQFaissSearch(DenseRetrievalFaissSearch):
             corpus: Dict[str, Dict[str, str]],
             queries: Dict[str, str], 
             top_k: int,
-            score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
+            **kwargs) -> Dict[str, Dict[str, float]]:
         
-        return super().search(corpus, queries, top_k, score_function, **kwargs)
+        return super().search(corpus, queries, top_k, **kwargs)
 
 
 class HNSWFaissSearch(DenseRetrievalFaissSearch):
@@ -215,8 +217,8 @@ class HNSWFaissSearch(DenseRetrievalFaissSearch):
         base_index = faiss.read_index(input_faiss_path)
         self.faiss_index = FaissHNSWIndex(base_index, passage_ids)
     
-    def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
-        faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
+    def index(self, corpus: Dict[str, Dict[str, str]], **kwargs):
+        faiss_ids, corpus_embeddings = super()._index(corpus, **kwargs)
 
         logger.info("Using Approximate Nearest Neighbours (HNSW) in Flat Mode!")
         logger.info("Parameters Required: hnsw_store_n: {}".format(self.hnsw_store_n))
@@ -235,9 +237,9 @@ class HNSWFaissSearch(DenseRetrievalFaissSearch):
             corpus: Dict[str, Dict[str, str]],
             queries: Dict[str, str], 
             top_k: int,
-            score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
+            **kwargs) -> Dict[str, Dict[str, float]]:
         
-        return super().search(corpus, queries, top_k, score_function, **kwargs)
+        return super().search(corpus, queries, top_k, **kwargs)
 
 class FlatIPFaissSearch(DenseRetrievalFaissSearch):
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "flat"):
@@ -245,8 +247,8 @@ class FlatIPFaissSearch(DenseRetrievalFaissSearch):
         base_index = faiss.read_index(input_faiss_path)
         self.faiss_index = FaissIndex(base_index, passage_ids)
 
-    def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
-        faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
+    def index(self, corpus: Dict[str, Dict[str, str]], **kwargs):
+        faiss_ids, corpus_embeddings = super()._index(corpus, **kwargs)
         base_index = faiss.IndexFlatIP(self.dim_size)
         self.faiss_index = FaissIndex.build(faiss_ids, corpus_embeddings, base_index)
 
@@ -257,9 +259,9 @@ class FlatIPFaissSearch(DenseRetrievalFaissSearch):
             corpus: Dict[str, Dict[str, str]],
             queries: Dict[str, str], 
             top_k: int,
-            score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
+            **kwargs) -> Dict[str, Dict[str, float]]:
         
-        return super().search(corpus, queries, top_k, score_function, **kwargs)
+        return super().search(corpus, queries, top_k, **kwargs)
 
 class PCAFaissSearch(DenseRetrievalFaissSearch):
     def __init__(self, model, base_index: faiss.Index, output_dimension: int, batch_size: int = 128, 
@@ -273,8 +275,8 @@ class PCAFaissSearch(DenseRetrievalFaissSearch):
         base_index = faiss.read_index(input_faiss_path)
         self.faiss_index = FaissTrainIndex(base_index, passage_ids)
 
-    def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
-        faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
+    def index(self, corpus: Dict[str, Dict[str, str]], **kwargs):
+        faiss_ids, corpus_embeddings = super()._index(corpus, **kwargs)
         logger.info("Creating PCA Matrix...")
         logger.info("Input Dimension: {}, Output Dimension: {}".format(self.dim_size, self.output_dim))
         pca_matrix = faiss.PCAMatrix(self.dim_size, self.output_dim, 0, True)
@@ -288,9 +290,9 @@ class PCAFaissSearch(DenseRetrievalFaissSearch):
             corpus: Dict[str, Dict[str, str]],
             queries: Dict[str, str], 
             top_k: int,
-            score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
+            **kwargs) -> Dict[str, Dict[str, float]]:
         
-        return super().search(corpus, queries, top_k, score_function, **kwargs)
+        return super().search(corpus, queries, top_k, **kwargs)
 
 class SQFaissSearch(DenseRetrievalFaissSearch):
     def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, 
@@ -304,8 +306,8 @@ class SQFaissSearch(DenseRetrievalFaissSearch):
         base_index = faiss.read_index(input_faiss_path)
         self.faiss_index = FaissTrainIndex(base_index, passage_ids)
 
-    def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
-        faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
+    def index(self, corpus: Dict[str, Dict[str, str]], **kwargs):
+        faiss_ids, corpus_embeddings = super()._index(corpus, **kwargs)
 
         logger.info("Using Scalar Quantizer in Flat Mode!")
         logger.info("Parameters Used: quantizer_type: {}".format(self.qname))
@@ -321,6 +323,6 @@ class SQFaissSearch(DenseRetrievalFaissSearch):
             corpus: Dict[str, Dict[str, str]],
             queries: Dict[str, str], 
             top_k: int,
-            score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
+            **kwargs) -> Dict[str, Dict[str, float]]:
         
-        return super().search(corpus, queries, top_k, score_function, **kwargs)
+        return super().search(corpus, queries, top_k, **kwargs)

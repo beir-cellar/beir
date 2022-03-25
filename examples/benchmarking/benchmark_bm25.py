@@ -49,7 +49,7 @@ model = BM25(index_name=index_name, hostname=hostname)
 bm25 = EvaluateRetrieval(model)
  
 #### Index 1M passages into the index (seperately)
-bm25.retriever.index(corpus_new)
+bm25.retrieval_model.index(corpus_new)
 
 #### Saving benchmark times
 time_taken_all = {}
@@ -59,7 +59,7 @@ for query_id in query_ids:
     
     #### Measure time to retrieve top-10 BM25 documents using single query latency
     start = datetime.datetime.now()
-    results = bm25.retriever.es.lexical_search(text=query, top_hits=10) 
+    results = bm25.retrieval_model.es.lexical_search(text=query, top_hits=10) 
     end = datetime.datetime.now()
     
     #### Measuring time taken in ms (milliseconds)

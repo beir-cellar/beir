@@ -44,8 +44,8 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 # NOTE: this version only works for max agg in SPLADE!
 
 model_path = "splade/weights/distilsplade_max"
-model = DRES(models.SPLADE(model_path), batch_size=128)
-retriever = EvaluateRetrieval(model, score_function="dot")
+model = DRES(models.SPLADE(model_path), batch_size=128, score_function="dot")
+retriever = EvaluateRetrieval(model)
 
 #### Retrieve dense results (format of results is identical to qrels)
 results = retriever.retrieve(corpus, queries)

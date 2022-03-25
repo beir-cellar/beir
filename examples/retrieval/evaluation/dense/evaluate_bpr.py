@@ -75,8 +75,9 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 # The model was fine-tuned using CLS Pooling and dot-product!
 # Open-sourced binary code SBERT model trained on MSMARCO to be made available soon!
 
+score_function = "dot" # or cos_sim for cosine similarity
 model = models.BinarySentenceBERT("msmarco-distilbert-base-tas-b") # Proxy for now, soon coming up BPR models trained on MSMARCO!
-faiss_search = BinaryFaissSearch(model, batch_size=128)
+faiss_search = BinaryFaissSearch(model, batch_size=128, score_function=score_function)
 
 #### Load faiss index from file or disk ####
 # We need two files to be present within the input_dir!
@@ -96,8 +97,7 @@ if os.path.isdir(input_dir):
 # Please Note, Reranking here is done with a bi-encoder which is quite faster compared to cross-encoders.
 # Reranking is advised by the original paper as its quite fast, efficient and leads to decent performances.
 
-score_function = "dot" # or cos_sim for cosine similarity
-retriever = EvaluateRetrieval(faiss_search, score_function=score_function)
+retriever = EvaluateRetrieval(faiss_search)
 
 rerank = True                       # False would only retrieve top-k documents based on hamming distance.
 binary_k = 1000                     # binary_k value denotes documents reranked for each query.

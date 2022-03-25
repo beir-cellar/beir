@@ -1,12 +1,13 @@
+from beir.retrieval.search.base import RetrievalModel
 from .elastic_search import ElasticSearch
 import tqdm
 import time
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 def sleep(seconds):
     if seconds: time.sleep(seconds) 
 
-class BM25Search:
+class BM25Search(RetrievalModel):
     def __init__(self, index_name: str, hostname: str = "localhost", keys: Dict[str, str] = {"title": "title", "body": "txt"}, language: str = "english",
                  batch_size: int = 128, timeout: int = 100, retry_on_timeout: bool = True, maxsize: int = 24, number_of_shards: int = "default", 
                  initialize: bool = True, sleep_for: int = 2):
@@ -33,7 +34,7 @@ class BM25Search:
         sleep(self.sleep_for)
         self.es.create_index()
     
-    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int], *args, **kwargs) -> Dict[str, Dict[str, float]]:
+    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: int, **kwargs) -> Dict[str, Dict[str, float]]:
         
         # Index the corpus within elastic-search
         # False, if the corpus has been already indexed

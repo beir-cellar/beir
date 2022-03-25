@@ -1,11 +1,13 @@
 from tqdm.autonotebook import trange
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Optional, Union, Tuple
 import logging
 import numpy as np
 
+from beir.retrieval.search.base import RetrievalModel
+
 logger = logging.getLogger(__name__)
 
-class SparseSearch:
+class SparseSearch(RetrievalModel):
     
     def __init__(self, model, batch_size: int = 16, **kwargs):
         self.model = model
@@ -17,9 +19,8 @@ class SparseSearch:
         corpus: Dict[str, Dict[str, str]], 
         queries: Dict[str, str], 
         top_k: int,
-        score_function: str, 
         query_weights: bool = False, 
-        *args, **kwargs) -> Dict[str, Dict[str, float]]:
+        **kwargs) -> Dict[str, Dict[str, float]]:
         
         doc_ids = list(corpus.keys())
         query_ids = list(queries.keys())

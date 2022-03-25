@@ -2,7 +2,7 @@ from beir.retrieval.search.base import RetrievalModel
 from .elastic_search import ElasticSearch
 import tqdm
 import time
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 def sleep(seconds):
     if seconds: time.sleep(seconds) 

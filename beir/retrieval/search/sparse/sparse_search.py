@@ -1,5 +1,5 @@
 from tqdm.autonotebook import trange
-from typing import List, Dict, Optional, Union, Tuple
+from typing import List, Dict, Union, Tuple
 import logging
 import numpy as np
 

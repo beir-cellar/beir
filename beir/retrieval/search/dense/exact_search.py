@@ -3,7 +3,7 @@ from .util import cos_sim, dot_score
 import logging
 import sys
 import torch
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 

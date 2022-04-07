@@ -25,6 +25,7 @@ from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.train import TrainRetriever
 import pathlib, os, gzip
 import logging
+import json
 
 #### Just some code to print debug information to stdout
 logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -50,8 +51,8 @@ train_batch_size = 75           # Increasing the train batch size improves the m
 max_seq_length = 350            # Max length for passages. Increasing it, requires more GPU memory (O(n^4))
 
 # The triplets file contains 5,028,051 sentence pairs (ref: https://sbert.net/datasets/paraphrases)
-triplets_url = "https://public.ukp.informatik.tu-darmstadt.de/reimers/sentence-transformers/datasets/paraphrases/msmarco-triplets.tsv.gz"
-msmarco_triplets_filepath = os.path.join(data_path, "msmarco-triplets.tsv.gz")
+triplets_url = "https://public.ukp.informatik.tu-darmstadt.de/reimers/sentence-transformers/datasets/paraphrases/msmarco-query_passage_negative.jsonl.gz"
+msmarco_triplets_filepath = os.path.join(data_path, "msmarco-triplets.jsonl.gz")
 
 if not os.path.isfile(msmarco_triplets_filepath):
     util.download_url(triplets_url, msmarco_triplets_filepath)
@@ -61,7 +62,7 @@ if not os.path.isfile(msmarco_triplets_filepath):
 triplets = []
 with gzip.open(msmarco_triplets_filepath, 'rt', encoding='utf8') as fIn:
     for line in fIn:
-        triplet = line.strip().split("\t")
+        triplet = json.loads(line)
         triplets.append(triplet)
         
 #### Provide any sentence-transformers or HF model

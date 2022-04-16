@@ -4,7 +4,8 @@ with open("README.md", mode="r", encoding="utf-8") as readme_file:
     readme = readme_file.read()
 
 optional_packages = {
-    "tf" : ['tensorflow>=2.2.0', 'tensorflow-text', 'tensorflow-hub']
+    "tf" : ['tensorflow>=2.2.0', 'tensorflow-text', 'tensorflow-hub'],
+    "manticore": ['manticoresearch==1.0.6', 'pandas', 'typer', 'wasabi']
 }
 
 setup(

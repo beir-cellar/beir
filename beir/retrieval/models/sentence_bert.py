@@ -21,3 +21,8 @@ class SentenceBERT:
     def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int = 8, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
         sentences = [(doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip() for doc in corpus]
         return self.doc_model.encode(sentences, batch_size=batch_size, **kwargs)
+
+    ## Encoding corpus in parallel
+    def encode_corpus_parallel(self, corpus: List[Dict[str, str]], pool: Dict[str, str], batch_size: int = 8, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
+        sentences = [(doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip() for doc in corpus]
+        return self.doc_model.encode_multi_process(sentences=sentences, pool=pool, batch_size=batch_size, **kwargs)

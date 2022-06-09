@@ -3,13 +3,14 @@ import logging
 import sys
 import torch
 from typing import Dict, List
+import math
 
 logger = logging.getLogger(__name__)
 
 #Parent class for any dense model
 class DenseRetrievalParallelExactSearch:
     
-    def __init__(self, model, pool, batch_size: int = 128, corpus_chunk_size: int = 50000, **kwargs):
+    def __init__(self, model, pool, batch_size: int = 128, corpus_chunk_size: int = None, **kwargs):
         #model is class that provides encode_corpus() and encode_queries()
         self.model = model
         self.batch_size = batch_size
@@ -57,11 +58,12 @@ class DenseRetrievalParallelExactSearch:
             chunk_size=self.corpus_chunk_size,
             )).float().to(self.device)
 
-        itr = range(0, len(corpus), self.corpus_chunk_size)
+        corpus_chunk_size = min(math.ceil(len(corpus) / len(self.pool["processes"]) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
+        itr = range(0, len(corpus), corpus_chunk_size)
 
         for batch_num, corpus_start_idx in enumerate(itr):
             logger.info("Computing similarities: Batch {}/{}...".format(batch_num+1, len(itr)))
-            corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))
+            corpus_end_idx = min(corpus_start_idx + corpus_chunk_size, len(corpus))
             sub_corpus_embeddings = corpus_embeddings[corpus_start_idx:corpus_end_idx]
             #Compute similarites using either cosine-similarity or dot product
             cos_scores = self.score_functions[score_function](query_embeddings, sub_corpus_embeddings)

@@ -49,20 +49,20 @@ class DenseRetrievalParallelExactSearch:
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
         logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
 
+        #Encode chunk of corpus (Send them to device:0 once computed for dot-product)    
+        corpus_embeddings = torch.from_numpy(self.model.encode_corpus_parallel(
+            corpus,
+            pool=self.pool,
+            batch_size=self.batch_size,
+            chunk_size=self.corpus_chunk_size,
+            )).float().to(self.device)
+
         itr = range(0, len(corpus), self.corpus_chunk_size)
 
         for batch_num, corpus_start_idx in enumerate(itr):
-            logger.info("Encoding Batch {}/{}...".format(batch_num+1, len(itr)))
+            logger.info("Computing similarities: Batch {}/{}...".format(batch_num+1, len(itr)))
             corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))
-
-            #Encode chunk of corpus (Send them to device:0 once computed for dot-product)    
-            sub_corpus_embeddings = torch.from_numpy(self.model.encode_corpus_parallel(
-                corpus[corpus_start_idx:corpus_end_idx],
-                pool=self.pool,
-                batch_size=self.batch_size,
-                chunk_size=self.corpus_chunk_size,
-                )).float().to(self.device)
-
+            sub_corpus_embeddings = corpus_embeddings[corpus_start_idx:corpus_end_idx]
             #Compute similarites using either cosine-similarity or dot product
             cos_scores = self.score_functions[score_function](query_embeddings, sub_corpus_embeddings)
             cos_scores[torch.isnan(cos_scores)] = -1

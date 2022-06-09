@@ -60,6 +60,7 @@ class DenseRetrievalParallelExactSearch:
                 corpus[corpus_start_idx:corpus_end_idx],
                 pool=self.pool,
                 batch_size=self.batch_size,
+                chunk_size=self.corpus_chunk_size,
                 )).float().to(self.device)
 
             #Compute similarites using either cosine-similarity or dot product

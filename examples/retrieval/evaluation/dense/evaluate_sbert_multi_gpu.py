@@ -40,11 +40,8 @@ if __name__ == "__main__":
     #### Complete list - https://www.sbert.net/docs/pretrained_models.html
     beir_model = models.SentenceBERT("msmarco-distilbert-base-tas-b")
 
-    #### Start the multi-process pool on all available CUDA devices (for only doc model)
-    pool = beir_model.doc_model.start_multi_process_pool()
-
     #### Start with Parallel search and evaluation
-    model = DRPES(beir_model, pool, batch_size=128)
+    model = DRPES(beir_model, batch_size=128, target_devices=["cpu"]*2, corpus_chunk_size=50000)
     retriever = EvaluateRetrieval(model, score_function="dot")
 
     #### Retrieve dense results (format of results is identical to qrels)

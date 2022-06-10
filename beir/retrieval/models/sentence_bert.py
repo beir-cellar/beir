@@ -48,7 +48,7 @@ class SentenceBERT:
         :param pool: A pool of workers started with SentenceTransformer.start_multi_process_pool
         :param batch_size: Encode sentences with batch size
         :param chunk_size: Sentences are chunked and sent to the individual processes. If none, it determine a sensible size.
-        :return: Numpy matrix with all embeddings
+        :return: Tuple of tensors with top k sentences indexes and their similarity scores
         """
         if chunk_size is None:
             chunk_size = min(math.ceil(len(sentences) / len(pool["processes"]) / 10), 5000)
@@ -72,6 +72,6 @@ class SentenceBERT:
 
         output_queue = pool['output']
         results_list = sorted([output_queue.get() for _ in range(last_chunk_id)], key=lambda x: x[0])
-        cos_scores_top_k_values = torch.cat([result[1] for result in results_list], dim=1) # (num_queries, (top_k + 1) * num_sentences / chunk_size) = (num_queries, top_k * num_batches)
-        cos_scores_top_k_idx = torch.cat([result[2] for result in results_list], dim=1)
+        cos_scores_top_k_values = torch.cat([result[1].cpu() for result in results_list], dim=1) # (num_queries, (top_k + 1) * num_sentences / chunk_size) = (num_queries, top_k * num_batches)
+        cos_scores_top_k_idx = torch.cat([result[2].cpu() for result in results_list], dim=1)
         return cos_scores_top_k_values, cos_scores_top_k_idx

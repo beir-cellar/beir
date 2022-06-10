@@ -24,7 +24,7 @@ class DenseRetrievalParallelExactSearch:
         self.convert_to_tensor = True
         self.results = {}
 
-        self.query_embeddings = None
+        self.query_embeddings = {}
         self.top_k = None
         self.score_function = None
     
@@ -55,7 +55,14 @@ class DenseRetrievalParallelExactSearch:
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
         logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
 
-        self.query_embeddings = query_embeddings
+        if self.target_devices is None:
+            if torch.cuda.is_available():
+                self.target_devices = ['cuda:{}'.format(i) for i in range(torch.cuda.device_count())]
+            else:
+                logger.info("CUDA is not available. Start 4 CPU worker")
+                self.target_devices = ['cpu']*4
+        # copy the query embeddings to all target devices
+        self.query_embeddings = {target_device: query_embeddings.to(target_device) for target_device in self.target_devices}
         self.top_k = top_k
         self.score_function = score_function    
         
@@ -95,9 +102,9 @@ class DenseRetrievalParallelExactSearch:
             try:
                 id, batch_size, sentences = input_queue.get()
                 embeddings = model.encode(
-                    sentences, device=target_device, show_progress_bar=False, convert_to_numpy=True, batch_size=batch_size
+                    sentences, device=target_device, show_progress_bar=False, convert_to_tensor=True, batch_size=batch_size
                 )
-                cos_scores = self.score_functions[self.score_function](self.query_embeddings, embeddings)
+                cos_scores = self.score_functions[self.score_function](self.query_embeddings[target_device], embeddings)
                 cos_scores[torch.isnan(cos_scores)] = -1
 
                 #Get top-k values

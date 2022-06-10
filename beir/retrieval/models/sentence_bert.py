@@ -22,6 +22,9 @@ class SentenceBERT:
     def start_multi_process_pool(self, target_devices: List[str] = None) -> Dict[str, object]:
         return self.doc_model.start_multi_process_pool(target_devices=target_devices)
 
+    def stop_multi_process_pool(self, pool: Dict[str, object]):
+        return self.doc_model.stop_multi_process_pool(pool)
+
     def encode_queries(self, queries: List[str], batch_size: int = 16, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
         return self.q_model.encode(queries, batch_size=batch_size, **kwargs)
     

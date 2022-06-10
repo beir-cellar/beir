@@ -80,6 +80,9 @@ class DenseRetrievalParallelExactSearch:
         cos_scores_top_k_values = cos_scores_top_k_values.cpu().tolist()
         cos_scores_top_k_idx = cos_scores_top_k_idx.cpu().tolist()
 
+        # Stop the proccesses in the pool and free memory
+        self.model.stop_multi_process_pool(pool)
+
         for query_itr in range(len(query_embeddings)):
             query_id = query_ids[query_itr]
             for i in range(len(cos_scores_top_k_values[query_itr])):

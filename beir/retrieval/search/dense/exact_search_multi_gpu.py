@@ -1,3 +1,4 @@
+from datasets import Dataset
 from .util import cos_sim, dot_score
 import logging
 import torch
@@ -5,6 +6,9 @@ from typing import Dict, List
 import math
 import queue
 from sentence_transformers import SentenceTransformer
+from multiprocess import set_start_method
+from accelerate import Accelerator, DistributedType
+from torch.utils.data import DataLoader
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +33,8 @@ class DenseRetrievalParallelExactSearch:
         self.score_function = None
     
     def search(self, 
-               corpus: Dict[str, Dict[str, str]], 
-               queries: Dict[str, str], 
+               corpus: Dataset, 
+               queries: Dataset, 
                top_k: List[int], 
                score_function: str,
                **kwargs) -> Dict[str, Dict[str, float]]:
@@ -41,12 +45,26 @@ class DenseRetrievalParallelExactSearch:
             raise ValueError("score function: {} must be either (cos_sim) for cosine similarity or (dot) for dot product".format(score_function))
             
         logger.info("Encoding Queries...")
-        query_ids = list(queries.keys())
+        query_ids = list(queries['id'])
         self.results = {qid: {} for qid in query_ids}
-        queries = [queries[qid] for qid in queries]
-        query_embeddings = self.model.encode_queries(
-            queries, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
-          
+
+        # initialize accelerator
+        accelerator = Accelerator(cpu=not torch.cuda.is_available(), mixed_precision=None)
+
+        # Instantiate dataloader
+        queries_dl = DataLoader(queries, batch_size=self.batch_size)
+        corpus_dl = DataLoader(corpus, batch_size=self.batch_size)
+
+
+
+        self.model, queries_dl, corpus_dl = accelerator.prepare(self.model, queries_dl, corpus_dl)
+
+
+        # query_embeddings = self.model.encode_queries(
+        #     queries, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
+
+
+
         logger.info("Sorting Corpus by document length (Longest first)...")
 
         corpus_ids = sorted(corpus, key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")), reverse=True)

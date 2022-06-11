@@ -1,6 +1,7 @@
 from beir import util, LoggingHandler
 from beir.retrieval import models
-from beir.datasets.data_loader import GenericDataLoader
+from beir.datasets.data_loader import GenericDataLoader as DataLoader
+from beir.datasets.data_loader_hf import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalParallelExactSearch as DRPES
 
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     # (2) fiqa/queries.jsonl (format: jsonlines)
     # (3) fiqa/qrels/test.tsv (format: tsv ("\t"))
 
+    # corpus, queries, qrels = DataLoader(data_folder=data_path).load(split="test")
     corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
     #### Dense Retrieval using SBERT (Sentence-BERT) ####

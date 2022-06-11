@@ -1,7 +1,7 @@
 from typing import Dict, Tuple
 import os
 import logging
-from datasets import load_dataset
+from datasets import load_dataset, Value, Features
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class GenericDataLoader:
         if os.path.exists(self.qrels_file):
             self._load_qrels()
             # filter queries with no qrels
-            self.queries = self.queries.filter(lambda x: int(x['_id']) in self.qrels['query-id'])
+            self.queries = self.queries.filter(lambda x: x['id'] in self.qrels['query-id'])
             logger.info("Loaded %d %s Queries.", len(self.queries), split.upper())
             logger.info("Query Example: %s", self.queries[0])
         
@@ -71,15 +71,20 @@ class GenericDataLoader:
     
     def _load_corpus(self):
         corpus_ds = load_dataset('json', data_files=self.corpus_file)['train']
-        corpus_ds = corpus_ds.remove_columns([col for col in corpus_ds.column_names if col not in ['_id', 'text', 'title']])
+        corpus_ds = corpus_ds.cast_column('_id', Value('string'))
+        corpus_ds = corpus_ds.rename_column('_id', 'id')
+        corpus_ds = corpus_ds.remove_columns([col for col in corpus_ds.column_names if col not in ['id', 'text', 'title']])
         self.corpus = corpus_ds
     
     def _load_queries(self):
         queries_ds = load_dataset('json', data_files=self.query_file)['train']
-        queries_ds = queries_ds.remove_columns([col for col in queries_ds.column_names if col not in ['_id', 'text']])
+        queries_ds = queries_ds.cast_column('_id', Value('string'))
+        queries_ds = queries_ds.rename_column('_id', 'id')
+        queries_ds = queries_ds.remove_columns([col for col in queries_ds.column_names if col not in ['id', 'text']])
         self.queries = queries_ds
         
     def _load_qrels(self):
         qrels_ds = load_dataset('csv', data_files=self.qrels_file, delimiter='\t')['train']
-        # qrels_ds = qrels_ds.remove_columns([col for col in qrels_ds.column_names if col not in ['text']])
+        features = Features({'query-id': Value('string'), 'corpus-id': Value('string'), 'score': Value('float')})
+        qrels_ds = qrels_ds.cast(features)
         self.qrels = qrels_ds

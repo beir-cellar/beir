@@ -1,3 +1,4 @@
+from collections import defaultdict
 from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader as DataLoader
@@ -10,10 +11,7 @@ import pathlib, os
 import random
 
 #### Just some code to print debug information to stdout
-logging.basicConfig(format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.INFO,
-                    handlers=[LoggingHandler()])
+logging.basicConfig(level=logging.INFO)
 #### /print debug information to stdout
 
 
@@ -33,8 +31,12 @@ if __name__ == "__main__":
     # (2) fiqa/queries.jsonl (format: jsonlines)
     # (3) fiqa/qrels/test.tsv (format: tsv ("\t"))
 
-    # corpus, queries, qrels = DataLoader(data_folder=data_path).load(split="test")
     corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+    qrels_dict = defaultdict(dict)
+    def qrels_dict_init(row):
+        qrels_dict[row['query-id']][row['corpus-id']] = int(row['score'])
+    qrels.map(qrels_dict_init)
+    qrels = qrels_dict
 
     #### Dense Retrieval using SBERT (Sentence-BERT) ####
     #### Provide any pretrained sentence-transformers model
@@ -43,7 +45,7 @@ if __name__ == "__main__":
     beir_model = models.SentenceBERT("msmarco-distilbert-base-tas-b")
 
     #### Start with Parallel search and evaluation
-    model = DRPES(beir_model, batch_size=128, target_devices=["cpu"]*2, corpus_chunk_size=50000)
+    model = DRPES(beir_model, batch_size=512, target_devices=None, corpus_chunk_size=16384)
     retriever = EvaluateRetrieval(model, score_function="dot")
 
     #### Retrieve dense results (format of results is identical to qrels)
@@ -66,9 +68,11 @@ if __name__ == "__main__":
 
     query_id, ranking_scores = random.choice(list(results.items()))
     scores_sorted = sorted(ranking_scores.items(), key=lambda item: item[1], reverse=True)
-    logging.info("Query : %s\n" % queries[query_id])
+    query = queries.filter(lambda x: x['id']==query_id)[0]['text']
+    logging.info("Query : %s\n" % query)
 
     for rank in range(top_k):
         doc_id = scores_sorted[rank][0]
+        doc = corpus.filter(lambda x: x['id']==doc_id)[0]
         # Format: Rank x: ID [Title] Body
-        logging.info("Rank %d: %s [%s] - %s\n" % (rank+1, doc_id, corpus[doc_id].get("title"), corpus[doc_id].get("text")))
+        logging.info("Rank %d: %s [%s] - %s\n" % (rank+1, doc_id, doc.get("title"), doc.get("text")))

@@ -9,11 +9,27 @@ from sentence_transformers import SentenceTransformer
 from multiprocess import set_start_method
 from accelerate import Accelerator, DistributedType
 from torch.utils.data import DataLoader
-
+from evaluate.module import EvaluationModule, EvaluationModuleInfo
+from datasets import Features, Value, Sequence
+from tqdm import tqdm
 logger = logging.getLogger(__name__)
 
-#Parent class for any dense model
 
+class DummyMetric(EvaluationModule):
+    def _info(self):
+        return EvaluationModuleInfo(
+            description="dummy metric for tests",
+            citation="insert citation here",
+            features=Features(
+                {"cos_scores_top_k_values": Sequence(Value("float")), "cos_scores_top_k_idx": Sequence(Value("int64"))}
+            ),
+        )
+
+    def _compute(self, cos_scores_top_k_values, cos_scores_top_k_idx):
+        return cos_scores_top_k_values, cos_scores_top_k_idx
+
+
+#Parent class for any dense model
 class DenseRetrievalParallelExactSearch:
     
     def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = None, target_devices: List[str] = None, **kwargs):
@@ -44,69 +60,65 @@ class DenseRetrievalParallelExactSearch:
         if score_function not in self.score_functions:
             raise ValueError("score function: {} must be either (cos_sim) for cosine similarity or (dot) for dot product".format(score_function))
             
-        logger.info("Encoding Queries...")
         query_ids = list(queries['id'])
         self.results = {qid: {} for qid in query_ids}
 
-        # initialize accelerator
-        accelerator = Accelerator(cpu=not torch.cuda.is_available(), mixed_precision=None)
+        metric = DummyMetric()
 
         # Instantiate dataloader
-        queries_dl = DataLoader(queries, batch_size=self.batch_size)
-        corpus_dl = DataLoader(corpus, batch_size=self.batch_size)
+        queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)
+        corpus_dl = DataLoader(corpus, batch_size=self.corpus_chunk_size)
 
-
-
-        self.model, queries_dl, corpus_dl = accelerator.prepare(self.model, queries_dl, corpus_dl)
-
-
-        # query_embeddings = self.model.encode_queries(
-        #     queries, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
-
-
+        # Encode queries
+        logger.info("Encoding Queries in batches...")
+        query_embeddings = []
+        for step, queries_batch in enumerate(queries_dl):
+            with torch.no_grad():
+                q_embeds = self.model.encode_queries(
+                    queries_batch['text'], batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
+            query_embeddings.append(q_embeds)
+        query_embeddings = torch.cat(query_embeddings, dim=0)
 
         logger.info("Sorting Corpus by document length (Longest first)...")
-
-        corpus_ids = sorted(corpus, key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")), reverse=True)
-        corpus = [corpus[cid] for cid in corpus_ids]
+        corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))})
+        corpus = corpus.sort('len', reverse=True)
 
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
         logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
 
-        if self.target_devices is None:
-            if torch.cuda.is_available():
-                self.target_devices = ['cuda:{}'.format(i) for i in range(torch.cuda.device_count())]
-            else:
-                logger.info("CUDA is not available. Start 4 CPU worker")
-                self.target_devices = ['cpu']*4
         # copy the query embeddings to all target devices
-        self.query_embeddings = {target_device: query_embeddings.to(target_device) for target_device in self.target_devices}
+        self.query_embeddings = query_embeddings
         self.top_k = top_k
         self.score_function = score_function    
-        
-        SentenceTransformer._encode_multi_process_worker = self._encode_multi_process_worker
-        pool = self.model.start_multi_process_pool(self.target_devices)
-        self.corpus_chunk_size = min(math.ceil(len(corpus) / len(pool["processes"]) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
-    
-        #Encode chunk of corpus (Send them to device:0 once computed for dot-product)    
-        cos_scores_top_k_values, cos_scores_top_k_idx = self.model.encode_corpus_parallel(
-            corpus,
-            pool=pool,
-            batch_size=self.batch_size,
-            chunk_size=self.corpus_chunk_size,
-            )
-        cos_scores_top_k_values = cos_scores_top_k_values.cpu().tolist()
-        cos_scores_top_k_idx = cos_scores_top_k_idx.cpu().tolist()
 
-        # Stop the proccesses in the pool and free memory
-        self.model.stop_multi_process_pool(pool)
+        for step, corpus_batch in enumerate(corpus_dl):
+            with torch.no_grad():
+                corpus_embeds = self.model.encode_corpus(
+                    corpus_batch, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
 
-        for query_itr in range(len(query_embeddings)):
+            cos_scores = self.score_functions[self.score_function](self.query_embeddings.to(corpus_embeds.device), corpus_embeds)
+            cos_scores[torch.isnan(cos_scores)] = -1
+
+            #Get top-k values
+            cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(self.top_k+1, len(cos_scores[1])), dim=1, largest=True, sorted=False)
+            cos_scores_top_k_values = cos_scores_top_k_values.T
+            cos_scores_top_k_idx = cos_scores_top_k_idx.T
+
+            # Store results in an Apache Arrow table
+            metric.add_batch(cos_scores_top_k_values=cos_scores_top_k_values, cos_scores_top_k_idx=cos_scores_top_k_idx)
+
+        # Gather all results
+        cos_scores_top_k_values, cos_scores_top_k_idx = metric.compute()
+
+        logger.info("Formatting results...")
+        # Load corpus ids in memory
+        corpus_ids = corpus['id']
+        for query_itr in tqdm(range(len(query_embeddings))):
             query_id = query_ids[query_itr]
-            for i in range(len(cos_scores_top_k_values[query_itr])):
+            for i in range(len(cos_scores_top_k_values)):
                 batch_num = i // (self.top_k+1)
-                sub_corpus_id = cos_scores_top_k_idx[query_itr][i] + batch_num * self.corpus_chunk_size
-                score = cos_scores_top_k_values[query_itr][i]
+                sub_corpus_id = cos_scores_top_k_idx[i][query_itr] + batch_num * self.corpus_chunk_size
+                score = cos_scores_top_k_values[i][query_itr]
                 corpus_id = corpus_ids[sub_corpus_id]
                 if corpus_id != query_id:
                     self.results[query_id][corpus_id] = score

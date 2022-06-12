@@ -29,7 +29,7 @@ class SentenceBERT:
         return self.q_model.encode(queries, batch_size=batch_size, **kwargs)
     
     def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int = 8, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
-        sentences = [(doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip() for doc in corpus]
+        sentences = [(corpus["title"][i] + self.sep + corpus["text"][i]).strip() if "title" in corpus else corpus["text"][i].strip() for i in range(len(corpus['text']))]
         return self.doc_model.encode(sentences, batch_size=batch_size, **kwargs)
 
     ## Encoding corpus in parallel

@@ -6,7 +6,7 @@ from datasets import load_dataset, Value, Features
 logger = logging.getLogger(__name__)
 
 
-class GenericDataLoader:
+class HFDataLoader:
     
     def __init__(self, data_folder: str = None, prefix: str = None, corpus_file: str = "corpus.jsonl", query_file: str = "queries.jsonl", 
                  qrels_folder: str = "qrels", qrels_file: str = ""):

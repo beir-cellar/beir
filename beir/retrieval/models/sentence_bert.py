@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import math
 import logging
+from datasets import Dataset
 
 logger = logging.getLogger(__name__)
 class SentenceBERT:
@@ -28,13 +29,19 @@ class SentenceBERT:
     def encode_queries(self, queries: List[str], batch_size: int = 16, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
         return self.q_model.encode(queries, batch_size=batch_size, **kwargs)
     
-    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int = 8, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
-        sentences = [(corpus["title"][i] + self.sep + corpus["text"][i]).strip() if "title" in corpus else corpus["text"][i].strip() for i in range(len(corpus['text']))]
+    def encode_corpus(self, corpus: Union[List[Dict[str, str]], Dict[str, List]], batch_size: int = 8, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
+        if type(corpus) is dict:
+            sentences = [(corpus["title"][i] + self.sep + corpus["text"][i]).strip() if "title" in corpus else corpus["text"][i].strip() for i in range(len(corpus['text']))]
+        else:
+            sentences = [(doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip() for doc in corpus]
         return self.doc_model.encode(sentences, batch_size=batch_size, **kwargs)
 
     ## Encoding corpus in parallel
-    def encode_corpus_parallel(self, corpus: List[Dict[str, str]], pool: Dict[str, str], batch_size: int = 8, chunk_size: int= None, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
-        sentences = [(doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip() for doc in corpus]
+    def encode_corpus_parallel(self, corpus: Union[List[Dict[str, str]], Dataset], pool: Dict[str, str], batch_size: int = 8, chunk_size: int = None, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
+        if isinstance(corpus, Dataset):
+            sentences = [(corpus["title"][i] + self.sep + corpus["text"][i]).strip() if "title" in corpus else corpus["text"][i].strip() for i in range(len(corpus['text']))]
+        else:
+            sentences = [(doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip() for doc in corpus]
         return self.encode_multi_process(sentences=sentences, pool=pool, batch_size=batch_size, chunk_size=chunk_size)
 
     @staticmethod

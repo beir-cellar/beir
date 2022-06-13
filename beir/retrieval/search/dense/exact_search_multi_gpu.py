@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from evaluate.module import EvaluationModule, EvaluationModuleInfo
 from datasets import Features, Value, Sequence
 from tqdm import tqdm
+import time
 logger = logging.getLogger(__name__)
 
 
@@ -62,6 +63,9 @@ class DenseRetrievalParallelExactSearch:
             
         query_ids = list(queries['id'])
         self.results = {qid: {} for qid in query_ids}
+        logger.info("Sorting Corpus by document length (Longest first)...")
+        corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))})
+        corpus = corpus.sort('len', reverse=True)
 
         metric = DummyMetric()
 
@@ -79,10 +83,6 @@ class DenseRetrievalParallelExactSearch:
             query_embeddings.append(q_embeds)
         query_embeddings = torch.cat(query_embeddings, dim=0)
 
-        logger.info("Sorting Corpus by document length (Longest first)...")
-        corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))})
-        corpus = corpus.sort('len', reverse=True)
-
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
         logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
 
@@ -92,6 +92,7 @@ class DenseRetrievalParallelExactSearch:
         self.score_function = score_function    
 
         for step, corpus_batch in enumerate(corpus_dl):
+            start_time = time.time()
             with torch.no_grad():
                 corpus_embeds = self.model.encode_corpus(
                     corpus_batch, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
@@ -106,6 +107,8 @@ class DenseRetrievalParallelExactSearch:
 
             # Store results in an Apache Arrow table
             metric.add_batch(cos_scores_top_k_values=cos_scores_top_k_values, cos_scores_top_k_idx=cos_scores_top_k_idx)
+            end_time = time.time()
+            logger.info("Encoded and stored batch {} in {:.2f} seconds".format(step, end_time - start_time))
 
         # Gather all results
         cos_scores_top_k_values, cos_scores_top_k_idx = metric.compute()

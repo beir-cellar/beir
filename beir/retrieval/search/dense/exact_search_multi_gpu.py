@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 class DummyMetric(EvaluationModule):
     def _info(self):
         return EvaluationModuleInfo(
+            description="dummy metric to handle storing middle results",
+            citation="",
             features=Features(
                 {"cos_scores_top_k_values": Sequence(Value("float")), "cos_scores_top_k_idx": Sequence(Value("int64")), "batch_index": Value("int64")},
             ),

@@ -1,10 +1,10 @@
 from collections import defaultdict
 from beir import util, LoggingHandler
 from beir.retrieval import models
-from beir.datasets.data_loader import GenericDataLoader as DataLoader
-from beir.datasets.data_loader_hf import GenericDataLoader
+from beir.datasets.data_loader_hf import HFDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalParallelExactSearch as DRPES
+import time
 
 import logging
 import pathlib, os
@@ -18,7 +18,11 @@ logging.basicConfig(level=logging.INFO)
 #Important, you need to shield your code with if __name__. Otherwise, CUDA runs into issues when spawning new processes.
 if __name__ == "__main__":
 
-    dataset = "fiqa"
+    dataset = "nfcorpus" # 3633, 323
+    keep_in_memory = True
+    streaming = False
+    corpus_chunk_size = 512
+    batch_size = 256 # sentence bert model batch size
 
     #### Download fiqa.zip dataset and unzip the dataset
     url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
@@ -31,7 +35,7 @@ if __name__ == "__main__":
     # (2) fiqa/queries.jsonl (format: jsonlines)
     # (3) fiqa/qrels/test.tsv (format: tsv ("\t"))
 
-    corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+    corpus, queries, qrels = HFDataLoader(data_folder=data_path, streaming=streaming, keep_in_memory=keep_in_memory).load(split="test")
     qrels_dict = defaultdict(dict)
     def qrels_dict_init(row):
         qrels_dict[row['query-id']][row['corpus-id']] = int(row['score'])
@@ -45,11 +49,14 @@ if __name__ == "__main__":
     beir_model = models.SentenceBERT("msmarco-distilbert-base-tas-b")
 
     #### Start with Parallel search and evaluation
-    model = DRPES(beir_model, batch_size=512, target_devices=None, corpus_chunk_size=16384)
+    model = DRPES(beir_model, batch_size=batch_size, target_devices=None, corpus_chunk_size=corpus_chunk_size)
     retriever = EvaluateRetrieval(model, score_function="dot")
 
     #### Retrieve dense results (format of results is identical to qrels)
+    start_time = time.time()
     results = retriever.retrieve(corpus, queries)
+    end_time = time.time()
+    print("Time taken to retrieve: {:.2f} seconds".format(end_time - start_time))
 
     #### Optional: Stop the proccesses in the pool
     # beir_model.doc_model.stop_multi_process_pool(pool)

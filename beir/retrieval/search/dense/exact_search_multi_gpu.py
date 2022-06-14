@@ -1,3 +1,4 @@
+import os
 from datasets import Dataset
 from .util import cos_sim, dot_score
 import logging
@@ -6,11 +7,10 @@ from typing import Dict, List
 import math
 import queue
 from sentence_transformers import SentenceTransformer
-from multiprocess import set_start_method
-from accelerate import Accelerator, DistributedType
 from torch.utils.data import DataLoader
 from evaluate.module import EvaluationModule, EvaluationModuleInfo
 from datasets import Features, Value, Sequence
+from datasets.utils.filelock import FileLock
 from tqdm import tqdm
 import time
 logger = logging.getLogger(__name__)
@@ -22,12 +22,12 @@ class DummyMetric(EvaluationModule):
             description="dummy metric for tests",
             citation="insert citation here",
             features=Features(
-                {"cos_scores_top_k_values": Sequence(Value("float")), "cos_scores_top_k_idx": Sequence(Value("int64"))}
+                {"cos_scores_top_k_values": Sequence(Value("float")), "cos_scores_top_k_idx": Sequence(Value("int64")), "batch_index": Value("int64")},
             ),
         )
 
-    def _compute(self, cos_scores_top_k_values, cos_scores_top_k_idx):
-        return cos_scores_top_k_values, cos_scores_top_k_idx
+    def _compute(self, cos_scores_top_k_values, cos_scores_top_k_idx, batch_index):
+        return cos_scores_top_k_values, cos_scores_top_k_idx, batch_index
 
 
 #Parent class for any dense model
@@ -37,6 +37,12 @@ class DenseRetrievalParallelExactSearch:
         #model is class that provides encode_corpus() and encode_queries()
         self.model = model
         self.batch_size = batch_size
+        if target_devices is None:
+            if torch.cuda.is_available():
+                target_devices = ['cuda:{}'.format(i) for i in range(torch.cuda.device_count())]
+            else:
+                logger.info("CUDA is not available. Start 4 CPU worker")
+                target_devices = ['cpu']*4
         self.target_devices = target_devices  # PyTorch target devices, e.g. cuda:0, cuda:1... If None, all available CUDA devices will be used, or 4 CPU processes
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.score_function_desc = {'cos_sim': "Cosine Similarity", 'dot': "Dot Product"}
@@ -64,12 +70,11 @@ class DenseRetrievalParallelExactSearch:
         query_ids = list(queries['id'])
         self.results = {qid: {} for qid in query_ids}
         logger.info("Sorting Corpus by document length (Longest first)...")
-        corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))})
+        corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
         corpus = corpus.sort('len', reverse=True)
 
-        metric = DummyMetric()
-
-        # Instantiate dataloader
+        # Initiate dataloader
+        self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
         queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)
         corpus_dl = DataLoader(corpus, batch_size=self.corpus_chunk_size)
 
@@ -89,29 +94,29 @@ class DenseRetrievalParallelExactSearch:
         # copy the query embeddings to all target devices
         self.query_embeddings = query_embeddings
         self.top_k = top_k
-        self.score_function = score_function    
+        self.score_function = score_function
 
-        for step, corpus_batch in enumerate(corpus_dl):
-            start_time = time.time()
+        # Start the multi-process pool on all target devices
+        SentenceTransformer._encode_multi_process_worker = self._encode_multi_process_worker
+        pool = self.model.start_multi_process_pool(self.target_devices)
+
+        start_time = time.time()
+        for chunk_id, corpus_batch in enumerate(corpus_dl):
             with torch.no_grad():
-                corpus_embeds = self.model.encode_corpus(
-                    corpus_batch, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
+                self.model.encode_corpus_parallel(
+                    corpus_batch, pool=pool, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor, chunk_id=chunk_id)
 
-            cos_scores = self.score_functions[self.score_function](self.query_embeddings.to(corpus_embeds.device), corpus_embeds)
-            cos_scores[torch.isnan(cos_scores)] = -1
+        # Stop the proccesses in the pool and free memory
+        self.model.stop_multi_process_pool(pool, len_queue=chunk_id+1)
 
-            #Get top-k values
-            cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(self.top_k+1, len(cos_scores[1])), dim=1, largest=True, sorted=False)
-            cos_scores_top_k_values = cos_scores_top_k_values.T
-            cos_scores_top_k_idx = cos_scores_top_k_idx.T
-
-            # Store results in an Apache Arrow table
-            metric.add_batch(cos_scores_top_k_values=cos_scores_top_k_values, cos_scores_top_k_idx=cos_scores_top_k_idx)
-            end_time = time.time()
-            logger.info("Encoded and stored batch {} in {:.2f} seconds".format(step, end_time - start_time))
+        end_time = time.time()
+        logger.info("Encoded all batches in {:.2f} seconds".format(end_time - start_time))
 
         # Gather all results
-        cos_scores_top_k_values, cos_scores_top_k_idx = metric.compute()
+        metric = DummyMetric(experiment_id="test_experiment", num_process=len(self.target_devices), process_id=0)
+        metric.filelock = FileLock(os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow.lock"))
+
+        cos_scores_top_k_values, cos_scores_top_k_idx, chunk_ids = metric.compute()
 
         logger.info("Formatting results...")
         # Load corpus ids in memory
@@ -119,7 +124,7 @@ class DenseRetrievalParallelExactSearch:
         for query_itr in tqdm(range(len(query_embeddings))):
             query_id = query_ids[query_itr]
             for i in range(len(cos_scores_top_k_values)):
-                batch_num = i // (self.top_k+1)
+                batch_num = chunk_ids[i]
                 sub_corpus_id = cos_scores_top_k_idx[i][query_itr] + batch_num * self.corpus_chunk_size
                 score = cos_scores_top_k_values[i][query_itr]
                 corpus_id = corpus_ids[sub_corpus_id]
@@ -134,18 +139,27 @@ class DenseRetrievalParallelExactSearch:
         Internal working process to encode sentences in multi-process setup.
         Note: Added distributed similarity computing and finding top k similar docs.
         """
+        process_id = self.target_devices.index(target_device)
+        metric = DummyMetric(experiment_id="test_experiment", num_process=len(self.target_devices), process_id=process_id)
         while True:
             try:
                 id, batch_size, sentences = input_queue.get()
-                embeddings = model.encode(
+                corpus_embeds = model.encode(
                     sentences, device=target_device, show_progress_bar=False, convert_to_tensor=True, batch_size=batch_size
                 )
-                cos_scores = self.score_functions[self.score_function](self.query_embeddings[target_device], embeddings)
+
+                cos_scores = self.score_functions[self.score_function](self.query_embeddings.to(corpus_embeds.device), corpus_embeds)
                 cos_scores[torch.isnan(cos_scores)] = -1
 
                 #Get top-k values
                 cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(self.top_k+1, len(cos_scores[1])), dim=1, largest=True, sorted=False)
+                cos_scores_top_k_values = cos_scores_top_k_values.T
+                cos_scores_top_k_idx = cos_scores_top_k_idx.T
 
-                results_queue.put([id, cos_scores_top_k_values, cos_scores_top_k_idx])
+                # Store results in an Apache Arrow table
+                metric.add_batch(cos_scores_top_k_values=cos_scores_top_k_values, cos_scores_top_k_idx=cos_scores_top_k_idx, batch_index=[id]*len(cos_scores_top_k_values))
+
+                # Alarm that process finished processing a batch
+                results_queue.put(None)
             except queue.Empty:
                 break

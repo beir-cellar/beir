@@ -19,8 +19,6 @@ logger = logging.getLogger(__name__)
 class DummyMetric(EvaluationModule):
     def _info(self):
         return EvaluationModuleInfo(
-            description="dummy metric for tests",
-            citation="insert citation here",
             features=Features(
                 {"cos_scores_top_k_values": Sequence(Value("float")), "cos_scores_top_k_idx": Sequence(Value("int64")), "batch_index": Value("int64")},
             ),
@@ -75,6 +73,7 @@ class DenseRetrievalParallelExactSearch:
 
         # Initiate dataloader
         self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
+        self.corpus_chunk_size = min(self.corpus_chunk_size, len(corpus)-1) # to avoid getting error in metric.compute()
         queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)
         corpus_dl = DataLoader(corpus, batch_size=self.corpus_chunk_size)
 

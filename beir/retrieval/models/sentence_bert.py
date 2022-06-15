@@ -24,7 +24,7 @@ class SentenceBERT:
     def start_multi_process_pool(self, target_devices: List[str] = None) -> Dict[str, object]:
         return self.doc_model.start_multi_process_pool(target_devices=target_devices)
 
-    def stop_multi_process_pool(self, pool: Dict[str, object]:
+    def stop_multi_process_pool(self, pool: Dict[str, object]):
         output_queue = pool['output']
         [output_queue.get() for _ in range(len(pool['processes']))]
         return self.doc_model.stop_multi_process_pool(pool)

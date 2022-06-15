@@ -29,6 +29,12 @@ class DummyMetric(EvaluationModule):
     def _compute(self, cos_scores_top_k_values, cos_scores_top_k_idx, batch_index):
         return cos_scores_top_k_values, cos_scores_top_k_idx, batch_index
 
+    def warmup(self):
+        """
+        Add dummy batch to acquire filelocks for all processes and avoid getting errors
+        """
+        self.add_batch(cos_scores_top_k_values=torch.ones((1,5)), cos_scores_top_k_idx=torch.ones((1,5)), batch_index=[-1])
+
 
 #Parent class for any dense model
 class DenseRetrievalParallelExactSearch:
@@ -125,6 +131,8 @@ class DenseRetrievalParallelExactSearch:
             query_id = query_ids[query_itr]
             for i in range(len(cos_scores_top_k_values)):
                 batch_num = chunk_ids[i]
+                if batch_num == -1:
+                    continue
                 sub_corpus_id = cos_scores_top_k_idx[i][query_itr] + batch_num * self.corpus_chunk_size
                 score = cos_scores_top_k_values[i][query_itr]
                 corpus_id = corpus_ids[sub_corpus_id]
@@ -141,6 +149,7 @@ class DenseRetrievalParallelExactSearch:
         """
         process_id = self.target_devices.index(target_device)
         metric = DummyMetric(experiment_id="test_experiment", num_process=len(self.target_devices), process_id=process_id)
+        metric.warmup()
         while True:
             try:
                 id, batch_size, sentences = input_queue.get()

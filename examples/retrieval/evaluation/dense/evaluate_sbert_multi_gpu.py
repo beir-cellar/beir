@@ -19,10 +19,13 @@ logging.basicConfig(level=logging.INFO)
 if __name__ == "__main__":
 
     dataset = "nfcorpus" # 3633, 323
-    keep_in_memory = True
+    keep_in_memory = False
     streaming = False
-    corpus_chunk_size = 512
-    batch_size = 256 # sentence bert model batch size
+    corpus_chunk_size = 128
+    batch_size = 32 # sentence bert model batch size
+    target_devices = ['cpu']*2
+    model_name = "msmarco-distilbert-base-tas-b"
+    # model_name = "average_word_embeddings_komninos"
 
     #### Download fiqa.zip dataset and unzip the dataset
     url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
@@ -41,10 +44,10 @@ if __name__ == "__main__":
     #### Provide any pretrained sentence-transformers model
     #### The model was fine-tuned using cosine-similarity.
     #### Complete list - https://www.sbert.net/docs/pretrained_models.html
-    beir_model = models.SentenceBERT("msmarco-distilbert-base-tas-b")
+    beir_model = models.SentenceBERT(model_name)
 
     #### Start with Parallel search and evaluation
-    model = DRPES(beir_model, batch_size=batch_size, target_devices=None, corpus_chunk_size=corpus_chunk_size)
+    model = DRPES(beir_model, batch_size=batch_size, target_devices=target_devices, corpus_chunk_size=corpus_chunk_size)
     retriever = EvaluateRetrieval(model, score_function="dot")
 
     #### Retrieve dense results (format of results is identical to qrels)

@@ -36,11 +36,6 @@ if __name__ == "__main__":
     # (3) fiqa/qrels/test.tsv (format: tsv ("\t"))
 
     corpus, queries, qrels = HFDataLoader(data_folder=data_path, streaming=streaming, keep_in_memory=keep_in_memory).load(split="test")
-    qrels_dict = defaultdict(dict)
-    def qrels_dict_init(row):
-        qrels_dict[row['query-id']][row['corpus-id']] = int(row['score'])
-    qrels.map(qrels_dict_init)
-    qrels = qrels_dict
 
     #### Dense Retrieval using SBERT (Sentence-BERT) ####
     #### Provide any pretrained sentence-transformers model

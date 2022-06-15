@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Dict, Tuple
 import os
 import logging
@@ -53,8 +54,13 @@ class HFDataLoader:
         if os.path.exists(self.qrels_file):
             self._load_qrels()
             # filter queries with no qrels
-            qids = self.qrels['query-id']
-            self.queries = self.queries.filter(lambda x: x['id'] in qids)
+            qrels_dict = defaultdict(dict)
+
+            def qrels_dict_init(row):
+                qrels_dict[row['query-id']][row['corpus-id']] = int(row['score'])
+            self.qrels.map(qrels_dict_init)
+            self.qrels = qrels_dict
+            self.queries = self.queries.filter(lambda x: x['id'] in self.qrels)
             logger.info("Loaded %d %s Queries.", len(self.queries), split.upper())
             logger.info("Query Example: %s", self.queries[0])
         

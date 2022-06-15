@@ -1,3 +1,4 @@
+from time import time
 from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
@@ -15,7 +16,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-dataset = "nfcorpus"
+dataset = "trec-covid"
 
 #### Download nfcorpus.zip dataset and unzip the dataset
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
@@ -35,12 +36,14 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 #### The model was fine-tuned using cosine-similarity.
 #### Complete list - https://www.sbert.net/docs/pretrained_models.html
 
-model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=16)
-retriever = EvaluateRetrieval(model, score_function="cos_sim")
+model = DRES(models.SentenceBERT("msmarco-distilbert-base-tas-b"), batch_size=256, corpus_chunk_size=512*9999)
+retriever = EvaluateRetrieval(model, score_function="dot")
 
 #### Retrieve dense results (format of results is identical to qrels)
+start_time = time()
 results = retriever.retrieve(corpus, queries)
-
+end_time = time()
+print("Time taken to retrieve: {:.2f} seconds".format(end_time - start_time))
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 
 logging.info("Retriever evaluation for k in: {}".format(retriever.k_values))

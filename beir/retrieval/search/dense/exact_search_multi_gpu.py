@@ -89,9 +89,6 @@ class DenseRetrievalParallelExactSearch:
             query_embeddings.append(q_embeds)
         query_embeddings = torch.cat(query_embeddings, dim=0)
 
-        logger.info("Encoding Corpus in batches... Warning: This might take a while!")
-        logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
-
         # copy the query embeddings to all target devices
         self.query_embeddings = query_embeddings
         self.top_k = top_k
@@ -101,14 +98,16 @@ class DenseRetrievalParallelExactSearch:
         SentenceTransformer._encode_multi_process_worker = self._encode_multi_process_worker
         pool = self.model.start_multi_process_pool(self.target_devices)
 
+        logger.info("Encoding Corpus in batches... Warning: This might take a while!")
+        logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
         start_time = time.time()
-        for chunk_id, corpus_batch in enumerate(corpus_dl):
+        for chunk_id, corpus_batch in tqdm(enumerate(corpus_dl), total=len(corpus) // self.corpus_chunk_size):
             with torch.no_grad():
                 self.model.encode_corpus_parallel(
                     corpus_batch, pool=pool, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor, chunk_id=chunk_id)
 
         # Stop the proccesses in the pool and free memory
-        self.model.stop_multi_process_pool(pool, len_queue=chunk_id+1)
+        self.model.stop_multi_process_pool(pool)
 
         end_time = time.time()
         logger.info("Encoded all batches in {:.2f} seconds".format(end_time - start_time))

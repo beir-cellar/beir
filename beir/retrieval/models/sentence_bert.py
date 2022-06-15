@@ -24,11 +24,9 @@ class SentenceBERT:
     def start_multi_process_pool(self, target_devices: List[str] = None) -> Dict[str, object]:
         return self.doc_model.start_multi_process_pool(target_devices=target_devices)
 
-    def stop_multi_process_pool(self, pool: Dict[str, object], len_queue: int = None):
+    def stop_multi_process_pool(self, pool: Dict[str, object]:
         output_queue = pool['output']
-        if len_queue is not None:
-            for _ in tqdm(range(len_queue)):
-                output_queue.get()
+        [output_queue.get() for _ in range(len(pool['processes']))]
         return self.doc_model.stop_multi_process_pool(pool)
 
     def encode_queries(self, queries: List[str], batch_size: int = 16, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
@@ -48,5 +46,9 @@ class SentenceBERT:
         else:
             sentences = [(doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip() for doc in corpus]
         
+        if chunk_id is not None and chunk_id >= len(pool['processes']):
+            output_queue = pool['output']
+            output_queue.get()
+
         input_queue = pool['input']
         input_queue.put([chunk_id, batch_size, sentences])

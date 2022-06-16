@@ -3,7 +3,7 @@ from datasets import Dataset
 from .util import cos_sim, dot_score
 import logging
 import torch
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import math
 import queue
 from sentence_transformers import SentenceTransformer
@@ -73,17 +73,9 @@ class DenseRetrievalParallelExactSearch:
         if score_function not in self.score_functions:
             raise ValueError("score function: {} must be either (cos_sim) for cosine similarity or (dot) for dot product".format(score_function))
             
-        query_ids = list(queries['id'])
-        self.results = {qid: {} for qid in query_ids}
-        logger.info("Sorting Corpus by document length (Longest first)...")
-        corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
-        corpus = corpus.sort('len', reverse=True)
-
-        # Initiate dataloader
         self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
         self.corpus_chunk_size = min(self.corpus_chunk_size, len(corpus)-1) # to avoid getting error in metric.compute()
-        queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)
-        corpus_dl = DataLoader(corpus, batch_size=self.corpus_chunk_size)
+        queries_dl, corpus_dl = self.init_dataloaders(corpus, queries, sort_corpus=True)
 
         # Encode queries
         logger.info("Encoding Queries in batches...")
@@ -126,7 +118,9 @@ class DenseRetrievalParallelExactSearch:
 
         logger.info("Formatting results...")
         # Load corpus ids in memory
+        query_ids = queries['id']
         corpus_ids = corpus['id']
+        self.results = {qid: {} for qid in query_ids}
         for query_itr in tqdm(range(len(query_embeddings))):
             query_id = query_ids[query_itr]
             for i in range(len(cos_scores_top_k_values)):
@@ -140,6 +134,17 @@ class DenseRetrievalParallelExactSearch:
                     self.results[query_id][corpus_id] = score
 
         return self.results 
+
+    def init_dataloaders(self, corpus: Dataset, queries: Dataset, sort_corpus: bool = True) -> Tuple[DataLoader, DataLoader]:
+        if sort_corpus:
+            logger.info("Sorting Corpus by document length (Longest first)...")
+            corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
+            corpus = corpus.sort('len', reverse=True)
+
+        # Initiate dataloader
+        queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)
+        corpus_dl = DataLoader(corpus, batch_size=self.corpus_chunk_size)
+        return queries_dl, corpus_dl
 
     def _encode_multi_process_worker(self, process_id, device, model, input_queue, results_queue):
         """

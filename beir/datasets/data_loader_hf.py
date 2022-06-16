@@ -14,12 +14,10 @@ class HFDataLoader:
         self.corpus = {}
         self.queries = {}
         self.qrels = {}
-
+        self.hf_repo = hf_repo
         if hf_repo:
             logger.warn("A huggingface repository is provided. This will override the data_folder, prefix and *_file arguments.")
-            self.hf_repo = hf_repo
             self.hf_repo_qrels = hf_repo_qrels if hf_repo_qrels else hf_repo + "-qrels"
-
         else:
             # data folder would contain these files: 
             # (1) fiqa/corpus.jsonl  (format: jsonlines)

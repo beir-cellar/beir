@@ -30,7 +30,7 @@ if __name__ == "__main__":
     model_name = "msmarco-distilbert-base-tas-b"
     target_devices = None # ['cpu']*2
 
-    corpus, queries, qrels = HFDataLoader(fhf_repo="BeIR/{dataset}", streaming=streaming, keep_in_memory=keep_in_memory).load(split="test")
+    corpus, queries, qrels = HFDataLoader(hf_repo=f"BeIR/{dataset}", streaming=streaming, keep_in_memory=keep_in_memory).load(split="test")
 
     #### Dense Retrieval using SBERT (Sentence-BERT) ####
     #### Provide any pretrained sentence-transformers model

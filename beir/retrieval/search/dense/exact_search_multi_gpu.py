@@ -141,20 +141,19 @@ class DenseRetrievalParallelExactSearch:
 
         return self.results 
 
-    def _encode_multi_process_worker(self, target_device: str, model, input_queue, results_queue):
+    def _encode_multi_process_worker(self, process_id, device, model, input_queue, results_queue):
         """
         (taken from UKPLab/sentence-transformers/sentence_transformers/SentenceTransformer.py)
         Internal working process to encode sentences in multi-process setup.
         Note: Added distributed similarity computing and finding top k similar docs.
         """
-        process_id = self.target_devices.index(target_device)
         metric = DummyMetric(experiment_id="test_experiment", num_process=len(self.target_devices), process_id=process_id)
         metric.warmup()
         while True:
             try:
                 id, batch_size, sentences = input_queue.get()
                 corpus_embeds = model.encode(
-                    sentences, device=target_device, show_progress_bar=False, convert_to_tensor=True, batch_size=batch_size
+                    sentences, device=device, show_progress_bar=False, convert_to_tensor=True, batch_size=batch_size
                 )
 
                 cos_scores = self.score_functions[self.score_function](self.query_embeddings.to(corpus_embeds.device), corpus_embeds)

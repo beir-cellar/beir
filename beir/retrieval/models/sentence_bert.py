@@ -1,5 +1,6 @@
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
+import torch.multiprocessing as mp
 from typing import List, Dict, Union, Tuple
 import numpy as np
 import logging
@@ -22,7 +23,19 @@ class SentenceBERT:
             self.doc_model = SentenceTransformer(model_path[1])
     
     def start_multi_process_pool(self, target_devices: List[str] = None) -> Dict[str, object]:
-        return self.doc_model.start_multi_process_pool(target_devices=target_devices)
+        logger.info("Start multi-process pool on devices: {}".format(', '.join(map(str, target_devices))))
+
+        ctx = mp.get_context('spawn')
+        input_queue = ctx.Queue()
+        output_queue = ctx.Queue()
+        processes = []
+
+        for process_id, device_name in enumerate(target_devices):
+            p = ctx.Process(target=SentenceTransformer._encode_multi_process_worker, args=(process_id, device_name, self.doc_model, input_queue, output_queue), daemon=True)
+            p.start()
+            processes.append(p)
+
+        return {'input': input_queue, 'output': output_queue, 'processes': processes}
 
     def stop_multi_process_pool(self, pool: Dict[str, object]):
         output_queue = pool['output']

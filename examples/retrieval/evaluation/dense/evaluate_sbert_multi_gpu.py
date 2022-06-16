@@ -28,22 +28,9 @@ if __name__ == "__main__":
     corpus_chunk_size = 2048
     batch_size = 256 # sentence bert model batch size
     model_name = "msmarco-distilbert-base-tas-b"
-    use_old = False
+    target_devices = None # ['cpu']*2
 
-    if use_old:
-        #### Download fiqa.zip dataset and unzip the dataset
-        url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
-        out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
-        data_path = util.download_and_unzip(url, out_dir)
-
-        #### Provide the data path where fiqa has been downloaded and unzipped to the data loader
-        # data folder would contain these files: 
-        # (1) fiqa/corpus.jsonl  (format: jsonlines)
-        # (2) fiqa/queries.jsonl (format: jsonlines)
-        # (3) fiqa/qrels/test.tsv (format: tsv ("\t"))
-        corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
-    else:
-        corpus, queries, qrels = HFDataLoader(fhf_repo="BeIR/{dataset}", streaming=streaming, keep_in_memory=keep_in_memory).load(split="test")
+    corpus, queries, qrels = HFDataLoader(fhf_repo="BeIR/{dataset}", streaming=streaming, keep_in_memory=keep_in_memory).load(split="test")
 
     #### Dense Retrieval using SBERT (Sentence-BERT) ####
     #### Provide any pretrained sentence-transformers model
@@ -52,10 +39,7 @@ if __name__ == "__main__":
     beir_model = models.SentenceBERT(model_name)
 
     #### Start with Parallel search and evaluation
-    if use_old:
-        model = DRES(beir_model, batch_size=batch_size, corpus_chunk_size=corpus_chunk_size)
-    else:
-        model = DRPES(beir_model, batch_size=batch_size, target_devices=None, corpus_chunk_size=corpus_chunk_size)
+    model = DRPES(beir_model, batch_size=batch_size, target_devices=target_devices, corpus_chunk_size=corpus_chunk_size)
     retriever = EvaluateRetrieval(model, score_function="dot")
 
     #### Retrieve dense results (format of results is identical to qrels)

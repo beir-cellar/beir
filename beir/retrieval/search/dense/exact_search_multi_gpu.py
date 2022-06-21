@@ -60,6 +60,7 @@ class DenseRetrievalParallelExactSearch:
         self.query_embeddings = {}
         self.top_k = None
         self.score_function = None
+        self.sort_corpus = True
     
     def search(self, 
                corpus: Dataset, 
@@ -75,7 +76,15 @@ class DenseRetrievalParallelExactSearch:
             
         self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
         self.corpus_chunk_size = min(self.corpus_chunk_size, len(corpus)-1) # to avoid getting error in metric.compute()
-        queries_dl, corpus_dl = self.init_dataloaders(corpus, queries, sort_corpus=True)
+        
+        if self.sort_corpus:
+            logger.info("Sorting Corpus by document length (Longest first)...")
+            corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
+            corpus = corpus.sort('len', reverse=True)
+
+        # Initiate dataloader
+        queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)
+        corpus_dl = DataLoader(corpus, batch_size=self.corpus_chunk_size)
 
         # Encode queries
         logger.info("Encoding Queries in batches...")
@@ -135,17 +144,6 @@ class DenseRetrievalParallelExactSearch:
 
         return self.results 
 
-    def init_dataloaders(self, corpus: Dataset, queries: Dataset, sort_corpus: bool = True) -> Tuple[DataLoader, DataLoader]:
-        if sort_corpus:
-            logger.info("Sorting Corpus by document length (Longest first)...")
-            corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
-            corpus = corpus.sort('len', reverse=True)
-
-        # Initiate dataloader
-        queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)
-        corpus_dl = DataLoader(corpus, batch_size=self.corpus_chunk_size)
-        return queries_dl, corpus_dl
-
     def _encode_multi_process_worker(self, process_id, device, model, input_queue, results_queue):
         """
         (taken from UKPLab/sentence-transformers/sentence_transformers/SentenceTransformer.py)
@@ -158,7 +156,7 @@ class DenseRetrievalParallelExactSearch:
             try:
                 id, batch_size, sentences = input_queue.get()
                 corpus_embeds = model.encode(
-                    sentences, device=device, show_progress_bar=False, convert_to_tensor=True, batch_size=batch_size
+                    sentences, device=device, show_progress_bar=self.show_progress_bar, convert_to_tensor=True, batch_size=batch_size
                 )
 
                 cos_scores = self.score_functions[self.score_function](self.query_embeddings.to(corpus_embeds.device), corpus_embeds)

@@ -1,5 +1,6 @@
+from datetime import datetime
 import os
-from datasets import Dataset
+from datasets import Array2D, Dataset
 from .util import cos_sim, dot_score
 import logging
 import torch
@@ -13,27 +14,36 @@ from datasets import Features, Value, Sequence
 from datasets.utils.filelock import FileLock
 from tqdm import tqdm
 import time
+import numpy as np
 logger = logging.getLogger(__name__)
 
 
 class DummyMetric(EvaluationModule):
+    len_queries = None
     def _info(self):
         return EvaluationModuleInfo(
             description="dummy metric to handle storing middle results",
             citation="",
             features=Features(
-                {"cos_scores_top_k_values": Sequence(Value("float")), "cos_scores_top_k_idx": Sequence(Value("int64")), "batch_index": Value("int64")},
+                {"cos_scores_top_k_values": Array2D((None, self.len_queries), "float32"), "cos_scores_top_k_idx": Array2D((None, self.len_queries), "int64"), "batch_index": Value("int64")},
             ),
         )
 
     def _compute(self, cos_scores_top_k_values, cos_scores_top_k_idx, batch_index):
+        for i in range(len(batch_index) - 1, -1, -1):
+            if batch_index[i] == -1:
+                del cos_scores_top_k_values[i]
+                del cos_scores_top_k_idx[i]
+        batch_index = [e for e in batch_index if e != -1]
+        cos_scores_top_k_values = np.concatenate(cos_scores_top_k_values, axis=0)
+        cos_scores_top_k_idx = np.concatenate(cos_scores_top_k_idx, axis=0)
         return cos_scores_top_k_values, cos_scores_top_k_idx, batch_index
 
     def warmup(self):
         """
         Add dummy batch to acquire filelocks for all processes and avoid getting errors
         """
-        self.add_batch(cos_scores_top_k_values=torch.ones((1,5)), cos_scores_top_k_idx=torch.ones((1,5)), batch_index=[-1])
+        self.add_batch(cos_scores_top_k_values=torch.ones((1, 1, self.len_queries), dtype=torch.float32), cos_scores_top_k_idx=torch.ones((1, 1, self.len_queries), dtype=torch.int64), batch_index=-torch.ones(1, dtype=torch.int64))
 
 
 #Parent class for any dense model
@@ -61,6 +71,7 @@ class DenseRetrievalParallelExactSearch:
         self.top_k = None
         self.score_function = None
         self.sort_corpus = True
+        self.experiment_id = f"test_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     
     def search(self, 
                corpus: Dataset, 
@@ -77,10 +88,10 @@ class DenseRetrievalParallelExactSearch:
         self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
         self.corpus_chunk_size = min(self.corpus_chunk_size, len(corpus)-1) # to avoid getting error in metric.compute()
         
-        if self.sort_corpus:
-            logger.info("Sorting Corpus by document length (Longest first)...")
-            corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
-            corpus = corpus.sort('len', reverse=True)
+        # if self.sort_corpus:
+        #     logger.info("Sorting Corpus by document length (Longest first)...")
+        #     corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
+        #     corpus = corpus.sort('len', reverse=True)
 
         # Initiate dataloader
         queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)
@@ -120,24 +131,26 @@ class DenseRetrievalParallelExactSearch:
         logger.info("Encoded all batches in {:.2f} seconds".format(end_time - start_time))
 
         # Gather all results
-        metric = DummyMetric(experiment_id="test_experiment", num_process=len(self.target_devices), process_id=0)
+        DummyMetric.len_queries = len(queries)
+        metric = DummyMetric(experiment_id=self.experiment_id, num_process=len(self.target_devices), process_id=0)
         metric.filelock = FileLock(os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow.lock"))
 
         cos_scores_top_k_values, cos_scores_top_k_idx, chunk_ids = metric.compute()
+        chunk_ids = np.repeat(chunk_ids, self.top_k+1)
 
         logger.info("Formatting results...")
         # Load corpus ids in memory
         query_ids = queries['id']
         corpus_ids = corpus['id']
         self.results = {qid: {} for qid in query_ids}
-        for query_itr in tqdm(range(len(query_embeddings))):
+        for query_itr in tqdm(range(len(query_embeddings))): #TODO: too slow
             query_id = query_ids[query_itr]
             for i in range(len(cos_scores_top_k_values)):
                 batch_num = chunk_ids[i]
                 if batch_num == -1:
                     continue
                 sub_corpus_id = cos_scores_top_k_idx[i][query_itr] + batch_num * self.corpus_chunk_size
-                score = cos_scores_top_k_values[i][query_itr]
+                score = cos_scores_top_k_values[i][query_itr].item() # convert np.float to float
                 corpus_id = corpus_ids[sub_corpus_id]
                 if corpus_id != query_id:
                     self.results[query_id][corpus_id] = score
@@ -150,7 +163,8 @@ class DenseRetrievalParallelExactSearch:
         Internal working process to encode sentences in multi-process setup.
         Note: Added distributed similarity computing and finding top k similar docs.
         """
-        metric = DummyMetric(experiment_id="test_experiment", num_process=len(self.target_devices), process_id=process_id)
+        DummyMetric.len_queries = len(self.query_embeddings)
+        metric = DummyMetric(experiment_id=self.experiment_id, num_process=len(self.target_devices), process_id=process_id)
         metric.warmup()
         while True:
             try:
@@ -166,6 +180,8 @@ class DenseRetrievalParallelExactSearch:
                 cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(self.top_k+1, len(cos_scores[1])), dim=1, largest=True, sorted=False)
                 cos_scores_top_k_values = cos_scores_top_k_values.T
                 cos_scores_top_k_idx = cos_scores_top_k_idx.T
+                cos_scores_top_k_values = cos_scores_top_k_values.unsqueeze(0)
+                cos_scores_top_k_idx = cos_scores_top_k_idx.unsqueeze(0)
 
                 # Store results in an Apache Arrow table
                 metric.add_batch(cos_scores_top_k_values=cos_scores_top_k_values, cos_scores_top_k_idx=cos_scores_top_k_idx, batch_index=[id]*len(cos_scores_top_k_values))

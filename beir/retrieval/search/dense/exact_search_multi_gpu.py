@@ -35,6 +35,7 @@ class DummyMetric(EvaluationModule):
                 del cos_scores_top_k_values[i]
                 del cos_scores_top_k_idx[i]
         batch_index = [e for e in batch_index if e != -1]
+        batch_index = np.repeat(batch_index, len(cos_scores_top_k_values[0]))
         cos_scores_top_k_values = np.concatenate(cos_scores_top_k_values, axis=0)
         cos_scores_top_k_idx = np.concatenate(cos_scores_top_k_idx, axis=0)
         return cos_scores_top_k_values, cos_scores_top_k_idx, batch_index
@@ -137,7 +138,6 @@ class DenseRetrievalParallelExactSearch:
         metric.cache_file_name = os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow")
 
         cos_scores_top_k_values, cos_scores_top_k_idx, chunk_ids = metric.compute()
-        chunk_ids = np.repeat(chunk_ids, self.top_k+1)
 
         logger.info("Formatting results...")
         # Load corpus ids in memory

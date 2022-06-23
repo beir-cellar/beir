@@ -134,6 +134,7 @@ class DenseRetrievalParallelExactSearch:
         DummyMetric.len_queries = len(queries)
         metric = DummyMetric(experiment_id=self.experiment_id, num_process=len(self.target_devices), process_id=0)
         metric.filelock = FileLock(os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow.lock"))
+        metric.cache_file_name = os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow")
 
         cos_scores_top_k_values, cos_scores_top_k_idx, chunk_ids = metric.compute()
         chunk_ids = np.repeat(chunk_ids, self.top_k+1)

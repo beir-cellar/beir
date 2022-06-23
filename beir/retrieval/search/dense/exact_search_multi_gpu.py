@@ -58,7 +58,7 @@ class DenseRetrievalParallelExactSearch:
                 target_devices = ['cuda:{}'.format(i) for i in range(torch.cuda.device_count())]
             else:
                 logger.info("CUDA is not available. Start 4 CPU worker")
-                target_devices = ['cpu']*4
+                target_devices = ['cpu']*1 # 4
         self.target_devices = target_devices  # PyTorch target devices, e.g. cuda:0, cuda:1... If None, all available CUDA devices will be used, or 4 CPU processes
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.score_function_desc = {'cos_sim': "Cosine Similarity", 'dot': "Dot Product"}

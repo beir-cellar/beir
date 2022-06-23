@@ -155,7 +155,11 @@ class DenseRetrievalParallelExactSearch:
                 corpus_id = corpus_ids[sub_corpus_id]
                 if corpus_id != query_id:
                     self.results[query_id][corpus_id] = score
-
+                    
+        # sort and keep only top_k results
+        for query_id in self.results:
+            self.results[query_id] = sorted(self.results[query_id].items(), key=lambda x: x[1], reverse=True)[:self.top_k+1]
+            self.results[query_id] = {k: v for k, v in self.results[query_id]}
         return self.results 
 
     def _encode_multi_process_worker(self, process_id, device, model, input_queue, results_queue):

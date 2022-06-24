@@ -89,10 +89,10 @@ class DenseRetrievalParallelExactSearch:
         self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
         self.corpus_chunk_size = min(self.corpus_chunk_size, len(corpus)-1) # to avoid getting error in metric.compute()
         
-        # if self.sort_corpus:
-        #     logger.info("Sorting Corpus by document length (Longest first)...")
-        #     corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
-        #     corpus = corpus.sort('len', reverse=True)
+        if self.sort_corpus:
+            logger.info("Sorting Corpus by document length (Longest first)...")
+            corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
+            corpus = corpus.sort('len', reverse=True)
 
         # Initiate dataloader
         queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)

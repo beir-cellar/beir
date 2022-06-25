@@ -25,7 +25,7 @@ class DummyMetric(EvaluationModule):
             description="dummy metric to handle storing middle results",
             citation="",
             features=Features(
-                {"cos_scores_top_k_values": Array2D((None, self.len_queries), "float32"), "cos_scores_top_k_idx": Array2D((None, self.len_queries), "int64"), "batch_index": Value("int64")},
+                {"cos_scores_top_k_values": Array2D((None, self.len_queries), "float32"), "cos_scores_top_k_idx": Array2D((None, self.len_queries), "int32"), "batch_index": Value("int32")},
             ),
         )
 
@@ -44,7 +44,7 @@ class DummyMetric(EvaluationModule):
         """
         Add dummy batch to acquire filelocks for all processes and avoid getting errors
         """
-        self.add_batch(cos_scores_top_k_values=torch.ones((1, 1, self.len_queries), dtype=torch.float32), cos_scores_top_k_idx=torch.ones((1, 1, self.len_queries), dtype=torch.int64), batch_index=-torch.ones(1, dtype=torch.int64))
+        self.add_batch(cos_scores_top_k_values=torch.ones((1, 1, self.len_queries), dtype=torch.float32), cos_scores_top_k_idx=torch.ones((1, 1, self.len_queries), dtype=torch.int32), batch_index=-torch.ones(1, dtype=torch.int32))
 
 
 #Parent class for any dense model

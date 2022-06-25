@@ -72,7 +72,7 @@ class DenseRetrievalParallelExactSearch:
         self.top_k = None
         self.score_function = None
         self.sort_corpus = True
-        self.experiment_id = f"test_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+        self.experiment_id = "exact_search_multi_gpu" # f"test_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     
     def search(self, 
                corpus: Dataset, 
@@ -85,6 +85,7 @@ class DenseRetrievalParallelExactSearch:
         #Returns a ranked list with the corpus ids
         if score_function not in self.score_functions:
             raise ValueError("score function: {} must be either (cos_sim) for cosine similarity or (dot) for dot product".format(score_function))
+        logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
             
         self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
         self.corpus_chunk_size = min(self.corpus_chunk_size, len(corpus)-1) # to avoid getting error in metric.compute()
@@ -118,12 +119,11 @@ class DenseRetrievalParallelExactSearch:
         pool = self.model.start_multi_process_pool(self.target_devices)
 
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
-        logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
         start_time = time.time()
         for chunk_id, corpus_batch in tqdm(enumerate(corpus_dl), total=len(corpus) // self.corpus_chunk_size):
             with torch.no_grad():
                 self.model.encode_corpus_parallel(
-                    corpus_batch, pool=pool, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor, chunk_id=chunk_id)
+                    corpus_batch, pool=pool, batch_size=self.batch_size, chunk_id=chunk_id)
 
         # Stop the proccesses in the pool and free memory
         self.model.stop_multi_process_pool(pool)
@@ -176,7 +176,7 @@ class DenseRetrievalParallelExactSearch:
                 try:
                     id, batch_size, sentences = input_queue.get()
                     corpus_embeds = model.encode(
-                        sentences, device=device, show_progress_bar=self.show_progress_bar, convert_to_tensor=True, batch_size=batch_size
+                        sentences, device=device, show_progress_bar=False, convert_to_tensor=True, batch_size=batch_size
                     ).detach()
 
                     cos_scores = self.score_functions[self.score_function](self.query_embeddings.to(corpus_embeds.device), corpus_embeds).detach()

@@ -38,7 +38,7 @@ class DummyMetric(EvaluationModule):
         batch_index = np.repeat(batch_index, len(cos_scores_top_k_values[0]))
         cos_scores_top_k_values = np.concatenate(cos_scores_top_k_values, axis=0)
         cos_scores_top_k_idx = np.concatenate(cos_scores_top_k_idx, axis=0)
-        return cos_scores_top_k_values, cos_scores_top_k_idx, batch_index
+        return cos_scores_top_k_values, cos_scores_top_k_idx, batch_index[:len(cos_scores_top_k_values)]
 
     def warmup(self):
         """
@@ -138,28 +138,27 @@ class DenseRetrievalParallelExactSearch:
         metric.cache_file_name = os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow")
 
         cos_scores_top_k_values, cos_scores_top_k_idx, chunk_ids = metric.compute()
+        cos_scores_top_k_idx = (cos_scores_top_k_idx.T + chunk_ids * self.corpus_chunk_size).T
+
+        # sort similar docs for each query by cosine similarity and keep only top_k
+        sorted_idx = np.argsort(cos_scores_top_k_values, axis=0)[::-1]
+        sorted_idx = sorted_idx[:self.top_k+1]
+        cos_scores_top_k_values = np.take_along_axis(cos_scores_top_k_values, sorted_idx, axis=0)
+        cos_scores_top_k_idx = np.take_along_axis(cos_scores_top_k_idx, sorted_idx, axis=0)
 
         logger.info("Formatting results...")
         # Load corpus ids in memory
         query_ids = queries['id']
         corpus_ids = corpus['id']
         self.results = {qid: {} for qid in query_ids}
-        for query_itr in tqdm(range(len(query_embeddings))): #TODO: too slow
+        for query_itr in tqdm(range(len(query_embeddings))):
             query_id = query_ids[query_itr]
             for i in range(len(cos_scores_top_k_values)):
-                batch_num = chunk_ids[i]
-                if batch_num == -1:
-                    continue
-                sub_corpus_id = cos_scores_top_k_idx[i][query_itr] + batch_num * self.corpus_chunk_size
+                sub_corpus_id = cos_scores_top_k_idx[i][query_itr]
                 score = cos_scores_top_k_values[i][query_itr].item() # convert np.float to float
                 corpus_id = corpus_ids[sub_corpus_id]
                 if corpus_id != query_id:
                     self.results[query_id][corpus_id] = score
-                    
-        # sort and keep only top_k results
-        for query_id in self.results:
-            self.results[query_id] = sorted(self.results[query_id].items(), key=lambda x: x[1], reverse=True)[:self.top_k+1]
-            self.results[query_id] = {k: v for k, v in self.results[query_id]}
         return self.results 
 
     def _encode_multi_process_worker(self, process_id, device, model, input_queue, results_queue):

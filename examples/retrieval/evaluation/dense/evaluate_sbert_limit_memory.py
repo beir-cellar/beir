@@ -2,10 +2,8 @@ from collections import defaultdict
 from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader_hf import HFDataLoader
-from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalParallelExactSearch as DRPES
-from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 import time
 
 import logging
@@ -20,26 +18,29 @@ logging.basicConfig(level=logging.INFO)
 #Important, you need to shield your code with if __name__. Otherwise, CUDA runs into issues when spawning new processes.
 if __name__ == "__main__":
 
-    tick = time.time()
+    dataset = "fiqa"
 
-    dataset = "nfcorpus"
-    keep_in_memory = False
-    streaming = False
-    corpus_chunk_size = 2048
-    batch_size = 256 # sentence bert model batch size
-    model_name = "msmarco-distilbert-base-tas-b"
-    target_devices = None # ['cpu']*2
+    #### Download fiqa.zip dataset and unzip the dataset
+    url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+    out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
+    data_path = util.download_and_unzip(url, out_dir)
 
-    corpus, queries, qrels = HFDataLoader(hf_repo=f"BeIR/{dataset}", streaming=streaming, keep_in_memory=keep_in_memory).load(split="test")
+    #### Provide the data path where fiqa has been downloaded and unzipped to the data loader
+    # data folder would contain these files: 
+    # (1) fiqa/corpus.jsonl  (format: jsonlines)
+    # (2) fiqa/queries.jsonl (format: jsonlines)
+    # (3) fiqa/qrels/test.tsv (format: tsv ("\t"))
+
+    corpus, queries, qrels = HFDataLoader(data_folder=data_path, streaming=False).load(split="test")
 
     #### Dense Retrieval using SBERT (Sentence-BERT) ####
     #### Provide any pretrained sentence-transformers model
     #### The model was fine-tuned using cosine-similarity.
     #### Complete list - https://www.sbert.net/docs/pretrained_models.html
-    beir_model = models.SentenceBERT(model_name)
+    beir_model = models.SentenceBERT("msmarco-distilbert-base-tas-b")
 
     #### Start with Parallel search and evaluation
-    model = DRPES(beir_model, batch_size=batch_size, target_devices=target_devices, corpus_chunk_size=corpus_chunk_size)
+    model = DRPES(beir_model, batch_size=512, target_devices=None, corpus_chunk_size=512*2)
     retriever = EvaluateRetrieval(model, score_function="dot")
 
     #### Retrieve dense results (format of results is identical to qrels)
@@ -47,6 +48,9 @@ if __name__ == "__main__":
     results = retriever.retrieve(corpus, queries)
     end_time = time.time()
     print("Time taken to retrieve: {:.2f} seconds".format(end_time - start_time))
+
+    #### Optional: Stop the proccesses in the pool
+    # beir_model.doc_model.stop_multi_process_pool(pool)
 
     #### Evaluate your retrieval using NDCG@k, MAP@K ...
 
@@ -56,9 +60,6 @@ if __name__ == "__main__":
     mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
     recall_cap = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="r_cap")
     hole = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="hole")
-
-    tock = time.time()
-    print("--- Total time taken: {:.2f} seconds ---".format(tock - tick))
 
     #### Print top-k documents retrieved ####
     top_k = 10

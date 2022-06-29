@@ -157,6 +157,9 @@ class BinaryFaissSearch(DenseRetrievalFaissSearch):
 
         return super().search(corpus, queries, top_k, score_function, **kwargs)
     
+    def get_index_name(self):
+        return "binary_faiss_index"
+    
 
 class PQFaissSearch(DenseRetrievalFaissSearch):
     def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, num_of_centroids: int = 96, 
@@ -199,6 +202,9 @@ class PQFaissSearch(DenseRetrievalFaissSearch):
             score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
         
         return super().search(corpus, queries, top_k, score_function, **kwargs)
+    
+    def get_index_name(self):
+        return "pq_faiss_index"
 
 
 class HNSWFaissSearch(DenseRetrievalFaissSearch):
@@ -238,6 +244,54 @@ class HNSWFaissSearch(DenseRetrievalFaissSearch):
             score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
         
         return super().search(corpus, queries, top_k, score_function, **kwargs)
+    
+    def get_index_name(self):
+        return "hnsw_faiss_index"
+
+class HNSWSQFaissSearch(DenseRetrievalFaissSearch):
+    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, hnsw_store_n: int = 128, 
+                 hnsw_ef_search: int = 128, hnsw_ef_construction: int = 200, similarity_metric=faiss.METRIC_INNER_PRODUCT, 
+                 quantizer_type: str = "QT_8bit", **kwargs):
+        super(HNSWSQFaissSearch, self).__init__(model, batch_size, corpus_chunk_size, **kwargs)
+        self.hnsw_store_n = hnsw_store_n
+        self.hnsw_ef_search = hnsw_ef_search
+        self.hnsw_ef_construction = hnsw_ef_construction
+        self.similarity_metric = similarity_metric
+        self.qname = quantizer_type
+    
+    def load(self, input_dir: str, prefix: str = "my-index", ext: str = "hnsw-sq"):
+        input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
+        base_index = faiss.read_index(input_faiss_path)
+        self.faiss_index = FaissTrainIndex(base_index, passage_ids)
+    
+    def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
+        faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
+
+        logger.info("Using Approximate Nearest Neighbours (HNSW) in SQ Mode!")
+        logger.info("Parameters Required: hnsw_store_n: {}".format(self.hnsw_store_n))
+        logger.info("Parameters Required: hnsw_ef_search: {}".format(self.hnsw_ef_search))
+        logger.info("Parameters Required: hnsw_ef_construction: {}".format(self.hnsw_ef_construction))
+        logger.info("Parameters Required: quantizer_type: {}".format(self.qname))
+        
+        qtype = getattr(faiss.ScalarQuantizer, self.qname)
+        base_index = faiss.IndexHNSWSQ(self.dim_size + 1, qtype, self.hnsw_store_n)
+        base_index.hnsw.efSearch = self.hnsw_ef_search
+        base_index.hnsw.efConstruction = self.hnsw_ef_construction
+        self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, base_index)
+
+    def save(self, output_dir: str, prefix: str = "my-index", ext: str = "hnsw-sq"):
+        super().save(output_dir, prefix, ext)
+    
+    def search(self, 
+            corpus: Dict[str, Dict[str, str]],
+            queries: Dict[str, str], 
+            top_k: int,
+            score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
+        
+        return super().search(corpus, queries, top_k, score_function, **kwargs)
+    
+    def get_index_name(self):
+        return "hnswsq_faiss_index"
 
 class FlatIPFaissSearch(DenseRetrievalFaissSearch):
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "flat"):
@@ -260,6 +314,9 @@ class FlatIPFaissSearch(DenseRetrievalFaissSearch):
             score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
         
         return super().search(corpus, queries, top_k, score_function, **kwargs)
+    
+    def get_index_name(self):
+        return "flat_faiss_index"
 
 class PCAFaissSearch(DenseRetrievalFaissSearch):
     def __init__(self, model, base_index: faiss.Index, output_dimension: int, batch_size: int = 128, 
@@ -291,6 +348,9 @@ class PCAFaissSearch(DenseRetrievalFaissSearch):
             score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
         
         return super().search(corpus, queries, top_k, score_function, **kwargs)
+    
+    def get_index_name(self):
+        return "pca_faiss_index"
 
 class SQFaissSearch(DenseRetrievalFaissSearch):
     def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, 
@@ -324,3 +384,6 @@ class SQFaissSearch(DenseRetrievalFaissSearch):
             score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
         
         return super().search(corpus, queries, top_k, score_function, **kwargs)
+    
+    def get_index_name(self):
+        return "sq_faiss_index"

@@ -23,7 +23,7 @@
     </a>
 </p>
 
-<h3 align="center">
+<h4 align="center">
     <p>
         <a href="https://openreview.net/forum?id=wCu6T5xFjeJ">Paper</a> |
         <a href="#beers-installation">Installation</a> |
@@ -31,7 +31,7 @@
         <a href="#beers-download-a-preprocessed-dataset">Datasets</a> |
         <a href="https://github.com/beir-cellar/beir/wiki">Wiki</a>
     <p>
-</h3>
+</h4>
 
 > The development of BEIR benchmark is supported by:
 

@@ -31,7 +31,11 @@ if __name__ == "__main__":
     # (2) fiqa/queries.jsonl (format: jsonlines)
     # (3) fiqa/qrels/test.tsv (format: tsv ("\t"))
 
+    #### Load our locally downloaded datasets via HFDataLoader to save RAM (i.e. do not load the whole corpus in RAM)
     corpus, queries, qrels = HFDataLoader(data_folder=data_path, streaming=False).load(split="test")
+
+    #### You can use our custom hosted BEIR datasets on HuggingFace again to save RAM (streaming=True) ####
+    # corpus, queries, qrels = HFDataLoader(hf_repo=f"BeIR/{dataset}", streaming=False, keep_in_memory=False).load(split="test")
 
     #### Dense Retrieval using SBERT (Sentence-BERT) ####
     #### Provide any pretrained sentence-transformers model

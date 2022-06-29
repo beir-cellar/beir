@@ -1,51 +1,58 @@
-from datetime import datetime
-import os
-from datasets import Array2D, Dataset
 from .util import cos_sim, dot_score
-import logging
-import torch
-from typing import Dict, List, Tuple
-import math
-import queue
 from sentence_transformers import SentenceTransformer
 from torch.utils.data import DataLoader
-from evaluate.module import EvaluationModule, EvaluationModuleInfo
 from datasets import Features, Value, Sequence
 from datasets.utils.filelock import FileLock
-from tqdm import tqdm
+from datasets import Array2D, Dataset
+from tqdm.autonotebook import tqdm
+from datetime import datetime
+from typing import Dict, List, Tuple
+
+import logging
+import torch
+import math
+import queue
+import os
 import time
 import numpy as np
+
 logger = logging.getLogger(__name__)
 
+import importlib.util
 
-class DummyMetric(EvaluationModule):
-    len_queries = None
-    def _info(self):
-        return EvaluationModuleInfo(
-            description="dummy metric to handle storing middle results",
-            citation="",
-            features=Features(
-                {"cos_scores_top_k_values": Array2D((None, self.len_queries), "float32"), "cos_scores_top_k_idx": Array2D((None, self.len_queries), "int32"), "batch_index": Value("int32")},
-            ),
-        )
+### HuggingFace Evaluate library (pip install evaluate) only available with Python >= 3.7.
+### Hence for no import issues with Python 3.6, we move DummyMetric if ``evaluate`` library is found.
+if importlib.util.find_spec("evaluate") is not None:
+    from evaluate.module import EvaluationModule, EvaluationModuleInfo
+    
+    class DummyMetric(EvaluationModule):
+        len_queries = None
+        
+        def _info(self):
+            return EvaluationModuleInfo(
+                description="dummy metric to handle storing middle results",
+                citation="",
+                features=Features(
+                    {"cos_scores_top_k_values": Array2D((None, self.len_queries), "float32"), "cos_scores_top_k_idx": Array2D((None, self.len_queries), "int32"), "batch_index": Value("int32")},
+                ),
+            )
 
-    def _compute(self, cos_scores_top_k_values, cos_scores_top_k_idx, batch_index):
-        for i in range(len(batch_index) - 1, -1, -1):
-            if batch_index[i] == -1:
-                del cos_scores_top_k_values[i]
-                del cos_scores_top_k_idx[i]
-        batch_index = [e for e in batch_index if e != -1]
-        batch_index = np.repeat(batch_index, len(cos_scores_top_k_values[0]))
-        cos_scores_top_k_values = np.concatenate(cos_scores_top_k_values, axis=0)
-        cos_scores_top_k_idx = np.concatenate(cos_scores_top_k_idx, axis=0)
-        return cos_scores_top_k_values, cos_scores_top_k_idx, batch_index[:len(cos_scores_top_k_values)]
+        def _compute(self, cos_scores_top_k_values, cos_scores_top_k_idx, batch_index):
+            for i in range(len(batch_index) - 1, -1, -1):
+                if batch_index[i] == -1:
+                    del cos_scores_top_k_values[i]
+                    del cos_scores_top_k_idx[i]
+            batch_index = [e for e in batch_index if e != -1]
+            batch_index = np.repeat(batch_index, len(cos_scores_top_k_values[0]))
+            cos_scores_top_k_values = np.concatenate(cos_scores_top_k_values, axis=0)
+            cos_scores_top_k_idx = np.concatenate(cos_scores_top_k_idx, axis=0)
+            return cos_scores_top_k_values, cos_scores_top_k_idx, batch_index[:len(cos_scores_top_k_values)]
 
-    def warmup(self):
-        """
-        Add dummy batch to acquire filelocks for all processes and avoid getting errors
-        """
-        self.add_batch(cos_scores_top_k_values=torch.ones((1, 1, self.len_queries), dtype=torch.float32), cos_scores_top_k_idx=torch.ones((1, 1, self.len_queries), dtype=torch.int32), batch_index=-torch.ones(1, dtype=torch.int32))
-
+        def warmup(self):
+            """
+            Add dummy batch to acquire filelocks for all processes and avoid getting errors
+            """
+            self.add_batch(cos_scores_top_k_values=torch.ones((1, 1, self.len_queries), dtype=torch.float32), cos_scores_top_k_idx=torch.ones((1, 1, self.len_queries), dtype=torch.int32), batch_index=-torch.ones(1, dtype=torch.int32))
 
 #Parent class for any dense model
 class DenseRetrievalParallelExactSearch:
@@ -86,6 +93,9 @@ class DenseRetrievalParallelExactSearch:
         if score_function not in self.score_functions:
             raise ValueError("score function: {} must be either (cos_sim) for cosine similarity or (dot) for dot product".format(score_function))
         logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
+
+        if importlib.util.find_spec("evaluate") is None:
+            raise ImportError("evaluate library not available. Please do ``pip install evaluate`` library with Python>=3.7 (not available with Python 3.6) to use distributed and multigpu evaluation.")
             
         self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
         self.corpus_chunk_size = min(self.corpus_chunk_size, len(corpus)-1) # to avoid getting error in metric.compute()

@@ -28,12 +28,12 @@
         <a href="https://openreview.net/forum?id=wCu6T5xFjeJ">Paper</a> |
         <a href="#beers-installation">Installation</a> |
         <a href="#beers-quick-example">Quick Example</a> |
-        <a href="#beers-download-a-preprocessed-dataset">Datasets</a> |
+        <a href="#beers-available-datasets">Datasets</a> |
         <a href="https://github.com/beir-cellar/beir/wiki">Wiki</a>
     <p>
 </h4>
 
-> The development of BEIR benchmark is supported by:
+<!-- > The development of BEIR benchmark is supported by: -->
 
 <h3 align="center">
     <a href="http://www.ukp.tu-darmstadt.de"><img style="float: left; padding: 2px 7px 2px 7px;" width="220" height="100" src="./images/ukp.png" /></a>
@@ -126,7 +126,6 @@ Command to generate md5hash using Terminal:  ``md5hash filename.zip``.
 | Dataset   | Website| BEIR-Name | Type | Queries  | Corpus | Rel D/Q | Down-load | md5 |
 | -------- | -----| ---------| --------- | ----------- | ---------| ---------| :----------: | :------:|
 | MSMARCO    | [Homepage](https://microsoft.github.io/msmarco/)| ``msmarco`` | ``train``<br>``dev``<br>``test``|  6,980   |  8.84M     |    1.1 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip) | ``444067daf65d982533ea17ebd59501e4`` |
-| MSMARCO v2 | [Homepage](https://microsoft.github.io/msmarco/TREC-Deep-Learning.html)| ``msmarco-v2`` | ``train``<br>``dev1``<br>``dev2``|  4,552<br>4,702   |  138M    |   | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco-v2.zip) | ``ba6238b403f0b345683885cc9390fff5`` |
 | TREC-COVID |  [Homepage](https://ir.nist.gov/covidSubmit/index.html)| ``trec-covid``| ``test``| 50|  171K| 493.5 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/trec-covid.zip) | ``ce62140cb23feb9becf6270d0d1fe6d1`` |
 | NFCorpus   | [Homepage](https://www.cl.uni-heidelberg.de/statnlpgroup/nfcorpus/) | ``nfcorpus`` | ``train``<br>``dev``<br>``test``|  323     |  3.6K     |  38.2 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/nfcorpus.zip) | ``a89dba18a62ef92f7d323ec890a0d38d`` |
 | BioASQ     | [Homepage](http://bioasq.org) | ``bioasq``|  ``train``<br>``test`` | 500    |  14.91M    |  8.05 | No | [How to Reproduce?](https://github.com/beir-cellar/beir/blob/main/examples/dataset#2-bioasq) |

@@ -1,13 +1,36 @@
-<h1 style="text-align:center">
+<h1 align="center">
 <img style="vertical-align:middle" width="450" height="180" src="https://raw.githubusercontent.com/benchmarkir/beir/main/images/color_logo_transparent_cropped.png" />
 </h1>
 
-![PyPI](https://img.shields.io/pypi/v/beir)
-[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=purple)](https://www.python.org/)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Nthakur20/StrapDown.js/graphs/commit-activity)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HfutiEhHMJLXiWGT8pcipxT5L2TpYEdt?usp=sharing)
-[![Downloads](https://pepy.tech/badge/beir)](https://pepy.tech/project/beir)
-[![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/benchmarkir/beir/)
+<p align="center">
+    <a href="https://github.com/beir-cellar/beir/releases">
+        <img alt="GitHub release" src="https://img.shields.io/github/release/beir-cellar/beir.svg">
+    </a>
+    <a href="https://www.python.org/">
+            <img alt="Build" src="https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=purple">
+    </a>
+    <a href="https://github.com/beir-cellar/beir/blob/master/LICENSE">
+        <img alt="License" src="https://img.shields.io/github/license/beir-cellar/beir.svg?color=green">
+    </a>
+    <a href="https://colab.research.google.com/drive/1HfutiEhHMJLXiWGT8pcipxT5L2TpYEdt?usp=sharing">
+        <img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg">
+    </a>
+    <a href="https://pepy.tech/project/beir">
+        <img alt="Downloads" src="https://pepy.tech/project/beir">
+    </a>
+    <a href="https://github.com/beir-cellar/beir/">
+        <img alt="Downloads" src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103">
+    </a>
+</p>
+
+<h3 align="center">
+    <p>
+        <a href="#beers-installation">Installation</a> |
+        <a href="#beers-features">Features</a> |
+        <a href="#beers-quick-example">Quick Example</a> |
+        <a href="#beers-download-a-preprocessed-dataset">Datasets</a>
+    <p>
+</h3>
 
 > The development of BEIR benchmark is supported by:
 
@@ -76,6 +99,44 @@ Tested with python versions 3.6 and 3.7
 - Wide settings included, covers diverse benchmarks useful for both academia and industry
 - Includes well-known retrieval architectures (lexical, dense, sparse and reranking-based)
 - Add and evaluate your own model in a easy framework using different state-of-the-art evaluation metrics
+
+## :beers: Quick Example
+
+```python
+from beir import util, LoggingHandler
+from beir.retrieval import models
+from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval.evaluation import EvaluateRetrieval
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+
+import logging
+import pathlib, os
+
+#### Just some code to print debug information to stdout
+logging.basicConfig(format='%(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO,
+                    handlers=[LoggingHandler()])
+#### /print debug information to stdout
+
+#### Download scifact.zip dataset and unzip the dataset
+dataset = "scifact"
+url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
+data_path = util.download_and_unzip(url, out_dir)
+
+#### Provide the data_path where scifact has been downloaded and unzipped
+corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+
+#### Load the SBERT model and retrieve using cosine-similarity
+model = DRES(models.SentenceBERT("msmarco-distilbert-base-v3"), batch_size=16)
+retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for dot-product
+results = retriever.retrieve(corpus, queries)
+
+#### Evaluate your model with NDCG@k, MAP@K, Recall@K and Precision@K  where k = [1,3,5,10,100,1000] 
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+```
+
 
 ## :beers: Leaderboard
 

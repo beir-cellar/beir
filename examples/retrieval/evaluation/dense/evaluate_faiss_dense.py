@@ -18,7 +18,7 @@ from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
-from beir.retrieval.search.dense import PQFaissSearch, HNSWFaissSearch, FlatIPFaissSearch
+from beir.retrieval.search.dense import PQFaissSearch, HNSWFaissSearch, FlatIPFaissSearch, HNSWSQFaissSearch    
 
 import logging
 import pathlib, os
@@ -78,13 +78,23 @@ faiss_search = FlatIPFaissSearch(model,
 #                                hnsw_ef_search=128,
 #                                hnsw_ef_construction=200)
 
+###############################################################
+#### HNSWSQ: Approximate Nearest Neighbours Search with SQ ####
+###############################################################
+
+# faiss_search = HNSWSQFaissSearch(model, 
+#                                 batch_size=128, 
+#                                 hnsw_store_n=128, 
+#                                 hnsw_ef_search=128,
+#                                 hnsw_ef_construction=200)
+
 #### Load faiss index from file or disk ####
 # We need two files to be present within the input_dir!
 # 1. input_dir/{prefix}.{ext}.faiss => which loads the faiss index.
 # 2. input_dir/{prefix}.{ext}.faiss => which loads mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
 
 prefix = "my-index"       # (default value)
-ext = "flat"              # or "pq", "hnsw"
+ext = "flat"              # or "pq", "hnsw", "hnsw-sq"
 input_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
 
 if os.path.exists(os.path.join(input_dir, "{}.{}.faiss".format(prefix, ext))):

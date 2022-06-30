@@ -123,7 +123,7 @@ ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_v
 
 ## :beers: Available Datasets
 
-Command to generate md5hash using Terminal:  ``md5hash filename.zip``.
+Command to generate md5hash using Terminal:  ``md5sum filename.zip``.
 
 You can view all datasets available **[here](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/)** or on **[HuggingFace](https://huggingface.co/BeIR)**.
 

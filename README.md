@@ -51,6 +51,8 @@
 
 For **an overview**, checkout our **new wiki** page: [https://github.com/beir-cellar/beir/wiki](https://github.com/beir-cellar/beir/wiki).
 
+For **models and datasets**, checkout out **HuggingFace (HF)** page: [https://huggingface.co/BeIR](https://huggingface.co/BeIR).
+
 For more information, checkout out our publications:
 
 - [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://openreview.net/forum?id=wCu6T5xFjeJ) (NeurIPS 2021, Datasets and Benchmarks Track)
@@ -123,6 +125,9 @@ ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_v
 
 Command to generate md5hash using Terminal:  ``md5hash filename.zip``.
 
+You can view all datasets available **[here](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/)** or on **[HuggingFace](https://huggingface.co/BeIR)**.
+
+
 | Dataset   | Website| BEIR-Name | Type | Queries  | Corpus | Rel D/Q | Down-load | md5 |
 | -------- | -----| ---------| --------- | ----------- | ---------| ---------| :----------: | :------:|
 | MSMARCO    | [Homepage](https://microsoft.github.io/msmarco/)| ``msmarco`` | ``train``<br>``dev``<br>``test``|  6,980   |  8.84M     |    1.1 | [Link](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip) | ``444067daf65d982533ea17ebd59501e4`` |
@@ -148,20 +153,35 @@ Command to generate md5hash using Terminal:  ``md5hash filename.zip``.
 
 ## :beers: Additional Information
 
-We also provide a variety of additional information in our [Wiki](https://github.com/beir-cellar/beir/wiki) page. 
+We also provide a variety of additional information in our **[Wiki](https://github.com/beir-cellar/beir/wiki)** page. 
 Please refer to these pages for the following:
 
-- [BEIR Leaderboard](https://docs.google.com/spreadsheets/d/1L8aACyPaXrL8iEelJLGqlMqXKPX2oSP_R10pZoy77Ns/edit#gid=0)
+
+### Quick Start
+
+- [Installing BEIR](https://github.com/beir-cellar/beir/wiki/Installing-beir)
 - [Examples and Tutorials](https://github.com/beir-cellar/beir/wiki/Examples-and-tutorials)
+
+### Datasets
+
+- [Datasets Available](https://github.com/beir-cellar/beir/wiki/Datasets-available)
 - [Multilingual Datasets](https://github.com/beir-cellar/beir/wiki/Multilingual-datasets)
 - [Load your Custom Dataset](https://github.com/beir-cellar/beir/wiki/Load-your-custom-dataset)
+
+### Models 
 - [Models Available](https://github.com/beir-cellar/beir/wiki/Models-available)
-- [Load your Custom Model](https://github.com/beir-cellar/beir/wiki/Load-your-custom-model)
+- [Evaluate your Custom Model](https://github.com/beir-cellar/beir/wiki/Evaluate-your-custom-model)
+
+### Metrics
+
 - [Metrics Available](https://github.com/beir-cellar/beir/wiki/Metrics-available)
-- [Course Material on IR](https://github.com/beir-cellar/beir/wiki/Course-material-on-ir)
 
+### Miscellaneous
 
-### :beers: Disclaimer
+- [BEIR Leaderboard](https://github.com/beir-cellar/beir/wiki/Leaderboard)
+- [Couse Material on IR](https://github.com/beir-cellar/beir/wiki/Course-material-on-ir)
+
+## :beers: Disclaimer
 
 Similar to Tensorflow [datasets](https://github.com/tensorflow/datasets) or HuggingFace's [datasets](https://github.com/huggingface/datasets) library, we just downloaded and prepared public datasets. We only distribute these datasets in a specific format, but we do not vouch for their quality or fairness, or claim that you have license to use the dataset. It remains the user's responsibility to determine whether you as a user have permission to use the dataset under the dataset's license and to cite the right owner of the dataset.
 

@@ -33,7 +33,7 @@ class BM25Search:
         sleep(self.sleep_for)
         self.es.create_index()
     
-    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: List[int], *args, **kwargs) -> Dict[str, Dict[str, float]]:
+    def search(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], top_k: int, *args, **kwargs) -> Dict[str, Dict[str, float]]:
         
         # Index the corpus within elastic-search
         # False, if the corpus has been already indexed

@@ -43,8 +43,20 @@ class EvaluateRetrieval:
     @staticmethod
     def evaluate(qrels: Dict[str, Dict[str, int]], 
                  results: Dict[str, Dict[str, float]], 
-                 k_values: List[int]) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, float], Dict[str, float]]:
-    
+                 k_values: List[int],
+                 ignore_identical_ids: bool=True) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, float], Dict[str, float]]:
+        
+        if ignore_identical_ids:
+            logging.info('Preprocessing the results to remove identical IDs. This is important for ArguAna and Quora')
+            popped = []
+            for qid, rels in results.items():
+                for pid in list(rels):
+                    if qid == pid:
+                        results[qid].pop(pid)
+                        popped.append(pid)
+            if len(popped):
+                logging.info(f'Removed {len(popped)} pairs. Examples: {popped[:3]}')
+
         ndcg = {}
         _map = {}
         recall = {}

@@ -47,15 +47,13 @@ class EvaluateRetrieval:
                  ignore_identical_ids: bool=True) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, float], Dict[str, float]]:
         
         if ignore_identical_ids:
-            logging.info('Preprocessing the results to remove identical IDs. This is important for ArguAna and Quora')
+            logging.info('For evaluation, we ignore identical query and document ids (default), please explicitly set ``ignore_identical_ids=False`` to ignore this.')
             popped = []
             for qid, rels in results.items():
                 for pid in list(rels):
                     if qid == pid:
                         results[qid].pop(pid)
                         popped.append(pid)
-            if len(popped):
-                logging.info(f'Removed {len(popped)} pairs. Examples: {popped[:3]}')
 
         ndcg = {}
         _map = {}

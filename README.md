@@ -29,7 +29,8 @@
         <a href="#beers-installation">Installation</a> |
         <a href="#beers-quick-example">Quick Example</a> |
         <a href="#beers-available-datasets">Datasets</a> |
-        <a href="https://github.com/beir-cellar/beir/wiki">Wiki</a>
+        <a href="https://github.com/beir-cellar/beir/wiki">Wiki</a> |
+        <a href="https://huggingface.co/BeIR">HF</a>
     <p>
 </h4>
 

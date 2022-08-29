@@ -42,11 +42,9 @@ if importlib.util.find_spec("evaluate") is not None:
                 if batch_index[i] == -1:
                     del cos_scores_top_k_values[i]
                     del cos_scores_top_k_idx[i]
-            batch_index = [e for e in batch_index if e != -1]
-            batch_index = np.repeat(batch_index, len(cos_scores_top_k_values[0]))
             cos_scores_top_k_values = np.concatenate(cos_scores_top_k_values, axis=0)
             cos_scores_top_k_idx = np.concatenate(cos_scores_top_k_idx, axis=0)
-            return cos_scores_top_k_values, cos_scores_top_k_idx, batch_index[:len(cos_scores_top_k_values)]
+            return cos_scores_top_k_values, cos_scores_top_k_idx
 
         def warmup(self):
             """
@@ -147,8 +145,7 @@ class DenseRetrievalParallelExactSearch:
         metric.filelock = FileLock(os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow.lock"))
         metric.cache_file_name = os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow")
 
-        cos_scores_top_k_values, cos_scores_top_k_idx, chunk_ids = metric.compute()
-        cos_scores_top_k_idx = (cos_scores_top_k_idx.T + chunk_ids * self.corpus_chunk_size).T
+        cos_scores_top_k_values, cos_scores_top_k_idx = metric.compute()
 
         # sort similar docs for each query by cosine similarity and keep only top_k
         sorted_idx = np.argsort(cos_scores_top_k_values, axis=0)[::-1]
@@ -195,6 +192,9 @@ class DenseRetrievalParallelExactSearch:
                     cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(self.top_k+1, len(cos_scores[1])), dim=1, largest=True, sorted=False)
                     cos_scores_top_k_values = cos_scores_top_k_values.T.unsqueeze(0).detach()
                     cos_scores_top_k_idx = cos_scores_top_k_idx.T.unsqueeze(0).detach()
+
+                    # correct sentence ids
+                    cos_scores_top_k_idx = cos_scores_top_k_idx + id * self.corpus_chunk_size
 
                     # Store results in an Apache Arrow table
                     metric.add_batch(cos_scores_top_k_values=cos_scores_top_k_values, cos_scores_top_k_idx=cos_scores_top_k_idx, batch_index=[id]*len(cos_scores_top_k_values))

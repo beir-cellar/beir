@@ -194,7 +194,7 @@ class DenseRetrievalParallelExactSearch:
                     cos_scores_top_k_idx = cos_scores_top_k_idx.T.unsqueeze(0).detach()
 
                     # correct sentence ids
-                    cos_scores_top_k_idx = cos_scores_top_k_idx + id * self.corpus_chunk_size
+                    cos_scores_top_k_idx += id * self.corpus_chunk_size
 
                     # Store results in an Apache Arrow table
                     metric.add_batch(cos_scores_top_k_values=cos_scores_top_k_values, cos_scores_top_k_idx=cos_scores_top_k_idx, batch_index=[id]*len(cos_scores_top_k_values))

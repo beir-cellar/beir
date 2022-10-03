@@ -3,6 +3,7 @@ import logging
 import sys
 import torch
 from typing import Dict, List
+import heapq
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,8 @@ class DenseRetrievalExactSearch:
         logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
 
         itr = range(0, len(corpus), self.corpus_chunk_size)
-
+        
+        result_heaps = {qid: [] for qid in query_ids}  # Keep only the top-k docs for each query
         for batch_num, corpus_start_idx in enumerate(itr):
             logger.info("Encoding Batch {}/{}...".format(batch_num+1, len(itr)))
             corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))
@@ -75,6 +77,13 @@ class DenseRetrievalExactSearch:
                 for sub_corpus_id, score in zip(cos_scores_top_k_idx[query_itr], cos_scores_top_k_values[query_itr]):
                     corpus_id = corpus_ids[corpus_start_idx+sub_corpus_id]
                     if corpus_id != query_id:
-                        self.results[query_id][corpus_id] = score
+                        if len(result_heaps[query_id]) < top_k:
+                            heapq.heappush(result_heaps[query_id], (score, corpus_id))
+                        else:
+                            heapq.heapreplace(result_heaps[query_id], (score, corpus_id))
+
+        for qid in result_heaps:
+            for score, corpus_id in result_heaps[qid]:
+                self.results[qid][corpus_id] = score
         
         return self.results 

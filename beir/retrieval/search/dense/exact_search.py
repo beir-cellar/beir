@@ -80,7 +80,7 @@ class DenseRetrievalExactSearch:
                         if len(result_heaps[query_id]) < top_k:
                             heapq.heappush(result_heaps[query_id], (score, corpus_id))
                         else:
-                            heapq.heapreplace(result_heaps[query_id], (score, corpus_id))
+                            heapq.heappushpop(result_heaps[query_id], (score, corpus_id))
 
         for qid in result_heaps:
             for score, corpus_id in result_heaps[qid]:

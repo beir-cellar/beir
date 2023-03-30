@@ -72,7 +72,7 @@ class DenseRetrievalParallelExactSearch:
         self.show_progress_bar = True #TODO: implement no progress bar if false
         self.convert_to_tensor = True
         self.results = {}
-
+        self.args = kwargs["args"]
         self.query_embeddings = {}
         self.top_k = None
         self.score_function = None
@@ -113,7 +113,7 @@ class DenseRetrievalParallelExactSearch:
         for step, queries_batch in enumerate(queries_dl):
             with torch.no_grad():
                 q_embeds = self.model.encode_queries(
-                    queries_batch['text'], batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
+                    queries_batch, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
             query_embeddings.append(q_embeds)
         query_embeddings = torch.cat(query_embeddings, dim=0)
 
@@ -181,9 +181,10 @@ class DenseRetrievalParallelExactSearch:
             while True:
                 try:
                     id, batch_size, sentences = input_queue.get()
-                    corpus_embeds = model.encode(
-                        sentences, device=device, show_progress_bar=False, convert_to_tensor=True, batch_size=batch_size
-                    ).detach()
+                    corpus_embeds = self.document_vectorizer(model=model, documents=sentences, overlap_percentage=self.args.overlap_percentage, max_input_length=model.max_seq_length, device=device,batch_size=batch_size).detach()
+                    # corpus_embeds = model.encode(
+                    #     sentences, device=device, show_progress_bar=False, convert_to_tensor=True, batch_size=batch_size
+                    # ).detach()
 
                     cos_scores = self.score_functions[self.score_function](self.query_embeddings.to(corpus_embeds.device), corpus_embeds).detach()
                     cos_scores[torch.isnan(cos_scores)] = -1
@@ -203,3 +204,137 @@ class DenseRetrievalParallelExactSearch:
                     results_queue.put(None)
                 except queue.Empty:
                     break
+    
+    # NOTE: There is a copy of document_vectorizer function in sentence_bert.py in BeIR package, update that too when changing this function if re-enabling SentenceTransformers models.
+    def document_vectorizer(
+        self,
+        model,
+        documents: List[str],
+        max_input_length: int,
+        overlap_percentage: int,
+        device,
+        batch_size,
+        token_keys: List[str] = None,
+    ) -> Dict:
+
+        documents_count = len(documents)
+        mil_without_spl_tokens = max_input_length - 1 # mil -> max input length
+        if not overlap_percentage:
+            overlap_percentage = [0]
+        if type(overlap_percentage) is int:
+            overlap_percentage = [overlap_percentage]
+        if token_keys == None:
+            token_keys = ["input_ids", "attention_mask"]
+
+        for overlap in overlap_percentage:
+            step_size = int(mil_without_spl_tokens * (1 - (overlap / 100)))
+            document_index_position = 0
+            sub_embeddings_counts = np.zeros(shape=documents_count, dtype=int)
+            last_segment_contributions = np.zeros(shape=documents_count, dtype=float)
+            max_len_in_batch = 0
+            inputs = []
+            context_masks = []
+            embeddings = []
+            token_count_total = 0
+            
+            if overlap > 0:
+                for document in documents:
+                    sub_embeddings_count = 0
+                    contribution = 0.0
+
+                    instruction_tokens = model.tokenizer.tokenize(document[0])
+                    instruction_token_ids = model.tokenizer.convert_tokens_to_ids(instruction_tokens)
+                    document_tokens = model.tokenizer.tokenize(document[1])
+                    document_token_ids = model.tokenizer.convert_tokens_to_ids(document_tokens)
+                    instruction_token_count = len(instruction_token_ids)
+                    document_token_count = len(document_token_ids)
+                    token_count = instruction_token_count + document_token_count
+                    token_count_total += token_count
+
+                    if token_count <= mil_without_spl_tokens:
+                        sub_embeddings = instruction_token_ids + document_token_ids
+                        inputs.append(sub_embeddings)
+                        sub_embeddings_count = 1
+                        if token_count > max_len_in_batch - 1:
+                            max_len_in_batch = token_count + 1
+                        context_masks.append(instruction_token_count)
+                    else:
+                        mil_without_start_end_instruction_tokens = mil_without_spl_tokens - instruction_token_count
+                        for i in range(
+                            mil_without_start_end_instruction_tokens, document_token_count, step_size
+                        ):
+                            sub_embeddings = instruction_token_ids + document_token_ids[i-(mil_without_start_end_instruction_tokens) : i]
+                            inputs.append(sub_embeddings)
+                            context_masks.append(instruction_token_count)
+                            sub_embeddings_count += 1
+
+                        remaining_tokens_count = (document_token_count - mil_without_start_end_instruction_tokens) % step_size
+                        if remaining_tokens_count:
+                            sub_embeddings = instruction_token_ids + document_token_ids[document_token_count - ((mil_without_start_end_instruction_tokens - step_size) + remaining_tokens_count):]
+                            inputs.append(sub_embeddings)
+                            context_masks.append(instruction_token_count)
+                            sub_embeddings_count += 1
+                            contribution = remaining_tokens_count/step_size
+                        max_len_in_batch = max_input_length
+
+                    last_segment_contributions[document_index_position] = contribution
+                    sub_embeddings_counts[document_index_position] = sub_embeddings_count
+                    document_index_position += 1
+                    
+                padded_inputs: Dict[str, List] = {
+                    token_key: [] for token_key in token_keys
+                }
+                for split_doc_tokens in inputs:
+                    padded_input = model.tokenizer.prepare_for_model(
+                        split_doc_tokens,
+                        max_length=max_len_in_batch,
+                        padding="max_length",
+                        truncation=False,
+                    )
+                    for token_key in token_keys:
+                        padded_inputs[token_key].append(padded_input[token_key])
+                for token_key in token_keys:
+                    padded_inputs[token_key] = torch.tensor(padded_inputs[token_key])    
+                padded_inputs["context_masks"] = torch.tensor(context_masks)
+                embeddings.extend(model.encode(padded_inputs, device=device, show_progress_bar=True, convert_to_tensor=True, batch_size=batch_size))
+                inputs.clear()
+                max_len_in_batch = 0
+            else:
+                embeddings.extend(model.encode(documents, device=device, show_progress_bar=True, convert_to_tensor=True, batch_size=batch_size))
+
+            # Construct Document Vector:
+            document_embeddings_mean = []
+            sub_embeddings_start = 0
+            for doc_index in range(documents_count):
+                sub_embeddings_count = sub_embeddings_counts[doc_index]
+                last_segment_contribution = last_segment_contributions[doc_index]
+                if last_segment_contribution:
+                    embeddings[sub_embeddings_start + sub_embeddings_count - 1] = (
+                        embeddings[sub_embeddings_start + sub_embeddings_count - 1]
+                        * last_segment_contribution
+                    )
+                    document_embeddings_mean.append(
+                        (
+                            np.sum(
+                                embeddings[
+                                    sub_embeddings_start : sub_embeddings_start
+                                    + sub_embeddings_count
+                                ],
+                                axis=0,
+                            )
+                            / (sub_embeddings_count - 1 + last_segment_contribution)
+                        ).tolist()
+                    )
+                else:
+                    document_embeddings_mean.append(
+                        np.mean(
+                            embeddings[
+                                sub_embeddings_start : sub_embeddings_start
+                                + sub_embeddings_count
+                            ],
+                            axis=0,
+                        ).tolist()
+                    )
+                sub_embeddings_start += sub_embeddings_count
+
+        return document_embeddings_mean

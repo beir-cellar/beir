@@ -2,7 +2,7 @@ from .util import cos_sim, dot_score
 from sentence_transformers import SentenceTransformer
 from torch.utils.data import DataLoader
 from datasets import Features, Value, Sequence
-from datasets.utils.filelock import FileLock
+from datasets.utils.file_utils import FileLock
 from datasets import Array2D, Dataset
 from tqdm.autonotebook import tqdm
 from datetime import datetime

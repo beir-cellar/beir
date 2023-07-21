@@ -52,7 +52,7 @@
 
 For **an overview**, checkout our **new wiki** page: [https://github.com/beir-cellar/beir/wiki](https://github.com/beir-cellar/beir/wiki).
 
-For **models and datasets**, checkout out **HuggingFace (HF)** page: [https://huggingface.co/BeIR](https://huggingface.co/BeIR).
+For **models and datasets**, checkout out **Hugging Face (HF)** page: [https://huggingface.co/BeIR](https://huggingface.co/BeIR).
 
 For **Leaderboard**, checkout out **Eval AI** page: [https://eval.ai/web/challenges/challenge-page/1897](https://eval.ai/web/challenges/challenge-page/1897).
 
@@ -129,7 +129,7 @@ ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_v
 
 Command to generate md5hash using Terminal:  ``md5sum filename.zip``.
 
-You can view all datasets available **[here](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/)** or on **[HuggingFace](https://huggingface.co/BeIR)**.
+You can view all datasets available **[here](https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/)** or on **[Hugging Face](https://huggingface.co/BeIR)**.
 
 
 | Dataset   | Website| BEIR-Name | Public? | Type | Queries  | Corpus | Rel D/Q | Down-load | md5 |
@@ -187,7 +187,7 @@ Please refer to these pages for the following:
 
 ## :beers: Disclaimer
 
-Similar to Tensorflow [datasets](https://github.com/tensorflow/datasets) or HuggingFace's [datasets](https://github.com/huggingface/datasets) library, we just downloaded and prepared public datasets. We only distribute these datasets in a specific format, but we do not vouch for their quality or fairness, or claim that you have license to use the dataset. It remains the user's responsibility to determine whether you as a user have permission to use the dataset under the dataset's license and to cite the right owner of the dataset.
+Similar to Tensorflow [datasets](https://github.com/tensorflow/datasets) or Hugging Face's [datasets](https://github.com/huggingface/datasets) library, we just downloaded and prepared public datasets. We only distribute these datasets in a specific format, but we do not vouch for their quality or fairness, or claim that you have license to use the dataset. It remains the user's responsibility to determine whether you as a user have permission to use the dataset under the dataset's license and to cite the right owner of the dataset.
 
 If you're a dataset owner and wish to update any part of it, or do not want your dataset to be included in this library, feel free to post an issue here or make a pull request!
 
@@ -234,7 +234,7 @@ Don't hesitate to send us an e-mail or report an issue, if something is broken (
 The BEIR Benchmark has been made possible due to a collaborative effort of the following universities and organizations:
 - [UKP Lab, Technical University of Darmstadt](http://www.ukp.tu-darmstadt.de/)
 - [University of Waterloo](https://uwaterloo.ca/)
-- [HuggingFace](https://huggingface.co/)
+- [Hugging Face](https://huggingface.co/)
 
 ## :beers: Contributors
 

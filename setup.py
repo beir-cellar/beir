@@ -9,7 +9,7 @@ optional_packages = {
 
 setup(
     name="beir",
-    version="1.0.1",
+    version="2.0.0",
     author="Nandan Thakur",
     author_email="nandant@gmail.com",
     description="A Heterogeneous Benchmark for Information Retrieval",
@@ -17,7 +17,7 @@ setup(
     long_description_content_type="text/markdown",
     license="Apache License 2.0",
     url="https://github.com/beir-cellar/beir",
-    download_url="https://github.com/beir-cellar/beir/archive/v1.0.1.zip",
+    download_url="https://github.com/beir-cellar/beir/archive/v2.0.0.zip",
     packages=find_packages(),
     python_requires='>=3.6',
     install_requires=[

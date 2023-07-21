@@ -1,4 +1,4 @@
-from sentence_transformers import SentenceTransformer, SentencesDataset, models, datasets
+from sentence_transformers import SentenceTransformer, SentencesDataset, datasets
 from sentence_transformers.evaluation import SentenceEvaluator, SequentialEvaluator, InformationRetrievalEvaluator
 from sentence_transformers.readers import InputExample
 from transformers import AdamW
@@ -6,21 +6,21 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import Optimizer
 from tqdm.autonotebook import trange
-from typing import Dict, Type, List, Callable, Iterable, Tuple
+from typing import Dict, List, Callable, Iterable, Tuple
 import logging
 import time
-import difflib
+import random
 
 logger = logging.getLogger(__name__)
 
 class TrainRetriever:
     
-    def __init__(self, model: Type[SentenceTransformer], batch_size: int = 64):
+    def __init__(self, model: SentenceTransformer, batch_size: int = 64):
         self.model = model
         self.batch_size = batch_size
 
     def load_train(self, corpus: Dict[str, Dict[str, str]], queries: Dict[str, str], 
-                   qrels: Dict[str, Dict[str, int]]) -> List[Type[InputExample]]:
+                   qrels: Dict[str, Dict[str, int]]) -> List[InputExample]:
         
         query_ids = list(queries.keys())
         train_samples = []
@@ -40,7 +40,7 @@ class TrainRetriever:
         logger.info("Loaded {} training pairs.".format(len(train_samples)))
         return train_samples
 
-    def load_train_triplets(self, triplets: List[Tuple[str, str, str]]) -> List[Type[InputExample]]:        
+    def load_train_triplets(self, triplets: List[Tuple[str, str, str]]) -> List[InputExample]:        
         
         train_samples = []
 
@@ -53,7 +53,7 @@ class TrainRetriever:
         logger.info("Loaded {} training pairs.".format(len(train_samples)))
         return train_samples
     
-    def prepare_train(self, train_dataset: List[Type[InputExample]], shuffle: bool = True, dataset_present: bool = False) -> DataLoader:
+    def prepare_train(self, train_dataset: List[InputExample], shuffle: bool = True, dataset_present: bool = False) -> DataLoader:
         
         if not dataset_present: 
             train_dataset = SentencesDataset(train_dataset, model=self.model)
@@ -61,7 +61,7 @@ class TrainRetriever:
         train_dataloader = DataLoader(train_dataset, shuffle=shuffle, batch_size=self.batch_size)
         return train_dataloader
     
-    def prepare_train_triplets(self, train_dataset: List[Type[InputExample]]) -> DataLoader:
+    def prepare_train_triplets(self, train_dataset: List[InputExample]) -> DataLoader:
         
         train_dataloader = datasets.NoDuplicatesDataLoader(train_dataset, batch_size=self.batch_size)
         return train_dataloader
@@ -117,7 +117,7 @@ class TrainRetriever:
             steps_per_epoch = None,
             scheduler: str = 'WarmupLinear',
             warmup_steps: int = 10000,
-            optimizer_class: Type[Optimizer] = AdamW,
+            optimizer_class: Optimizer = AdamW,
             optimizer_params : Dict[str, object]= {'lr': 2e-5, 'eps': 1e-6, 'correct_bias': False},
             weight_decay: float = 0.01,
             evaluation_steps: int = 0,

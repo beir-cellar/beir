@@ -1,26 +1,27 @@
-from .util import cos_sim, dot_score, normalize, save_dict_to_tsv, load_tsv_to_dict
+from .. import BaseSearch
+from .util import save_dict_to_tsv, load_tsv_to_dict
 from .faiss_index import FaissBinaryIndex, FaissTrainIndex, FaissHNSWIndex, FaissIndex
 import logging
-import sys
-import torch
 import faiss
 import numpy as np
 import os
-from typing import Dict, List
+from typing import Dict
 from tqdm.autonotebook import tqdm
 
 logger = logging.getLogger(__name__)
 
 #Parent class for any faiss search
-class DenseRetrievalFaissSearch:
+class DenseRetrievalFaissSearch(BaseSearch):
     
-    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, **kwargs):
+    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, use_gpu: bool = False, **kwargs):
         self.model = model
         self.batch_size = batch_size
         self.corpus_chunk_size = corpus_chunk_size
         self.score_functions = ['cos_sim','dot']
         self.mapping_tsv_keys = ["beir-docid", "faiss-docid"]
         self.faiss_index = None
+        self.use_gpu = use_gpu
+        self.single_gpu = faiss.StandardGpuResources() if use_gpu else None
         self.dim_size = 0
         self.results = {}
         self.mapping = {}
@@ -73,7 +74,7 @@ class DenseRetrievalFaissSearch:
         itr = range(0, len(corpus), self.corpus_chunk_size)
 
         for batch_num, corpus_start_idx in enumerate(itr):
-            logger.info("Encoding Batch {}/{}...".format(batch_num+1, len(itr)))
+            logger.info("Encoding Batch {}/{}. Normalize: {}...".format(batch_num+1, len(itr), normalize_embeddings))
             corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))
             
             #Encode chunk of corpus    
@@ -105,15 +106,18 @@ class DenseRetrievalFaissSearch:
                score_function = str, **kwargs) -> Dict[str, Dict[str, float]]:
         
         assert score_function in self.score_functions
+        normalize_embeddings = True if score_function == "cos_sim" else False
 
         if not self.faiss_index: self.index(corpus, score_function)
 
-        logger.info("Encoding Queries...")
         query_ids = list(queries.keys())
         queries = [queries[qid] for qid in queries]
+        logger.info("Computing Query Embeddings. Normalize: {}...".format(normalize_embeddings))
         query_embeddings = self.model.encode_queries(
-            queries, show_progress_bar=True, batch_size=self.batch_size)
-
+            queries, show_progress_bar=True, 
+            batch_size=self.batch_size, 
+            normalize_embeddings=normalize_embeddings)
+        
         faiss_scores, faiss_doc_ids = self.faiss_index.search(query_embeddings, top_k, **kwargs)
         
         for idx in range(len(query_ids)):
@@ -173,7 +177,12 @@ class PQFaissSearch(DenseRetrievalFaissSearch):
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "pq"):
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
         base_index = faiss.read_index(input_faiss_path)
-        self.faiss_index = FaissTrainIndex(base_index, passage_ids)
+        if self.use_gpu:
+            logger.info("Moving Faiss Index from CPU to GPU...")
+            gpu_base_index = faiss.index_cpu_to_gpu(self.single_gpu, 0, base_index)
+            self.faiss_index = FaissTrainIndex(gpu_base_index, passage_ids)
+        else:
+            self.faiss_index = FaissTrainIndex(base_index, passage_ids)
 
     def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
         faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)  
@@ -189,8 +198,14 @@ class PQFaissSearch(DenseRetrievalFaissSearch):
             logger.info("Creating OPQ Matrix...")
             opq_matrix = faiss.OPQMatrix(self.dim_size, self.code_size)
             base_index = faiss.IndexPreTransform(opq_matrix, base_index)
-
-        self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, base_index)
+        
+        if self.use_gpu:
+            logger.info("Moving Faiss Index from CPU to GPU...")
+            gpu_base_index = faiss.index_cpu_to_gpu(self.single_gpu, 0, base_index)
+            self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, gpu_base_index)
+        
+        else:
+            self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, base_index)
 
     def save(self, output_dir: str, prefix: str = "my-index", ext: str = "pq"):
         super().save(output_dir, prefix, ext)
@@ -219,7 +234,13 @@ class HNSWFaissSearch(DenseRetrievalFaissSearch):
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "hnsw"):
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
         base_index = faiss.read_index(input_faiss_path)
-        self.faiss_index = FaissHNSWIndex(base_index, passage_ids)
+        if self.use_gpu:
+            logger.info("Moving Faiss Index from CPU to GPU...")
+            gpu_base_index = faiss.index_cpu_to_gpu(self.single_gpu, 0, base_index)
+            self.faiss_index = FaissHNSWIndex(gpu_base_index, passage_ids)
+        else:
+            self.faiss_index = FaissHNSWIndex(base_index, passage_ids)
+
     
     def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
         faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
@@ -232,7 +253,12 @@ class HNSWFaissSearch(DenseRetrievalFaissSearch):
         base_index = faiss.IndexHNSWFlat(self.dim_size + 1, self.hnsw_store_n, self.similarity_metric)
         base_index.hnsw.efSearch = self.hnsw_ef_search
         base_index.hnsw.efConstruction = self.hnsw_ef_construction
-        self.faiss_index = FaissHNSWIndex.build(faiss_ids, corpus_embeddings, base_index)
+        if self.use_gpu:
+            logger.info("Moving Faiss Index from CPU to GPU...")
+            gpu_base_index = faiss.index_cpu_to_gpu(self.single_gpu, 0, base_index)
+            self.faiss_index = FaissHNSWIndex.build(faiss_ids, corpus_embeddings, gpu_base_index)
+        else:
+            self.faiss_index = FaissHNSWIndex.build(faiss_ids, corpus_embeddings, base_index)
 
     def save(self, output_dir: str, prefix: str = "my-index", ext: str = "hnsw"):
         super().save(output_dir, prefix, ext)
@@ -297,12 +323,22 @@ class FlatIPFaissSearch(DenseRetrievalFaissSearch):
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "flat"):
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
         base_index = faiss.read_index(input_faiss_path)
-        self.faiss_index = FaissIndex(base_index, passage_ids)
+        if self.use_gpu:
+            logger.info("Moving Faiss Index from CPU to GPU...")
+            gpu_base_index = faiss.index_cpu_to_gpu(self.single_gpu, 0, base_index)
+            self.faiss_index = FaissIndex(gpu_base_index, passage_ids)
+        else:
+            self.faiss_index = FaissIndex(base_index, passage_ids)
 
     def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
         faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
         base_index = faiss.IndexFlatIP(self.dim_size)
-        self.faiss_index = FaissIndex.build(faiss_ids, corpus_embeddings, base_index)
+        if self.use_gpu:
+            logger.info("Moving Faiss Index from CPU to GPU...")
+            gpu_base_index = faiss.index_cpu_to_gpu(self.single_gpu, 0, base_index)
+            self.faiss_index = FaissIndex.build(faiss_ids, corpus_embeddings, gpu_base_index)
+        else:
+            self.faiss_index = FaissIndex.build(faiss_ids, corpus_embeddings, base_index)
 
     def save(self, output_dir: str, prefix: str = "my-index", ext: str = "flat"):
         super().save(output_dir, prefix, ext)
@@ -320,23 +356,45 @@ class FlatIPFaissSearch(DenseRetrievalFaissSearch):
 
 class PCAFaissSearch(DenseRetrievalFaissSearch):
     def __init__(self, model, base_index: faiss.Index, output_dimension: int, batch_size: int = 128, 
-                corpus_chunk_size: int = 50000, **kwargs):
+                corpus_chunk_size: int = 50000, pca_matrix = None, random_rotation: bool = False, 
+                eigen_power: float = 0.0, **kwargs):
         super(PCAFaissSearch, self).__init__(model, batch_size, corpus_chunk_size, **kwargs)
         self.base_index = base_index
         self.output_dim = output_dimension
+        self.pca_matrix = pca_matrix
+        self.random_rotation = random_rotation
+        self.eigen_power = eigen_power
 
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "pca"):
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
         base_index = faiss.read_index(input_faiss_path)
-        self.faiss_index = FaissTrainIndex(base_index, passage_ids)
+        if self.use_gpu:
+            logger.info("Moving Faiss Index from CPU to GPU...")
+            gpu_base_index = faiss.index_cpu_to_gpu(self.single_gpu, 0, base_index)
+            self.faiss_index = FaissTrainIndex(gpu_base_index, passage_ids)
+        else:
+            self.faiss_index = FaissTrainIndex(base_index, passage_ids)
+
 
     def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
         faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
         logger.info("Creating PCA Matrix...")
         logger.info("Input Dimension: {}, Output Dimension: {}".format(self.dim_size, self.output_dim))
-        pca_matrix = faiss.PCAMatrix(self.dim_size, self.output_dim, 0, True)
+        pca_matrix = faiss.PCAMatrix(self.dim_size, self.output_dim, self.eigen_power, self.random_rotation)
+        logger.info("Random Rotation in PCA Matrix is set to: {}".format(self.random_rotation))
+        logger.info("Whitening in PCA Matrix is set to: {}".format(self.eigen_power))
+        if self.pca_matrix is not None:
+            pca_matrix = pca_matrix.copy_from(self.pca_matrix)
+        self.pca_matrix = pca_matrix
+        
+        # Final index
         final_index = faiss.IndexPreTransform(pca_matrix, self.base_index)
-        self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, final_index)
+        if self.use_gpu:
+            logger.info("Moving Faiss Index from CPU to GPU...")
+            gpu_base_index = faiss.index_cpu_to_gpu(self.single_gpu, 0, final_index)
+            self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, gpu_base_index)
+        else:
+            self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, final_index)
 
     def save(self, output_dir: str, prefix: str = "my-index", ext: str = "pca"):
         super().save(output_dir, prefix, ext)
@@ -362,7 +420,12 @@ class SQFaissSearch(DenseRetrievalFaissSearch):
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "sq"):
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
         base_index = faiss.read_index(input_faiss_path)
-        self.faiss_index = FaissTrainIndex(base_index, passage_ids)
+        if self.use_gpu:
+            logger.info("Moving Faiss Index from CPU to GPU...")
+            gpu_base_index = faiss.index_cpu_to_gpu(self.single_gpu, 0, base_index)
+            self.faiss_index = FaissTrainIndex(gpu_base_index, passage_ids)
+        else:
+            self.faiss_index = FaissTrainIndex(base_index, passage_ids)
 
     def index(self, corpus: Dict[str, Dict[str, str]], score_function: str = None, **kwargs):
         faiss_ids, corpus_embeddings = super()._index(corpus, score_function, **kwargs)
@@ -372,7 +435,12 @@ class SQFaissSearch(DenseRetrievalFaissSearch):
 
         qtype = getattr(faiss.ScalarQuantizer, self.qname)
         base_index = faiss.IndexScalarQuantizer(self.dim_size, qtype, self.similarity_metric)
-        self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, base_index)
+        if self.use_gpu:
+            logger.info("Moving Faiss Index from CPU to GPU...")
+            gpu_base_index = faiss.index_cpu_to_gpu(self.single_gpu, 0, base_index)
+            self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, gpu_base_index)
+        else:
+            self.faiss_index = FaissTrainIndex.build(faiss_ids, corpus_embeddings, base_index)
 
     def save(self, output_dir: str, prefix: str = "my-index", ext: str = "sq"):
         super().save(output_dir, prefix, ext)

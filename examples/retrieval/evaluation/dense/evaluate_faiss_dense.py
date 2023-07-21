@@ -31,11 +31,12 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-dataset = "nfcorpus"
+dataset = "scifact"
 
 #### Download nfcorpus.zip dataset and unzip the dataset
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
-out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
+# out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
+out_dir = "/store2/scratch/n3thakur/beir-datasets/"
 data_path = util.download_and_unzip(url, out_dir)
 
 #### Provide the data path where nfcorpus has been downloaded and unzipped to the data loader
@@ -111,7 +112,8 @@ results = retriever.retrieve(corpus, queries)
 
 prefix = "my-index"      # (default value)
 ext = "flat"             # or "pq", "hnsw" 
-output_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
+# output_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
+output_dir = "/store2/scratch/n3thakur/beir-datasets/{}/faiss-index".format(dataset)
 os.makedirs(output_dir, exist_ok=True)
 
 if not os.path.exists(os.path.join(output_dir, "{}.{}.faiss".format(prefix, ext))):

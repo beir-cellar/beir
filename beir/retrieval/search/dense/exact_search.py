@@ -1,14 +1,15 @@
+from .. import BaseSearch
 from .util import cos_sim, dot_score
 import logging
-import sys
 import torch
-from typing import Dict, List
+from typing import Dict
 import heapq
 
 logger = logging.getLogger(__name__)
 
-#Parent class for any dense model
-class DenseRetrievalExactSearch:
+# DenseRetrievalExactSearch is parent class for any dense model that can be used for retrieval
+# Abstract class is BaseSearch
+class DenseRetrievalExactSearch(BaseSearch):
     
     def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, **kwargs):
         #model is class that provides encode_corpus() and encode_queries()
@@ -17,19 +18,20 @@ class DenseRetrievalExactSearch:
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.score_function_desc = {'cos_sim': "Cosine Similarity", 'dot': "Dot Product"}
         self.corpus_chunk_size = corpus_chunk_size
-        self.show_progress_bar = True #TODO: implement no progress bar if false
-        self.convert_to_tensor = True
+        self.show_progress_bar = kwargs.get("show_progress_bar", True)
+        self.convert_to_tensor = kwargs.get("convert_to_tensor", True)
         self.results = {}
     
     def search(self, 
                corpus: Dict[str, Dict[str, str]], 
                queries: Dict[str, str], 
-               top_k: List[int], 
+               top_k: int, 
                score_function: str,
-               return_sorted: bool = False, **kwargs) -> Dict[str, Dict[str, float]]:
-        #Create embeddings for all queries using model.encode_queries()
-        #Runs semantic search against the corpus embeddings
-        #Returns a ranked list with the corpus ids
+               return_sorted: bool = False, 
+               **kwargs) -> Dict[str, Dict[str, float]]:
+        # Create embeddings for all queries using model.encode_queries()
+        # Runs semantic search against the corpus embeddings
+        # Returns a ranked list with the corpus ids
         if score_function not in self.score_functions:
             raise ValueError("score function: {} must be either (cos_sim) for cosine similarity or (dot) for dot product".format(score_function))
             
@@ -55,7 +57,7 @@ class DenseRetrievalExactSearch:
             logger.info("Encoding Batch {}/{}...".format(batch_num+1, len(itr)))
             corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))
 
-            #Encode chunk of corpus    
+            # Encode chunk of corpus    
             sub_corpus_embeddings = self.model.encode_corpus(
                 corpus[corpus_start_idx:corpus_end_idx],
                 batch_size=self.batch_size,
@@ -63,11 +65,11 @@ class DenseRetrievalExactSearch:
                 convert_to_tensor = self.convert_to_tensor
                 )
 
-            #Compute similarites using either cosine-similarity or dot product
+            # Compute similarites using either cosine-similarity or dot product
             cos_scores = self.score_functions[score_function](query_embeddings, sub_corpus_embeddings)
             cos_scores[torch.isnan(cos_scores)] = -1
 
-            #Get top-k values
+            # Get top-k values
             cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(top_k+1, len(cos_scores[1])), dim=1, largest=True, sorted=return_sorted)
             cos_scores_top_k_values = cos_scores_top_k_values.cpu().tolist()
             cos_scores_top_k_idx = cos_scores_top_k_idx.cpu().tolist()

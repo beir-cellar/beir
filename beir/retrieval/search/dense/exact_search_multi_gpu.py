@@ -1,12 +1,12 @@
+from .. import BaseSearch
 from .util import cos_sim, dot_score
 from sentence_transformers import SentenceTransformer
 from torch.utils.data import DataLoader
-from datasets import Features, Value, Sequence
+from datasets import Features, Value
 from datasets.utils.filelock import FileLock
 from datasets import Array2D, Dataset
 from tqdm.autonotebook import tqdm
-from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import logging
 import torch
@@ -42,11 +42,9 @@ if importlib.util.find_spec("evaluate") is not None:
                 if batch_index[i] == -1:
                     del cos_scores_top_k_values[i]
                     del cos_scores_top_k_idx[i]
-            batch_index = [e for e in batch_index if e != -1]
-            batch_index = np.repeat(batch_index, len(cos_scores_top_k_values[0]))
             cos_scores_top_k_values = np.concatenate(cos_scores_top_k_values, axis=0)
             cos_scores_top_k_idx = np.concatenate(cos_scores_top_k_idx, axis=0)
-            return cos_scores_top_k_values, cos_scores_top_k_idx, batch_index[:len(cos_scores_top_k_values)]
+            return cos_scores_top_k_values, cos_scores_top_k_idx
 
         def warmup(self):
             """
@@ -55,7 +53,7 @@ if importlib.util.find_spec("evaluate") is not None:
             self.add_batch(cos_scores_top_k_values=torch.ones((1, 1, self.len_queries), dtype=torch.float32), cos_scores_top_k_idx=torch.ones((1, 1, self.len_queries), dtype=torch.int32), batch_index=-torch.ones(1, dtype=torch.int32))
 
 #Parent class for any dense model
-class DenseRetrievalParallelExactSearch:
+class DenseRetrievalParallelExactSearch(BaseSearch):
     
     def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = None, target_devices: List[str] = None, **kwargs):
         #model is class that provides encode_corpus() and encode_queries()
@@ -71,8 +69,8 @@ class DenseRetrievalParallelExactSearch:
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.score_function_desc = {'cos_sim': "Cosine Similarity", 'dot': "Dot Product"}
         self.corpus_chunk_size = corpus_chunk_size
-        self.show_progress_bar = True #TODO: implement no progress bar if false
-        self.convert_to_tensor = True
+        self.show_progress_bar = kwargs.get("show_progress_bar", True)
+        self.convert_to_tensor = kwargs.get("convert_to_tensor", True)
         self.results = {}
 
         self.query_embeddings = {}
@@ -84,7 +82,7 @@ class DenseRetrievalParallelExactSearch:
     def search(self, 
                corpus: Dataset, 
                queries: Dataset, 
-               top_k: List[int], 
+               top_k: int, 
                score_function: str,
                **kwargs) -> Dict[str, Dict[str, float]]:
         #Create embeddings for all queries using model.encode_queries()
@@ -147,8 +145,7 @@ class DenseRetrievalParallelExactSearch:
         metric.filelock = FileLock(os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow.lock"))
         metric.cache_file_name = os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow")
 
-        cos_scores_top_k_values, cos_scores_top_k_idx, chunk_ids = metric.compute()
-        cos_scores_top_k_idx = (cos_scores_top_k_idx.T + chunk_ids * self.corpus_chunk_size).T
+        cos_scores_top_k_values, cos_scores_top_k_idx = metric.compute()
 
         # sort similar docs for each query by cosine similarity and keep only top_k
         sorted_idx = np.argsort(cos_scores_top_k_values, axis=0)[::-1]
@@ -195,6 +192,9 @@ class DenseRetrievalParallelExactSearch:
                     cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(self.top_k+1, len(cos_scores[1])), dim=1, largest=True, sorted=False)
                     cos_scores_top_k_values = cos_scores_top_k_values.T.unsqueeze(0).detach()
                     cos_scores_top_k_idx = cos_scores_top_k_idx.T.unsqueeze(0).detach()
+
+                    # correct sentence ids
+                    cos_scores_top_k_idx += id * self.corpus_chunk_size
 
                     # Store results in an Apache Arrow table
                     metric.add_batch(cos_scores_top_k_values=cos_scores_top_k_values, cos_scores_top_k_idx=cos_scores_top_k_idx, batch_index=[id]*len(cos_scores_top_k_values))

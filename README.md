@@ -54,6 +54,8 @@ For **an overview**, checkout our **new wiki** page: [https://github.com/beir-ce
 
 For **models and datasets**, checkout out **HuggingFace (HF)** page: [https://huggingface.co/BeIR](https://huggingface.co/BeIR).
 
+For **Leaderboard**, checkout out **Eval AI** page: [https://eval.ai/web/challenges/challenge-page/1897](https://eval.ai/web/challenges/challenge-page/1897).
+
 For more information, checkout out our publications:
 
 - [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://openreview.net/forum?id=wCu6T5xFjeJ) (NeurIPS 2021, Datasets and Benchmarks Track)

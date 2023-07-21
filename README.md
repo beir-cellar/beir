@@ -59,6 +59,7 @@ For **Leaderboard**, checkout out **Eval AI** page: [https://eval.ai/web/challen
 For more information, checkout out our publications:
 
 - [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://openreview.net/forum?id=wCu6T5xFjeJ) (NeurIPS 2021, Datasets and Benchmarks Track)
+- [Resources for Brewing BEIR: Reproducible Reference Models and an Official Leaderboard](https://arxiv.org/abs/2306.07471) (Arxiv 2023.)
 
 ## :beers: Installation
 
@@ -204,6 +205,18 @@ If you find this repository helpful, feel free to cite our publication [BEIR: A 
     booktitle={Thirty-fifth Conference on Neural Information Processing Systems Datasets and Benchmarks Track (Round 2)},
     year={2021},
     url={https://openreview.net/forum?id=wCu6T5xFjeJ}
+}
+```
+
+If you use any baseline score from the BEIR leaderboard, feel free to cite our publication [Resources for Brewing BEIR: Reproducible Reference Models and an Official Leaderboard](https://arxiv.org/abs/2306.07471)
+```
+@misc{kamalloo2023resources,
+      title={Resources for Brewing BEIR: Reproducible Reference Models and an Official Leaderboard}, 
+      author={Ehsan Kamalloo and Nandan Thakur and Carlos Lassance and Xueguang Ma and Jheng-Hong Yang and Jimmy Lin},
+      year={2023},
+      eprint={2306.07471},
+      archivePrefix={arXiv},
+      primaryClass={cs.IR}
 }
 ```
 

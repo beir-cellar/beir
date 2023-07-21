@@ -1,17 +1,14 @@
 import pytrec_eval
 import logging
-from typing import Type, List, Dict, Union, Tuple
-from .search.dense import DenseRetrievalExactSearch as DRES
-from .search.dense import DenseRetrievalFaissSearch as DRFS
-from .search.lexical import BM25Search as BM25
-from .search.sparse import SparseSearch as SS
+from typing import List, Dict, Tuple
+from .search.base import BaseSearch
 from .custom_metrics import mrr, recall_cap, hole, top_k_accuracy
 
 logger = logging.getLogger(__name__)
 
 class EvaluateRetrieval:
     
-    def __init__(self, retriever: Union[Type[DRES], Type[DRFS], Type[BM25], Type[SS]] = None, k_values: List[int] = [1,3,5,10,100,1000], score_function: str = "cos_sim"):
+    def __init__(self, retriever: BaseSearch = None, k_values: List[int] = [1,3,5,10,100,1000], score_function: str = "cos_sim"):
         self.k_values = k_values
         self.top_k = max(k_values)
         self.retriever = retriever

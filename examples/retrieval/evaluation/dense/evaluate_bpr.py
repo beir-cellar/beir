@@ -55,7 +55,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     handlers=[LoggingHandler()])
 #### /print debug information to stdout
 
-dataset = "nfcorpus"
+dataset = "msmarco"
 
 #### Download nfcorpus.zip dataset and unzip the dataset
 url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
@@ -75,7 +75,8 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 # The model was fine-tuned using CLS Pooling and dot-product!
 # Open-sourced binary code SBERT model trained on MSMARCO to be made available soon!
 
-model = models.BinarySentenceBERT("msmarco-distilbert-base-tas-b") # Proxy for now, soon coming up BPR models trained on MSMARCO!
+model_name="income/bpr-gpl-trec-covid-base-msmarco-distilbert-tas-b"
+model = models.BinarySentenceBERT(model_name) # Proxy for now, soon coming up BPR models trained on MSMARCO!
 faiss_search = BinaryFaissSearch(model, batch_size=128)
 
 #### Load faiss index from file or disk ####
@@ -129,11 +130,47 @@ hole = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="hol
 #### Print top-k documents retrieved ####
 top_k = 10
 
-query_id, ranking_scores = random.choice(list(results.items()))
-scores_sorted = sorted(ranking_scores.items(), key=lambda item: item[1], reverse=True)
-logging.info("Query : %s\n" % queries[query_id])
+out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", dataset)
+os.makedirs(out_dir, exist_ok=True)
 
-for rank in range(top_k):
-    doc_id = scores_sorted[rank][0]
-    # Format: Rank x: ID [Title] Body
-    logging.info("Rank %d: %s [%s] - %s\n" % (rank+1, doc_id, corpus[doc_id].get("title"), corpus[doc_id].get("text")))
+with open(os.path.join(out_dir, model_name.replace("/", "_") + "_results.txt"), "w+") as fOut:
+  fOut.write("\nNDCG@K\n")
+  fOut.write("--------\n")
+  for top_k in ndcg:
+    fOut.write(top_k + ":\t" + str(ndcg[top_k]) + "\n")
+  
+  fOut.write("\nMAP@K\n")
+  fOut.write("--------\n")
+  for top_k in _map:
+    fOut.write(top_k + ":\t" + str(_map[top_k]) + "\n")
+  
+  fOut.write("\nRecall@K\n")
+  fOut.write("--------\n")
+  for top_k in recall:
+    fOut.write(top_k + ":\t" + str(recall[top_k]) + "\n")
+  
+  fOut.write("\nPrecision@K\n")
+  fOut.write("--------\n")
+  for top_k in precision:
+    fOut.write(top_k + ":\t" + str(precision[top_k]) + "\n")
+  
+  fOut.write("\nMRR@k\n")
+  fOut.write("--------\n")
+  for top_k in mrr:
+    fOut.write(top_k + ":\t" + str(mrr[top_k]) + "\n")
+  
+  fOut.write("\nR_cap@k\n")
+  fOut.write("--------\n")
+  for top_k in recall_cap:
+    fOut.write(top_k + ":\t" + str(recall_cap[top_k]) + "\n")
+
+  query_id, ranking_scores = random.choice(list(results.items()))
+  scores_sorted = sorted(ranking_scores.items(), key=lambda item: item[1], reverse=True)
+  logging.info("Query : %s\n" % queries[query_id])
+  fOut.write("\n\nQuery : %s\n" % queries[query_id])
+
+  for rank in range(10):
+      doc_id = scores_sorted[rank][0]
+      # Format: Rank x: ID [Title] Body
+      fOut.write("Rank %d: %s [%s] - %s\n" % (rank+1, doc_id, corpus[doc_id].get("title"), corpus[doc_id].get("text")))
+      logging.info("Rank %d: %s [%s] - %s\n" % (rank+1, doc_id, corpus[doc_id].get("title"), corpus[doc_id].get("text")))

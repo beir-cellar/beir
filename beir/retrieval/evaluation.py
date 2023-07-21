@@ -44,7 +44,7 @@ class EvaluateRetrieval:
                  ignore_identical_ids: bool=True) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, float], Dict[str, float]]:
         
         if ignore_identical_ids:
-            logging.info('For evaluation, we ignore identical query and document ids (default), please explicitly set ``ignore_identical_ids=False`` to ignore this.')
+            logger.info('For evaluation, we ignore identical query and document ids (default), please explicitly set ``ignore_identical_ids=False`` to ignore this.')
             popped = []
             for qid, rels in results.items():
                 for pid in list(rels):
@@ -84,9 +84,9 @@ class EvaluateRetrieval:
             precision[f"P@{k}"] = round(precision[f"P@{k}"]/len(scores), 5)
         
         for eval in [ndcg, _map, recall, precision]:
-            logging.info("\n")
+            logger.info("\n")
             for k in eval.keys():
-                logging.info("{}: {:.4f}".format(k, eval[k]))
+                logger.info("{}: {:.4f}".format(k, eval[k]))
 
         return ndcg, _map, recall, precision
     

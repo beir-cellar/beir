@@ -80,8 +80,10 @@ class DenseRetrievalExactSearch(BaseSearch):
                     corpus_id = corpus_ids[corpus_start_idx+sub_corpus_id]
                     if corpus_id != query_id:
                         if len(result_heaps[query_id]) < top_k:
+                            # Push item on the heap
                             heapq.heappush(result_heaps[query_id], (score, corpus_id))
                         else:
+                            # If item is larger than the smallest in the heap, push it on the heap then pop the smallest element
                             heapq.heappushpop(result_heaps[query_id], (score, corpus_id))
 
         for qid in result_heaps:

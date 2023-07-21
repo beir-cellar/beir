@@ -43,8 +43,18 @@ class EvaluateRetrieval:
     @staticmethod
     def evaluate(qrels: Dict[str, Dict[str, int]], 
                  results: Dict[str, Dict[str, float]], 
-                 k_values: List[int]) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, float], Dict[str, float]]:
-    
+                 k_values: List[int],
+                 ignore_identical_ids: bool=True) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, float], Dict[str, float]]:
+        
+        if ignore_identical_ids:
+            logging.info('For evaluation, we ignore identical query and document ids (default), please explicitly set ``ignore_identical_ids=False`` to ignore this.')
+            popped = []
+            for qid, rels in results.items():
+                for pid in list(rels):
+                    if qid == pid:
+                        results[qid].pop(pid)
+                        popped.append(pid)
+
         ndcg = {}
         _map = {}
         recall = {}

@@ -196,7 +196,9 @@ class PQFaissSearch(DenseRetrievalFaissSearch):
         if self.use_rotation:
             logger.info("Rotating data before encoding it with a product quantizer...")
             logger.info("Creating OPQ Matrix...")
-            opq_matrix = faiss.OPQMatrix(self.dim_size, self.code_size)
+            logger.info("Input Dimension: {}, Output Dimension: {}".format(self.dim_size, self.num_of_centroids*4))
+            opq_matrix = faiss.OPQMatrix(self.dim_size, self.code_size, self.num_of_centroids*4)
+            base_index = faiss.IndexPQ(self.num_of_centroids*4, self.num_of_centroids, self.code_size, self.similarity_metric)
             base_index = faiss.IndexPreTransform(opq_matrix, base_index)
         
         if self.use_gpu:

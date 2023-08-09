@@ -119,3 +119,14 @@ def write_to_tsv(output_file: str, data: Dict[str, str]):
         for query_id, corpus_dict in data.items():
             for corpus_id, score in corpus_dict.items():
                 writer.writerow([query_id, corpus_id, score])
+
+def save_runfile(
+        output_file: str, 
+        results: Dict[str, Dict[str, float]], 
+        run_name: str = "beir", 
+        top_k: int = 1000):
+    with open(output_file, "w") as fOut:
+        for qid, doc_dict in results.items():
+            sorted_docs = sorted(doc_dict.items(), key=lambda item: item[1], reverse=True)[:top_k]
+            for doc_id, score in sorted_docs:
+                fOut.write(f"{qid} Q0 {doc_id} 0 {score} {run_name}\n")

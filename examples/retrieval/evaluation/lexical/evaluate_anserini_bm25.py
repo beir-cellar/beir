@@ -7,8 +7,7 @@ To install docker on your local machine, please refer here: https://docs.docker.
 After docker installation, please follow the steps below to get docker container up and running:
 
 1. docker pull beir/pyserini-fastapi 
-2. docker build -t pyserini-fastapi .
-3. docker run -p 8000:8000 -it --rm pyserini-fastapi
+2. docker run -p 8000:8000 -it -d --rm beir/pyserini-fastapi
 
 Once the docker container is up and running in local, now run the code below.
 This code doesn't require GPU to run.
@@ -34,7 +33,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 
 #### Download scifact.zip dataset and unzip the dataset
 dataset = "scifact"
-url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+url = "http://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")

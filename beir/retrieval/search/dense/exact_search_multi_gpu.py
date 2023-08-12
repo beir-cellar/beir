@@ -100,8 +100,6 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
 
         # WARNING: We remove the query from results if it exists in corpus
         corpus = corpus.filter(lambda x: x["id"] not in queries["id"])
-        if len(corpus) // world_size < top_k:
-            raise NotImplementedError(f"Local corpus size ({len(corpus) // world_size}) is smaller than top_k ({top_k}). Please reduce top_k.")
 
         logger.warning(f"corpus_chunk_size wasn't specified. Setting it to {min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000)}")
         self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
@@ -202,10 +200,24 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         # Displace index by all_ranks_corpus_start_idx so that we index `corpus` and not `local_corpus`
         all_chunks_cos_scores_top_k_idx += all_ranks_corpus_start_idx
 
+        # If local_corpus doesn't have top_k samples we pad scores to `pad_gathered_tensor_to`
+        if len(local_corpus) < top_k:
+            pad_gathered_tensor_to = math.ceil(len(corpus) / world_size)
+            cos_scores_top_k_values = torch.cat(
+                [cos_scores_top_k_values, torch.ones((cos_scores_top_k_values.shape[0], pad_gathered_tensor_to - cos_scores_top_k_values.shape[1]), device=cos_scores_top_k_values.device) * -1], 
+                dim=1
+            )
+            all_chunks_cos_scores_top_k_idx = torch.cat(
+                [all_chunks_cos_scores_top_k_idx, torch.ones((all_chunks_cos_scores_top_k_idx.shape[0], pad_gathered_tensor_to - all_chunks_cos_scores_top_k_idx.shape[1]), device=all_chunks_cos_scores_top_k_idx.device, dtype=all_chunks_cos_scores_top_k_idx.dtype) * -1], 
+                dim=1
+            )
+        else:
+            pad_gathered_tensor_to = top_k
+
         # all gather top_k results from all ranks
         n_queries = len(query_ids)
-        all_ranks_top_k_values = torch.empty((world_size, n_queries, top_k), dtype=torch.float32, device="cuda")
-        all_ranks_top_k_idx = torch.empty((world_size, n_queries, top_k), dtype=torch.long, device="cuda")
+        all_ranks_top_k_values = torch.empty((world_size, n_queries, pad_gathered_tensor_to), dtype=cos_scores_top_k_values.dtype, device="cuda")
+        all_ranks_top_k_idx = torch.empty((world_size, n_queries, pad_gathered_tensor_to), dtype=all_chunks_cos_scores_top_k_idx.dtype, device="cuda")
         dist.barrier()
         logger.info(f"All gather top_k values from all ranks...")
         dist.all_gather_into_tensor(all_ranks_top_k_values, cos_scores_top_k_values)
@@ -213,17 +225,17 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         dist.all_gather_into_tensor(all_ranks_top_k_idx, all_chunks_cos_scores_top_k_idx)
         logger.info(f"All gather ... Done!")
 
-        all_ranks_top_k_values = all_ranks_top_k_values.permute(1, 0, 2).reshape(n_queries, -1) # (n_queries, world_size*(top_k))
-        all_ranks_top_k_idx = all_ranks_top_k_idx.permute(1, 0, 2).reshape(n_queries, -1) # (n_queries, world_size*(top_k))
+        all_ranks_top_k_values = all_ranks_top_k_values.permute(1, 0, 2).reshape(n_queries, -1) # (n_queries, world_size*(pad_gathered_tensor_to))
+        all_ranks_top_k_idx = all_ranks_top_k_idx.permute(1, 0, 2).reshape(n_queries, -1) # (n_queries, world_size*(pad_gathered_tensor_to))
 
         # keep only top_k top scoring docs from all ranks
-        cos_scores_top_k_values, temp_cos_scores_top_k_idx = torch.topk(all_ranks_top_k_values, top_k, dim=1, largest=True) # (num_queries, top_k)
+        cos_scores_top_k_values, temp_cos_scores_top_k_idx = torch.topk(all_ranks_top_k_values, min(top_k, all_ranks_top_k_values.shape[1]), dim=1, largest=True) # (num_queries, top_k)
 
         # `all_ranks_top_k_idx` should index `corpus_ids` and not `all_ranks_top_k_values`
         all_ranks_top_k_idx = torch.gather(all_ranks_top_k_idx, dim=1, index=temp_cos_scores_top_k_idx) # (num_queries, top_k) // indexes between (0, len(corpus))
 
         # fill in results
-        for qid, top_k_values, top_k_idx in zip(query_ids, cos_scores_top_k_values, all_ranks_top_k_idx):
+        for qid, top_k_values, top_k_idx in tqdm(zip(query_ids, cos_scores_top_k_values, all_ranks_top_k_idx), desc="Formatting results..."):
             for score, corpus_id in zip(top_k_values, top_k_idx):
                 if corpus_id != qid: # WARNING: We remove the query from results if it exists in corpus
                     corpus_idx = corpus[corpus_id.item()]["id"]

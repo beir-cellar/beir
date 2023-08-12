@@ -101,8 +101,9 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         # WARNING: We remove the query from results if it exists in corpus
         corpus = corpus.filter(lambda x: x["id"] not in queries["id"])
 
-        logger.warning(f"corpus_chunk_size wasn't specified. Setting it to {min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000)}")
-        self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
+        if self.corpus_chunk_size is None:
+            logger.warning(f"corpus_chunk_size wasn't specified. Setting it to {min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000)}")
+            self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000)
 
         # limit corpus
         # import joblib
@@ -235,11 +236,14 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         all_ranks_top_k_idx = torch.gather(all_ranks_top_k_idx, dim=1, index=temp_cos_scores_top_k_idx) # (num_queries, top_k) // indexes between (0, len(corpus))
 
         # fill in results
+        cos_scores_top_k_values = cos_scores_top_k_values.tolist()
+        all_ranks_top_k_idx = all_ranks_top_k_idx.tolist()
+        corpus_i_to_idx = corpus["id"]
         for qid, top_k_values, top_k_idx in tqdm(zip(query_ids, cos_scores_top_k_values, all_ranks_top_k_idx), desc="Formatting results..."):
-            for score, corpus_id in zip(top_k_values, top_k_idx):
-                if corpus_id != qid: # WARNING: We remove the query from results if it exists in corpus
-                    corpus_idx = corpus[corpus_id.item()]["id"]
-                    self.results[qid][corpus_idx] = score.item()
+            for score, corpus_i in zip(top_k_values, top_k_idx):
+                if corpus_i != qid: # WARNING: We remove the query from results if it exists in corpus
+                    corpus_idx = corpus_i_to_idx[corpus_i]
+                    self.results[qid][corpus_idx] = score
 
         # import joblib
         # joblib.dump(self.results, f"results.pkl")

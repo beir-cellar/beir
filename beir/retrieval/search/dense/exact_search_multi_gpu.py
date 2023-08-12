@@ -15,6 +15,9 @@ import queue
 import os
 import time
 import numpy as np
+import heapq
+from datasets.distributed import split_dataset_by_node
+import torch.distributed as dist
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +61,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
     def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = None, target_devices: List[str] = None, **kwargs):
         #model is class that provides encode_corpus() and encode_queries()
         self.model = model
-        self.batch_size = batch_size
+        self.encoding_batch_size = batch_size
         if target_devices is None:
             if torch.cuda.is_available():
                 target_devices = ['cuda:{}'.format(i) for i in range(torch.cuda.device_count())]
@@ -79,6 +82,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         self.sort_corpus = True
         self.experiment_id = "exact_search_multi_gpu" # f"test_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     
+    @torch.no_grad()
     def search(self, 
                corpus: Dataset, 
                queries: Dataset, 
@@ -92,80 +96,150 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
             raise ValueError("score function: {} must be either (cos_sim) for cosine similarity or (dot) for dot product".format(score_function))
         logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
 
-        if importlib.util.find_spec("evaluate") is None:
-            raise ImportError("evaluate library not available. Please do ``pip install evaluate`` library with Python>=3.7 (not available with Python 3.6) to use distributed and multigpu evaluation.")
-            
+        world_size = int(os.getenv("WORLD_SIZE", 1))
+
+        # WARNING: We remove the query from results if it exists in corpus
+        corpus = corpus.filter(lambda x: x["id"] not in queries["id"])
+        if len(corpus) // world_size < top_k:
+            raise NotImplementedError(f"Local corpus size ({len(corpus) // world_size}) is smaller than top_k ({top_k}). Please reduce top_k.")
+
+        logger.warning(f"corpus_chunk_size wasn't specified. Setting it to {min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000)}")
         self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000) if self.corpus_chunk_size is None else self.corpus_chunk_size
-        self.corpus_chunk_size = min(self.corpus_chunk_size, len(corpus)-1) # to avoid getting error in metric.compute()
-        
-        if self.sort_corpus:
-            logger.info("Sorting Corpus by document length (Longest first)...")
-            corpus = corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
-            corpus = corpus.sort('len', reverse=True)
+
+        # limit corpus
+        # import joblib
+        # query_ids = joblib.load("query_ids.pkl")
+        # corpus_ids = joblib.load("corpus_ids.pkl")
+        # # check if corpus_id in queries
+        # assert len(set(corpus_ids).intersection(set(query_ids))) == 0, "corpus_ids and query_ids must be disjoint"
+        # # keep only queries with `id` column in query_ids
+        # queries = queries.filter(lambda x: x["id"] in query_ids)
+        # corpus = corpus.filter(lambda x: x["id"] in corpus_ids)
+
+        # # check all corpus_ids exist in corpus
+        # for corpus_id in corpus_ids:
+        #     assert corpus_id in corpus["id"], f"corpus_id: {corpus_id} not found in corpus"
+        # queries = queries.select(range(min(len(queries), 10)))
+        # corpus = corpus.select(range(min(len(corpus), 100)))
+        # top_k = 10
+
+        # add index column
+        corpus = corpus.add_column("mteb_index", range(len(corpus)))
+
+        # Split corpus across devices to parallelize encoding
+        assert isinstance(corpus, Dataset), f"Corpus must be a Dataset object, but got {type(corpus)}"
+        local_corpus = split_dataset_by_node(corpus, rank=int(os.getenv("RANK", 0)), world_size=world_size)
+
+        all_ranks_corpus_start_idx = local_corpus["mteb_index"][0] # I'm assuming `split_dataset_by_node` splits local_corpus evenly while keeping same order
+
+        # if self.sort_corpus:
+        #     # SentenceTransformer.encode sorts sentences anyway
+        #     logger.info("Sorting Corpus by document length (Longest first)...")
+        #     local_corpus = local_corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
+        #     local_corpus = local_corpus.sort('len', reverse=True)
 
         # Initiate dataloader
         queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)
-        corpus_dl = DataLoader(corpus, batch_size=self.corpus_chunk_size)
+        corpus_dl = DataLoader(local_corpus, batch_size=self.corpus_chunk_size)
 
-        # Encode queries
+        # Encode queries (all ranks do this)
         logger.info("Encoding Queries in batches...")
         query_embeddings = []
         for step, queries_batch in enumerate(queries_dl):
-            with torch.no_grad():
-                q_embeds = self.model.encode_queries(
-                    queries_batch['text'], batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
+            q_embeds = self.model.encode_queries(
+                queries_batch['text'], batch_size=self.encoding_batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
             query_embeddings.append(q_embeds)
         query_embeddings = torch.cat(query_embeddings, dim=0)
 
-        # copy the query embeddings to all target devices
         self.query_embeddings = query_embeddings
         self.top_k = top_k
         self.score_function = score_function
 
-        # Start the multi-process pool on all target devices
-        SentenceTransformer._encode_multi_process_worker = self._encode_multi_process_worker
-        pool = self.model.start_multi_process_pool(self.target_devices)
-
+        # Encode corpus (each rank encodes `local_corpus`)
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
         start_time = time.time()
-        for chunk_id, corpus_batch in tqdm(enumerate(corpus_dl), total=len(corpus) // self.corpus_chunk_size):
-            with torch.no_grad():
-                self.model.encode_corpus_parallel(
-                    corpus_batch, pool=pool, batch_size=self.batch_size, chunk_id=chunk_id)
+        query_ids = queries["id"]
+        self.results = {qid: {} for qid in query_ids}
+        all_chunks_cos_scores_top_k_values = []
+        all_chunks_cos_scores_top_k_idx = []
+        for chunk_id, corpus_batch in tqdm(enumerate(corpus_dl), total=len(local_corpus) // self.corpus_chunk_size):
+            corpus_start_idx = chunk_id * self.corpus_chunk_size
+            
+            # Encode chunk of local_corpus 
+            sub_corpus_embeddings = self.model.encode_corpus(
+                corpus_batch, 
+                batch_size=self.encoding_batch_size,
+                show_progress_bar=self.show_progress_bar, 
+                convert_to_tensor = self.convert_to_tensor
+            )
 
-        # Stop the proccesses in the pool and free memory
-        self.model.stop_multi_process_pool(pool)
+            # Compute similarites using either cosine-similarity or dot product
+            cos_scores = self.score_functions[score_function](query_embeddings, sub_corpus_embeddings) # (num_queries, self.corpus_chunk_size)
+            cos_scores[torch.isnan(cos_scores)] = -1
+
+            # Get top-k values
+            cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(top_k, cos_scores.shape[1]), dim=1, largest=True) # (num_queries, top_k)
+
+            # Displace index by corpus_start_idx
+            cos_scores_top_k_idx += corpus_start_idx
+
+            all_chunks_cos_scores_top_k_values.append(cos_scores_top_k_values)
+            all_chunks_cos_scores_top_k_idx.append(cos_scores_top_k_idx)
+
 
         end_time = time.time()
         logger.info("Encoded all batches in {:.2f} seconds".format(end_time - start_time))
 
-        # Gather all results
-        DummyMetric.len_queries = len(queries)
-        metric = DummyMetric(experiment_id=self.experiment_id, num_process=len(self.target_devices), process_id=0)
-        metric.filelock = FileLock(os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow.lock"))
-        metric.cache_file_name = os.path.join(metric.data_dir, f"{metric.experiment_id}-{metric.num_process}-{metric.process_id}.arrow")
+        # TODO: have shapes (top_k, num_queries) instead?
+        # keep only top_k top scoring docs from this rank
+        all_chunks_cos_scores_top_k_values = torch.cat(all_chunks_cos_scores_top_k_values, dim=1) # (num_queries, (top_k)*n_chunks)
+        all_chunks_cos_scores_top_k_idx = torch.cat(all_chunks_cos_scores_top_k_idx, dim=1) # (num_queries, (top_k)*n_chunks) 
+        cos_scores_top_k_values, temp_cos_scores_top_k_idx = torch.topk(all_chunks_cos_scores_top_k_values, min(top_k, all_chunks_cos_scores_top_k_values.shape[1]), dim=1, largest=True) # (num_queries, top_k)
 
-        cos_scores_top_k_values, cos_scores_top_k_idx = metric.compute()
+        # `all_chunks_cos_scores_top_k_idx` should index `corpus_ids` and not `all_chunks_cos_scores_top_k_values`
+        all_chunks_cos_scores_top_k_idx = torch.gather(all_chunks_cos_scores_top_k_idx, dim=1, index=temp_cos_scores_top_k_idx) # (num_queries, top_k) // indexes between (0, len(local_corpus))
 
-        # sort similar docs for each query by cosine similarity and keep only top_k
-        sorted_idx = np.argsort(cos_scores_top_k_values, axis=0)[::-1]
-        sorted_idx = sorted_idx[:self.top_k+1]
-        cos_scores_top_k_values = np.take_along_axis(cos_scores_top_k_values, sorted_idx, axis=0)
-        cos_scores_top_k_idx = np.take_along_axis(cos_scores_top_k_idx, sorted_idx, axis=0)
+        # Displace index by all_ranks_corpus_start_idx so that we index `corpus` and not `local_corpus`
+        all_chunks_cos_scores_top_k_idx += all_ranks_corpus_start_idx
 
-        logger.info("Formatting results...")
-        # Load corpus ids in memory
-        query_ids = queries['id']
-        corpus_ids = corpus['id']
-        self.results = {qid: {} for qid in query_ids}
-        for query_itr in tqdm(range(len(query_embeddings))):
-            query_id = query_ids[query_itr]
-            for i in range(len(cos_scores_top_k_values)):
-                sub_corpus_id = cos_scores_top_k_idx[i][query_itr]
-                score = cos_scores_top_k_values[i][query_itr].item() # convert np.float to float
-                corpus_id = corpus_ids[sub_corpus_id]
-                if corpus_id != query_id:
-                    self.results[query_id][corpus_id] = score
+        # all gather top_k results from all ranks
+        n_queries = len(query_ids)
+        all_ranks_top_k_values = torch.empty((world_size, n_queries, top_k), dtype=torch.float32, device="cuda")
+        all_ranks_top_k_idx = torch.empty((world_size, n_queries, top_k), dtype=torch.long, device="cuda")
+        dist.barrier()
+        logger.info(f"All gather top_k values from all ranks...")
+        dist.all_gather_into_tensor(all_ranks_top_k_values, cos_scores_top_k_values)
+        logger.info(f"All gather top_k idx from all ranks...")
+        dist.all_gather_into_tensor(all_ranks_top_k_idx, all_chunks_cos_scores_top_k_idx)
+        logger.info(f"All gather ... Done!")
+
+        all_ranks_top_k_values = all_ranks_top_k_values.permute(1, 0, 2).reshape(n_queries, -1) # (n_queries, world_size*(top_k))
+        all_ranks_top_k_idx = all_ranks_top_k_idx.permute(1, 0, 2).reshape(n_queries, -1) # (n_queries, world_size*(top_k))
+
+        # keep only top_k top scoring docs from all ranks
+        cos_scores_top_k_values, temp_cos_scores_top_k_idx = torch.topk(all_ranks_top_k_values, top_k, dim=1, largest=True) # (num_queries, top_k)
+
+        # `all_ranks_top_k_idx` should index `corpus_ids` and not `all_ranks_top_k_values`
+        all_ranks_top_k_idx = torch.gather(all_ranks_top_k_idx, dim=1, index=temp_cos_scores_top_k_idx) # (num_queries, top_k) // indexes between (0, len(corpus))
+
+        # fill in results
+        for qid, top_k_values, top_k_idx in zip(query_ids, cos_scores_top_k_values, all_ranks_top_k_idx):
+            for score, corpus_id in zip(top_k_values, top_k_idx):
+                if corpus_id != qid: # WARNING: We remove the query from results if it exists in corpus
+                    corpus_idx = corpus[corpus_id.item()]["id"]
+                    self.results[qid][corpus_idx] = score.item()
+
+        # import joblib
+        # joblib.dump(self.results, f"results.pkl")
+        # ref_results = joblib.load(f"results.pkl")
+
+        # compare results
+        # sort self.results and ref_results
+        # self.results = {k: {k2: v2 for k2, v2 in sorted(v.items(), key=lambda item: item[1], reverse=True)} for k, v in self.results.items()}
+        # ref_results = {k: {k2: v2 for k2, v2 in sorted(v.items(), key=lambda item: item[1], reverse=True)} for k, v in ref_results.items()}
+        # for qid in self.results:
+        #     for corpus_idx in self.results[qid]:
+        #         assert self.results[qid][corpus_idx] == ref_results[qid][corpus_idx]
         return self.results 
 
     def _encode_multi_process_worker(self, process_id, device, model, input_queue, results_queue):
@@ -189,7 +263,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
                     cos_scores[torch.isnan(cos_scores)] = -1
 
                     #Get top-k values
-                    cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(self.top_k+1, len(cos_scores[1])), dim=1, largest=True, sorted=False)
+                    cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(self.top_k, len(cos_scores[1])), dim=1, largest=True, sorted=False)
                     cos_scores_top_k_values = cos_scores_top_k_values.T.unsqueeze(0).detach()
                     cos_scores_top_k_idx = cos_scores_top_k_idx.T.unsqueeze(0).detach()
 

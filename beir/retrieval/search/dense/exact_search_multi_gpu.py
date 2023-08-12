@@ -58,17 +58,10 @@ if importlib.util.find_spec("evaluate") is not None:
 #Parent class for any dense model
 class DenseRetrievalParallelExactSearch(BaseSearch):
     
-    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = None, target_devices: List[str] = None, **kwargs):
+    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 10000, target_devices: List[str] = None, **kwargs):
         #model is class that provides encode_corpus() and encode_queries()
         self.model = model
         self.encoding_batch_size = batch_size
-        if target_devices is None:
-            if torch.cuda.is_available():
-                target_devices = ['cuda:{}'.format(i) for i in range(torch.cuda.device_count())]
-            else:
-                logger.info("CUDA is not available. Start 4 CPU worker")
-                target_devices = ['cpu']*1 # 4
-        self.target_devices = target_devices  # PyTorch target devices, e.g. cuda:0, cuda:1... If None, all available CUDA devices will be used, or 4 CPU processes
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.score_function_desc = {'cos_sim': "Cosine Similarity", 'dot': "Dot Product"}
         self.corpus_chunk_size = corpus_chunk_size
@@ -79,7 +72,6 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         self.query_embeddings = {}
         self.top_k = None
         self.score_function = None
-        self.experiment_id = "exact_search_multi_gpu" # f"test_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     
     @torch.no_grad()
     def search(self, 
@@ -87,6 +79,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
                queries: Dataset, 
                top_k: int, 
                score_function: str,
+               ignore_identical_ids: bool = True,
                **kwargs) -> Dict[str, Dict[str, float]]:
         #Create embeddings for all queries using model.encode_queries()
         #Runs semantic search against the corpus embeddings
@@ -97,29 +90,9 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
 
         world_size = int(os.getenv("WORLD_SIZE", 1))
 
-        # WARNING: We remove the query from results if it exists in corpus
-        corpus = corpus.filter(lambda x: x["id"] not in queries["id"])
-
-        if self.corpus_chunk_size is None:
-            logger.warning(f"corpus_chunk_size wasn't specified. Setting it to {min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000)}")
-            self.corpus_chunk_size = min(math.ceil(len(corpus) / len(self.target_devices) / 10), 5000)
-
-        # limit corpus
-        # import joblib
-        # query_ids = joblib.load("query_ids.pkl")
-        # corpus_ids = joblib.load("corpus_ids.pkl")
-        # # check if corpus_id in queries
-        # assert len(set(corpus_ids).intersection(set(query_ids))) == 0, "corpus_ids and query_ids must be disjoint"
-        # # keep only queries with `id` column in query_ids
-        # queries = queries.filter(lambda x: x["id"] in query_ids)
-        # corpus = corpus.filter(lambda x: x["id"] in corpus_ids)
-
-        # # check all corpus_ids exist in corpus
-        # for corpus_id in corpus_ids:
-        #     assert corpus_id in corpus["id"], f"corpus_id: {corpus_id} not found in corpus"
-        # queries = queries.select(range(min(len(queries), 10)))
-        # corpus = corpus.select(range(min(len(corpus), 100)))
-        # top_k = 10
+        if ignore_identical_ids:
+            # We remove the query from results if it exists in corpus
+            corpus = corpus.filter(lambda x: x["id"] not in queries["id"])
 
         # add index column
         corpus = corpus.add_column("mteb_index", range(len(corpus)))
@@ -234,19 +207,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         corpus_i_to_idx = corpus["id"]
         for qid, top_k_values, top_k_idx in zip(query_ids, cos_scores_top_k_values, all_ranks_top_k_idx):
             for score, corpus_i in zip(top_k_values, top_k_idx):
-                if corpus_i != qid: # WARNING: We remove the query from results if it exists in corpus
-                    corpus_idx = corpus_i_to_idx[corpus_i]
-                    self.results[qid][corpus_idx] = score
-
-        # import joblib
-        # joblib.dump(self.results, f"results.pkl")
-        # ref_results = joblib.load(f"results.pkl")
-
-        # compare results
-        # sort self.results and ref_results
-        # self.results = {k: {k2: v2 for k2, v2 in sorted(v.items(), key=lambda item: item[1], reverse=True)} for k, v in self.results.items()}
-        # ref_results = {k: {k2: v2 for k2, v2 in sorted(v.items(), key=lambda item: item[1], reverse=True)} for k, v in ref_results.items()}
-        # for qid in self.results:
-        #     for corpus_idx in self.results[qid]:
-        #         assert self.results[qid][corpus_idx] == ref_results[qid][corpus_idx]
+                corpus_idx = corpus_i_to_idx[corpus_i]
+                assert ignore_identical_ids is False or corpus_idx != qid, "Query id and corpus id should not be the same if ignore_identical_ids is set to True."
+                self.results[qid][corpus_idx] = score
         return self.results 

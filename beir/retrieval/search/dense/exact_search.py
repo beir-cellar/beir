@@ -82,7 +82,7 @@ class DenseRetrievalExactSearch(BaseSearch):
                 query_id = query_ids[query_itr]                  
                 for sub_corpus_id, score in zip(cos_scores_top_k_idx[query_itr], cos_scores_top_k_values[query_itr]):
                     corpus_id = corpus_ids[corpus_start_idx+sub_corpus_id]
-                    assert ignore_identical_ids is True and corpus_id != query_id, "Query id and corpus id should not be the same"
+                    assert ignore_identical_ids is False or corpus_id != query_id, "Query id and corpus id should not be the same if ignore_identical_ids is set to True"
                     if len(result_heaps[query_id]) < top_k:
                         # Push item on the heap
                         heapq.heappush(result_heaps[query_id], (score, corpus_id))

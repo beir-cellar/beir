@@ -79,7 +79,6 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         self.query_embeddings = {}
         self.top_k = None
         self.score_function = None
-        self.sort_corpus = True
         self.experiment_id = "exact_search_multi_gpu" # f"test_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     
     @torch.no_grad()
@@ -130,12 +129,6 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         local_corpus = split_dataset_by_node(corpus, rank=int(os.getenv("RANK", 0)), world_size=world_size)
 
         all_ranks_corpus_start_idx = local_corpus["mteb_index"][0] # I'm assuming `split_dataset_by_node` splits local_corpus evenly while keeping same order
-
-        # if self.sort_corpus:
-        #     # SentenceTransformer.encode sorts sentences anyway
-        #     logger.info("Sorting Corpus by document length (Longest first)...")
-        #     local_corpus = local_corpus.map(lambda x: {'len': len(x.get("title", "") + x.get("text", ""))}, num_proc=4)
-        #     local_corpus = local_corpus.sort('len', reverse=True)
 
         # Initiate dataloader
         queries_dl = DataLoader(queries, batch_size=self.corpus_chunk_size)
@@ -257,39 +250,3 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         #     for corpus_idx in self.results[qid]:
         #         assert self.results[qid][corpus_idx] == ref_results[qid][corpus_idx]
         return self.results 
-
-    def _encode_multi_process_worker(self, process_id, device, model, input_queue, results_queue):
-        """
-        (taken from UKPLab/sentence-transformers/sentence_transformers/SentenceTransformer.py)
-        Internal working process to encode sentences in multi-process setup.
-        Note: Added distributed similarity computing and finding top k similar docs.
-        """
-        DummyMetric.len_queries = len(self.query_embeddings)
-        metric = DummyMetric(experiment_id=self.experiment_id, num_process=len(self.target_devices), process_id=process_id)
-        metric.warmup()
-        with torch.no_grad():
-            while True:
-                try:
-                    id, batch_size, sentences = input_queue.get()
-                    corpus_embeds = model.encode(
-                        sentences, device=device, show_progress_bar=False, convert_to_tensor=True, batch_size=batch_size
-                    ).detach()
-
-                    cos_scores = self.score_functions[self.score_function](self.query_embeddings.to(corpus_embeds.device), corpus_embeds).detach()
-                    cos_scores[torch.isnan(cos_scores)] = -1
-
-                    #Get top-k values
-                    cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(cos_scores, min(self.top_k, len(cos_scores[1])), dim=1, largest=True, sorted=False)
-                    cos_scores_top_k_values = cos_scores_top_k_values.T.unsqueeze(0).detach()
-                    cos_scores_top_k_idx = cos_scores_top_k_idx.T.unsqueeze(0).detach()
-
-                    # correct sentence ids
-                    cos_scores_top_k_idx += id * self.corpus_chunk_size
-
-                    # Store results in an Apache Arrow table
-                    metric.add_batch(cos_scores_top_k_values=cos_scores_top_k_values, cos_scores_top_k_idx=cos_scores_top_k_idx, batch_index=[id]*len(cos_scores_top_k_values))
-
-                    # Alarm that process finished processing a batch
-                    results_queue.put(None)
-                except queue.Empty:
-                    break

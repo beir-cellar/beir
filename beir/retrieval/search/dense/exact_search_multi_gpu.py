@@ -39,7 +39,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.score_function_desc = {'cos_sim': "Cosine Similarity", 'dot': "Dot Product"}
         self.corpus_chunk_size = corpus_chunk_size
-        self.show_progress_bar = kwargs.get("show_progress_bar", False)
+        self.show_progress_bar = kwargs.get("show_progress_bar", True)
         self.convert_to_tensor = kwargs.get("convert_to_tensor", True)
         self.results = {}
 
@@ -63,6 +63,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         logger.info("Scoring Function: {} ({})".format(self.score_function_desc[score_function], score_function))
 
         world_size = int(os.getenv("WORLD_SIZE", 1))
+        rank = int(os.getenv("RANK", 0))
 
         if ignore_identical_ids:
             with main_rank_first(dist.group.WORLD):
@@ -79,7 +80,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
 
         # Split corpus across devices to parallelize encoding
         assert isinstance(corpus, Dataset), f"Corpus must be a Dataset object, but got {type(corpus)}"
-        local_corpus = split_dataset_by_node(corpus, rank=int(os.getenv("RANK", 0)), world_size=world_size)
+        local_corpus = split_dataset_by_node(corpus, rank=rank, world_size=world_size)
         logger.info(f"Splitted corpus into {world_size} chunks. Rank {int(os.getenv('RANK', 0))} has {len(local_corpus)} docs.")
 
         all_ranks_corpus_start_idx = local_corpus["mteb_index"][0] # I'm assuming `split_dataset_by_node` splits local_corpus evenly while keeping same order
@@ -89,9 +90,9 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         corpus_dl = DataLoader(local_corpus, batch_size=self.corpus_chunk_size)
 
         # Encode queries (all ranks do this)
-        logger.info("Encoding Queries in batches...")
+        logger.info(f"Encoding Queries ({len(queries)} queries) in {len(queries) // self.corpus_chunk_size + 1} batches... Warning: This might take a while!")
         query_embeddings = []
-        for step, queries_batch in enumerate(queries_dl):
+        for step, queries_batch in tqdm(enumerate(queries_dl), total=len(queries) // self.corpus_chunk_size + 1, desc="Encode Queries", disable=rank != 0):
             q_embeds = self.model.encode_queries(
                 queries_batch['text'], batch_size=self.encoding_batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
             query_embeddings.append(q_embeds)
@@ -108,7 +109,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         self.results = {qid: {} for qid in query_ids}
         all_chunks_cos_scores_top_k_values = []
         all_chunks_cos_scores_top_k_idx = []
-        for chunk_id, corpus_batch in tqdm(enumerate(corpus_dl), total=len(local_corpus) // self.corpus_chunk_size + 1, desc="Encode Corpus"):
+        for chunk_id, corpus_batch in tqdm(enumerate(corpus_dl), total=len(local_corpus) // self.corpus_chunk_size + 1, desc="Encode Corpus", disable=rank != 0):
             corpus_start_idx = chunk_id * self.corpus_chunk_size
             
             # Encode chunk of local_corpus 

@@ -13,9 +13,20 @@ import os
 import time
 from datasets.distributed import split_dataset_by_node
 import torch.distributed as dist
+from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
+@contextmanager
+def main_rank_first(group: dist.ProcessGroup):
+    is_main_rank = dist.get_rank(group) == 0
+    if is_main_rank:
+        yield
+
+    dist.barrier(group)
+
+    if not is_main_rank:
+        yield
 
 # parent class for any dense model that can be used for retrieval
 # Abstract class is BaseSearch
@@ -28,7 +39,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.score_function_desc = {'cos_sim': "Cosine Similarity", 'dot': "Dot Product"}
         self.corpus_chunk_size = corpus_chunk_size
-        self.show_progress_bar = kwargs.get("show_progress_bar", True)
+        self.show_progress_bar = kwargs.get("show_progress_bar", False)
         self.convert_to_tensor = kwargs.get("convert_to_tensor", True)
         self.results = {}
 
@@ -54,8 +65,14 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         world_size = int(os.getenv("WORLD_SIZE", 1))
 
         if ignore_identical_ids:
-            # We remove the query from results if it exists in corpus
-            corpus = corpus.filter(lambda x: x["id"] not in queries["id"])
+            with main_rank_first(dist.group.WORLD):
+                # We remove the query from results if it exists in corpus
+                logger.info("Ignoring identical ids between queries and corpus...")
+                start_time = time.time()
+                # batched filter must return list of bools
+                queries_ids = queries["id"]
+                corpus = corpus.filter(lambda batch: [cid not in queries_ids for cid in batch["id"]], batched=True, num_proc=12, load_from_cache_file=True)
+                logger.info("Ignore identical ids took {:.2f} seconds".format(time.time() - start_time))
 
         # add index column
         corpus = corpus.add_column("mteb_index", range(len(corpus)))
@@ -63,6 +80,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         # Split corpus across devices to parallelize encoding
         assert isinstance(corpus, Dataset), f"Corpus must be a Dataset object, but got {type(corpus)}"
         local_corpus = split_dataset_by_node(corpus, rank=int(os.getenv("RANK", 0)), world_size=world_size)
+        logger.info(f"Splitted corpus into {world_size} chunks. Rank {int(os.getenv('RANK', 0))} has {len(local_corpus)} docs.")
 
         all_ranks_corpus_start_idx = local_corpus["mteb_index"][0] # I'm assuming `split_dataset_by_node` splits local_corpus evenly while keeping same order
 
@@ -84,13 +102,13 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         self.score_function = score_function
 
         # Encode corpus (each rank encodes `local_corpus`)
-        logger.info("Encoding Corpus in batches... Warning: This might take a while!")
+        logger.info(f"Encoding Corpus ({len(local_corpus)} docs) in {len(local_corpus) // self.corpus_chunk_size + 1} batches... Warning: This might take a while!")
         start_time = time.time()
         query_ids = queries["id"]
         self.results = {qid: {} for qid in query_ids}
         all_chunks_cos_scores_top_k_values = []
         all_chunks_cos_scores_top_k_idx = []
-        for chunk_id, corpus_batch in tqdm(enumerate(corpus_dl), total=len(local_corpus) // self.corpus_chunk_size):
+        for chunk_id, corpus_batch in tqdm(enumerate(corpus_dl), total=len(local_corpus) // self.corpus_chunk_size + 1, desc="Encode Corpus"):
             corpus_start_idx = chunk_id * self.corpus_chunk_size
             
             # Encode chunk of local_corpus 

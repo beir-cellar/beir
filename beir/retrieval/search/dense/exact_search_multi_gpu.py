@@ -17,10 +17,11 @@ import torch.distributed as dist
 logger = logging.getLogger(__name__)
 
 
-#Parent class for any dense model
+# parent class for any dense model that can be used for retrieval
+# Abstract class is BaseSearch
 class DenseRetrievalParallelExactSearch(BaseSearch):
     
-    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 10000, target_devices: List[str] = None, **kwargs):
+    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 10000, **kwargs):
         #model is class that provides encode_corpus() and encode_queries()
         self.model = model
         self.encoding_batch_size = batch_size

@@ -239,7 +239,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         cos_scores_top_k_values = cos_scores_top_k_values.tolist()
         all_ranks_top_k_idx = all_ranks_top_k_idx.tolist()
         corpus_i_to_idx = corpus["id"]
-        for qid, top_k_values, top_k_idx in tqdm(zip(query_ids, cos_scores_top_k_values, all_ranks_top_k_idx), desc="Formatting results..."):
+        for qid, top_k_values, top_k_idx in zip(query_ids, cos_scores_top_k_values, all_ranks_top_k_idx):
             for score, corpus_i in zip(top_k_values, top_k_idx):
                 if corpus_i != qid: # WARNING: We remove the query from results if it exists in corpus
                     corpus_idx = corpus_i_to_idx[corpus_i]

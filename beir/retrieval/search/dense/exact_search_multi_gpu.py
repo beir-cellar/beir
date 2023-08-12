@@ -39,7 +39,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.score_function_desc = {'cos_sim': "Cosine Similarity", 'dot': "Dot Product"}
         self.corpus_chunk_size = corpus_chunk_size
-        self.show_progress_bar = kwargs.get("show_progress_bar", True)
+        self.show_progress_bar = kwargs.get("show_progress_bar", True) if int(os.getenv("RANK", 0)) == 0 else False
         self.convert_to_tensor = kwargs.get("convert_to_tensor", True)
         self.results = {}
 

@@ -13,25 +13,21 @@ To run this code, you preferably need access to mutliple GPUs. Faster than runni
 CUDA_VISIBLE_DEVICES=0,1,2,3 python evaluate_sbert_multi_gpu.py
 '''
 
-from collections import defaultdict
-from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader_hf import HFDataLoader
-from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalParallelExactSearch as DRPES
-from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 import time
 
 import logging
-import pathlib, os
+import os
 import random
 
 import torch
 from torch import distributed as dist
 
 # Then use this command to run on 2 GPUs for example
-# torchrun --nproc_per_node=2 /fsx/nouamane/projects/beir/examples/retrieval/evaluation/dense/evaluate_sbert_multi_gpu.py
+# torchrun --nproc_per_node=2 examples/retrieval/evaluation/dense/evaluate_sbert_multi_gpu.py
 if __name__ == "__main__":
 
     # Initialize torch.distributed

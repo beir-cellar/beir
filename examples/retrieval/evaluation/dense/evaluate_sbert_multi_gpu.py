@@ -1,16 +1,15 @@
 '''
 This sample python shows how to evaluate BEIR dataset quickly using Mutliple GPU for evaluation (for large datasets).
-To run this code, you need Python >= 3.7 (not 3.6) and need to install evaluate library separately: ``pip install evaluate``
+To run this code, you need Python >= 3.7 (not 3.6)
 Enabling multi-gpu evaluation has been thanks due to tremendous efforts of Noumane Tazi (https://github.com/NouamaneTazi)
 
 IMPORTANT: The following code will not run with Python 3.6! 
 1. Please install Python 3.7 using Anaconda (conda create -n myenv python=3.7)
-2. Next, install Evaluate (https://github.com/huggingface/evaluate) using ``pip install evaluate``.
 
 You are good to go!
 
 To run this code, you preferably need access to mutliple GPUs. Faster than running on single GPU.
-CUDA_VISIBLE_DEVICES=0,1,2,3 python evaluate_sbert_multi_gpu.py
+CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 examples/retrieval/evaluation/dense/evaluate_sbert_multi_gpu.py
 '''
 
 from beir.retrieval import models
@@ -26,8 +25,6 @@ import random
 import torch
 from torch import distributed as dist
 
-# Then use this command to run on 2 GPUs for example
-# torchrun --nproc_per_node=2 examples/retrieval/evaluation/dense/evaluate_sbert_multi_gpu.py
 if __name__ == "__main__":
 
     # Initialize torch.distributed

@@ -43,90 +43,90 @@ def run(dataset_name):
                         index_name=index_name,
                         credential=AzureKeyCredential(admin_key))
 
-    try:
-        result = admin_client.delete_index(index_name)
-        print ('Index', index_name, 'Deleted')
-    except Exception as ex:
-        print (ex)
+    # try:
+    #     result = admin_client.delete_index(index_name)
+    #     print ('Index', index_name, 'Deleted')
+    # except Exception as ex:
+    #     print (ex)
 
-    # %%
-    from azure.search.documents.indexes.models import (  
-        CorsOptions,
-        SearchIndex,  
-        SearchField,  
-        SearchFieldDataType,  
-        SimpleField,  
-        SearchableField,
-        ComplexField,
-        SearchIndex,  
-        SemanticConfiguration,  
-        SemanticPrioritizedFields,  
-        SemanticField,
-        SemanticSearch,
-        # SemanticSettings,  
-    )
+    # # %%
+    # from azure.search.documents.indexes.models import (  
+    #     CorsOptions,
+    #     SearchIndex,  
+    #     SearchField,  
+    #     SearchFieldDataType,  
+    #     SimpleField,  
+    #     SearchableField,
+    #     ComplexField,
+    #     SearchIndex,  
+    #     SemanticConfiguration,  
+    #     SemanticPrioritizedFields,  
+    #     SemanticField,
+    #     SemanticSearch,
+    #     # SemanticSettings,  
+    # )
 
-    fields = [
-        SimpleField(name="corpusId", type=SearchFieldDataType.String, key=True),
-        SearchableField(name="title", type=SearchFieldDataType.String),
-        SearchableField(name="text", type=SearchFieldDataType.String),
-    ]
-    ## import SemanticConfiguration from azure ai search
-    semantic_config = SemanticConfiguration(
-        name="my-semantic-config",
-        prioritized_fields=SemanticPrioritizedFields(
-                title_field=SemanticField(field_name="title"),
-                # prioritized_keywords_fields=[SemanticField(field_name="Category")],
-                content_fields=[SemanticField(field_name="text")]
-        )
-    )
+    # fields = [
+    #     SimpleField(name="corpusId", type=SearchFieldDataType.String, key=True),
+    #     SearchableField(name="title", type=SearchFieldDataType.String),
+    #     SearchableField(name="text", type=SearchFieldDataType.String),
+    # ]
+    # ## import SemanticConfiguration from azure ai search
+    # semantic_config = SemanticConfiguration(
+    #     name="my-semantic-config",
+    #     prioritized_fields=SemanticPrioritizedFields(
+    #             title_field=SemanticField(field_name="title"),
+    #             # prioritized_keywords_fields=[SemanticField(field_name="Category")],
+    #             content_fields=[SemanticField(field_name="text")]
+    #     )
+    # )
 
-    semantic_settings = SemanticSearch(configurations=[semantic_config])
-    cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
-    scoring_profiles = []
-    index = SearchIndex(
-        name=index_name,
-        fields=fields,
-        semantic_search=semantic_settings,
-        scoring_profiles=scoring_profiles,
-        cors_options=cors_options)
+    # semantic_settings = SemanticSearch(configurations=[semantic_config])
+    # cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
+    # scoring_profiles = []
+    # index = SearchIndex(
+    #     name=index_name,
+    #     fields=fields,
+    #     semantic_search=semantic_settings,
+    #     scoring_profiles=scoring_profiles,
+    #     cors_options=cors_options)
 
-    print(index)
+    # print(index)
 
-    try:
-        result = admin_client.create_index(index)
-        print ('Index', result.name, 'created')
-    except Exception as ex:
-        print (ex)
+    # try:
+    #     result = admin_client.create_index(index)
+    #     print ('Index', result.name, 'created')
+    # except Exception as ex:
+    #     print (ex)
 
-    # %%
-    # create documents for corpus
-    documents = []
-    for id in corpus:
-        #print(id)
-        documents.append({
-            "corpusId": id,
-            "title": corpus[id]["title"],
-            "text": corpus[id]["text"]
-        })
+    # # %%
+    # # create documents for corpus
+    # documents = []
+    # for id in corpus:
+    #     #print(id)
+    #     documents.append({
+    #         "corpusId": id,
+    #         "title": corpus[id]["title"],
+    #         "text": corpus[id]["text"]
+    #     })
 
-    # %%
-    try:
-        # Upload documents to the index per 100 documents
-        print("documents size is", len(documents))
-        if len(documents) > 1000:
-            for i in range(0, len(documents), 1000):
-                result = search_client.upload_documents(documents=documents[i:i+1000])
-                print("Upload of new document succeeded: {}".format(result[0].succeeded))   
-        #result = search_client.upload_documents(documents=documents)
-        # print("Upload of new document succeeded: {}".format(result[0].succeeded))
-    except Exception as ex:
-        print (ex.message)
+    # # %%
+    # try:
+    #     # Upload documents to the index per 100 documents
+    #     print("documents size is", len(documents))
+    #     if len(documents) > 1000:
+    #         for i in range(0, len(documents), 1000):
+    #             result = search_client.upload_documents(documents=documents[i:i+1000])
+    #             print("Upload of new document succeeded: {}".format(result[0].succeeded))   
+    #     #result = search_client.upload_documents(documents=documents)
+    #     # print("Upload of new document succeeded: {}".format(result[0].succeeded))
+    # except Exception as ex:
+    #     print (ex.message)
 
     # %% [markdown]
     # ## Search an index
-    import time
-    time.sleep(30)
+    # import time
+    # time.sleep(30)
     # %%
     results = search_client.search(search_text="*", include_total_count=True)
     print ('Total Documents Matching Query:', results.get_count())
@@ -157,46 +157,49 @@ def run(dataset_name):
     #     print("title", result["title"])
     #     print("text", result["text"][:100], "...\n")
 
-    # # %%
-    # query_ids = list(queries)[:10]
-    # dict_results = {}
-    # for query_id in query_ids:
-    #     query = queries[query_id]
-    #     results = search_client.search(search_text=query, include_total_count=True, select='corpusId, title, text', top=100)
-    #     id_score = {}
-    #     for result in results:
-    #         id_score[result["corpusId"]] = result["@search.score"]
-    #     # print(id_score)
-    #     dict_results[query_id] = id_score
+    # %%
+    query_ids = list(queries)
+    dict_results = {}
+    for query_id in query_ids:
+        query = queries[query_id]
+        results = search_client.search(search_text=query, include_total_count=True, select='corpusId, title, text', top=50)
+        id_score = {}
+        for result in results:
+            id_score[result["corpusId"]] = result["@search.score"]
+        # print(id_score)
+        dict_results[query_id] = id_score
 
-    # # %%
-    # from beir.retrieval.evaluation import EvaluateRetrieval
-    # ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(qrels, dict_results, [1, 3, 5, 10, 50, 100])
-    # print(ndcg, _map, recall, precision)
+    # %%
+    from beir.retrieval.evaluation import EvaluateRetrieval
+    ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(qrels, dict_results, [1, 3, 5, 10, 50, 100])
+    print(ndcg, _map, recall, precision)
 
-    # import json
-    # with open(dataset+"_azureaisearch_no_reranking_result.json", "w") as f:
-    #     json.dump(dict_results, f)
+    import json
+    with open(dataset+"_azureaisearch_no_reranking_result.json", "w") as f:
+        json.dump(dict_results, f)
 
 
 
-    # query_ids = list(queries)[:10]
-    # dict_results = {}
-    # for query_id in query_ids:
-    #     query = queries[query_id]
-    #     results = search_client.search(search_text=query, include_total_count=True, select='corpusId, title, text', top=100, semantic_configuration_name="my-semantic-config", query_type="semantic")
-    #     id_score = {}
-    #     for result in results:
-    #         id_score[result["corpusId"]] = result["@search.score"]
-    #     # print(id_score)
-    #     dict_results[query_id] = id_score
+    query_ids = list(queries)
+    dict_results = {}
+    for query_id in query_ids:
+        query = queries[query_id]
+        results = search_client.search(search_text=query, include_total_count=True, select='corpusId, title, text', top=50, semantic_configuration_name="my-semantic-config", query_type="semantic")
+        # results = search_client.search(search_text=query, include_total_count=True, select='corpusId, title, text', top=100, semantic_configuration_name="my-semantic-config", query_type="semantic")
+        id_score = {}
+        for result in results:
+            # print("query:", query)
+            # print(result["@search.reranker_score"])
+            id_score[result["corpusId"]] = result["@search.reranker_score"]
+        # print(id_score)
+        dict_results[query_id] = id_score
 
-    # # %%
-    # from beir.retrieval.evaluation import EvaluateRetrieval
-    # ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(qrels, dict_results, [1, 3, 5, 10, 50, 100])
-    # print(ndcg, _map, recall, precision)
-    # with open(dataset+"_azureaisearch_reranking_result.json", "w") as f:
-    #     json.dump(dict_results, f)
+    # %%
+    from beir.retrieval.evaluation import EvaluateRetrieval
+    ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(qrels, dict_results, [1, 3, 5, 10, 50, 100])
+    print(ndcg, _map, recall, precision)
+    with open(dataset+"_azureaisearch_reranking_result.json", "w") as f:
+        json.dump(dict_results, f)
 
 # %%
 
@@ -208,7 +211,8 @@ def main():
                     level=logging.CRITICAL,
                     handlers=[LoggingHandler()])
     # dataset_names = ["scifact", "nq", "scidocs", "arguana", "climate-fever", "dbpedia", "fever", "hotpotqa", "covid", "touche2020"]
-    dataset_names = ["scifact","scidocs", "arguana", "climate-fever"]
+    dataset_names = ["scifact"]
+    # dataset_names = ["scifact", "scidocs", "arguana", "climate-fever"]
 
     for dataset_name in dataset_names:
         run(dataset_name)

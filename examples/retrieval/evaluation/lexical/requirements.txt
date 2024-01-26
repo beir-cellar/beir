@@ -1,0 +1,7 @@
+ipykernel
+notebook
+openai
+azure-search-documents
+tenacity
+beir
+python-dotenv

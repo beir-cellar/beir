@@ -3,11 +3,40 @@ from beir import util, LoggingHandler
 from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
-from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+from beir.retrieval.search.dense import DenseOfflineRetrievalExactSearch
+from typing import List, Dict, Optional
+import numpy as np
 
 import logging
 import pathlib, os
 import random
+
+class OfflineModel:
+    def __init__(self, model_path=None, **kwargs):
+        self.model = None # ---> HERE Load your custom model
+        self.query_npy = np.load(f"{model_path}/queries.npy")
+        self.corpus_npy = np.load(f"{model_path}/corpus0.npy")
+        self.query_ids = self.load_ids(f"{model_path}/queries.ids")
+        self.corpus_ids = self.load_ids(f"{model_path}/corpus0.ids")
+        # self.model = SentenceTransformer(model_path)
+    
+    def load_ids(self, id_strs_path):
+        id_strs = open(id_strs_path, 'r').read().splitlines()
+        return {id.strip(): idx for idx, id in enumerate(id_strs)}
+    
+    # Write your own encoding query function (Returns: Query embeddings as numpy array)
+    # For eg ==> return np.asarray(self.model.encode(queries, batch_size=batch_size, **kwargs))
+    def encode_queries(self, queries: List[str], batch_size: int = 16, **kwargs) -> np.ndarray:
+        idxs = [self.query_ids[q_id] for q_id in queries]
+        return self.query_npy[idxs]
+    
+    # Write your own encoding corpus function (Returns: Document embeddings as numpy array)  
+    # For eg ==> sentences = [(doc["title"] + "  " + doc["text"]).strip() for doc in corpus]
+    #        ==> return np.asarray(self.model.encode(sentences, batch_size=batch_size, **kwargs))
+    def encode_corpus(self, corpus: List[str], batch_size: int = 8, **kwargs) -> np.ndarray:
+        idxs = [self.corpus_ids[c_id] for c_id in corpus]
+        return self.corpus_npy[idxs]
+
 
 #### Just some code to print debug information to stdout
 logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -36,7 +65,7 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 #### The model was fine-tuned using cosine-similarity.
 #### Complete list - https://www.sbert.net/docs/pretrained_models.html
 
-model = DRES(models.SentenceBERT("msmarco-distilbert-base-tas-b"), batch_size=256, corpus_chunk_size=512*9999)
+model = DenseOfflineRetrievalExactSearch(OfflineModel(model_path="./offline_model"))
 retriever = EvaluateRetrieval(model, score_function="dot")
 
 #### Retrieve dense results (format of results is identical to qrels)

@@ -1,5 +1,6 @@
 from .. import BaseSearch
 from .util import cos_sim, dot_score
+import numpy as np
 import logging
 import torch
 from typing import Dict
@@ -22,6 +23,19 @@ class DenseRetrievalExactSearch(BaseSearch):
         self.convert_to_tensor = kwargs.get("convert_to_tensor", True)
         self.results = {}
     
+    def call_model_for_queries(self, queries, queries_ids=None):
+        query_embeddings = self.model.encode_queries(
+            queries, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
+        return query_embeddings
+    
+    def call_model_for_subcorpus(self, corpus_start_idx, corpus_end_idx, corpus, cor_ids=None):
+        return self.model.encode_corpus(
+                corpus[corpus_start_idx:corpus_end_idx],
+                batch_size=self.batch_size,
+                show_progress_bar=self.show_progress_bar, 
+                convert_to_tensor = self.convert_to_tensor
+                )
+
     def search(self, 
                corpus: Dict[str, Dict[str, str]], 
                queries: Dict[str, str], 
@@ -38,10 +52,13 @@ class DenseRetrievalExactSearch(BaseSearch):
         logger.info("Encoding Queries...")
         query_ids = list(queries.keys())
         self.results = {qid: {} for qid in query_ids}
-        queries = [queries[qid] for qid in queries]
-        query_embeddings = self.model.encode_queries(
-            queries, batch_size=self.batch_size, show_progress_bar=self.show_progress_bar, convert_to_tensor=self.convert_to_tensor)
-          
+        queries_strings = []
+        queries_ids = []
+        for qid, qs in queries.items():
+            queries_strings.append(qs)
+            queries_ids.append(qid)
+            
+        query_embeddings = self.call_model_for_queries(queries_strings, queries_ids)          
         logger.info("Sorting Corpus by document length (Longest first)...")
 
         corpus_ids = sorted(corpus, key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")), reverse=True)
@@ -58,12 +75,7 @@ class DenseRetrievalExactSearch(BaseSearch):
             corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))
 
             # Encode chunk of corpus    
-            sub_corpus_embeddings = self.model.encode_corpus(
-                corpus[corpus_start_idx:corpus_end_idx],
-                batch_size=self.batch_size,
-                show_progress_bar=self.show_progress_bar, 
-                convert_to_tensor = self.convert_to_tensor
-                )
+            sub_corpus_embeddings = self.call_model_for_subcorpus(corpus_start_idx, corpus_end_idx, corpus, corpus_ids)
 
             # Compute similarites using either cosine-similarity or dot product
             cos_scores = self.score_functions[score_function](query_embeddings, sub_corpus_embeddings)
@@ -91,3 +103,15 @@ class DenseRetrievalExactSearch(BaseSearch):
                 self.results[qid][corpus_id] = score
         
         return self.results 
+
+class DenseOfflineRetrievalExactSearch(DenseRetrievalExactSearch):
+    def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = 50000, **kwargs):
+        super(DenseOfflineRetrievalExactSearch, self).__init__(model, batch_size, corpus_chunk_size, **kwargs)
+        
+    def call_model_for_queries(self, queries, queries_ids):
+        query_embeddings = self.model.encode_queries(queries_ids)
+        return query_embeddings
+    
+    def call_model_for_subcorpus(self, corpus_start_idx, corpus_end_idx, corpus ,cor_ids):
+        sub_corpus_embeddings =  self.model.encode_corpus(cor_ids[corpus_start_idx:corpus_end_idx])
+        return sub_corpus_embeddings

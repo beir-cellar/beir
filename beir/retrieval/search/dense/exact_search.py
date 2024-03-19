@@ -60,12 +60,7 @@ class DenseRetrievalExactSearch(BaseSearch):
             queries_strings.append(qs)
             queries_ids.append(qid)
             
-        query_embeddings = self.call_model_for_queries(queries_strings, queries_ids)
-        #with open("offline_model/queries.ids", "w") as f:
-        #    f.write("\n".join([str(x) for x in queries_ids]))
-        #np.save("offline_model/query.npy", query_embeddings.cpu().numpy())
-        
-          
+        query_embeddings = self.call_model_for_queries(queries_strings, queries_ids)          
         logger.info("Sorting Corpus by document length (Longest first)...")
 
         corpus_ids = sorted(corpus, key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")), reverse=True)
@@ -83,10 +78,6 @@ class DenseRetrievalExactSearch(BaseSearch):
 
             # Encode chunk of corpus    
             sub_corpus_embeddings = self.call_model_for_subcorpus(corpus_start_idx, corpus_end_idx, corpus, corpus_ids)
-            #with open(f"offline_model/corpus{batch_num}.ids", "w") as f:
-            #    f.write("\n".join([str(x) for x in corpus_ids[corpus_start_idx:corpus_end_idx]]))
-            #np.save(f"offline_model/corpus{batch_num}.npy", sub_corpus_embeddings.cpu().numpy())
-
 
             # Compute similarites using either cosine-similarity or dot product
             cos_scores = self.score_functions[score_function](query_embeddings, sub_corpus_embeddings)

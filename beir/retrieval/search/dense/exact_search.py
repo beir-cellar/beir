@@ -8,8 +8,6 @@ import heapq
 
 logger = logging.getLogger(__name__)
 
-
-
 # DenseRetrievalExactSearch is parent class for any dense model that can be used for retrieval
 # Abstract class is BaseSearch
 class DenseRetrievalExactSearch(BaseSearch):

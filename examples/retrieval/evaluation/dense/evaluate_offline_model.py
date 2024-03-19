@@ -13,12 +13,12 @@ import random
 
 class OfflineModel:
     def __init__(self, model_path=None, **kwargs):
-        self.model = None # ---> HERE Load your custom model
+        self.model = None # We don't use the model in offline mode 
+        # simply load the query, corpus and qrels
         self.query_npy = np.load(f"{model_path}/queries.npy")
         self.corpus_npy = np.load(f"{model_path}/corpus0.npy")
         self.query_ids = self.load_ids(f"{model_path}/queries.ids")
         self.corpus_ids = self.load_ids(f"{model_path}/corpus0.ids")
-        # self.model = SentenceTransformer(model_path)
     
     def load_ids(self, id_strs_path):
         id_strs = open(id_strs_path, 'r').read().splitlines()

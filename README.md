@@ -116,7 +116,7 @@ data_path = util.download_and_unzip(url, out_dir)
 #### Provide the data_path where scifact has been downloaded and unzipped
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
-#### Load the SBERT model and retrieve using cosine-similarity
+#### Load the SBERT model and retrieve using dot product similarity
 model = DRES(models.SentenceBERT("msmarco-distilbert-base-tas-b"), batch_size=16)
 retriever = EvaluateRetrieval(model, score_function="dot") # or "cos_sim" for cosine similarity
 results = retriever.retrieve(corpus, queries)

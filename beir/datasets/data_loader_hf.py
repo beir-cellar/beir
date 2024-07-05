@@ -94,7 +94,7 @@ class HFDataLoader:
         corpus_ds = next(iter(corpus_ds.values())) # get first split
         corpus_ds = corpus_ds.cast_column('_id', Value('string'))
         corpus_ds = corpus_ds.rename_column('_id', 'id')
-        corpus_ds = corpus_ds.remove_columns([col for col in corpus_ds.column_names if col not in ['id', 'text', 'title']])
+        corpus_ds = corpus_ds.remove_columns([col for col in corpus_ds.column_names if col not in ['id', 'text', 'title', 'processed_text']])
         self.corpus = corpus_ds
     
     def _load_queries(self):

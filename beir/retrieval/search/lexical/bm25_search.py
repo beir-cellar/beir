@@ -65,10 +65,10 @@ class BM25Search(BaseSearch):
     
     def index(self, corpus: Dict[str, Dict[str, str]]):
         progress = tqdm.tqdm(unit="docs", total=len(corpus))
-        # dictionary structure = {_id: {title_key: title, text_key: text}}
+        # dictionary structure = {_id: {title_key: title, text_key: text}}l
         dictionary = {idx: {
             self.config["keys"]["title"]: corpus[idx].get("title", None), 
-            self.config["keys"]["body"]: corpus[idx].get("text", None)
+            self.config["keys"]["body"]: corpus[idx].get("processed_text", None)
             } for idx in list(corpus.keys())
         }
         self.es.bulk_add_to_index(

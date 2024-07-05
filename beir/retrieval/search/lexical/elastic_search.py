@@ -4,33 +4,6 @@ from typing import Dict, List, Tuple
 import logging
 import tqdm
 import sys
-import re
-import pymorphy3
-from nltk.corpus import stopwords
-import nltk
-import json
-from elasticsearch import Elasticsearch
-
-nltk.download('stopwords')
-russian_stopwords = set(stopwords.words('russian'))
-morph = pymorphy3.MorphAnalyzer()
-
-
-def preprocess_text(text):
-    text = text.lower()
-    text = re.sub(r'[^\w\s]', '', text)
-    words = text.split()
-
-    processed_words = []
-    for word in words:
-        if word not in russian_stopwords:
-            lemma = morph.parse(word)[0].normal_form
-            processed_words.append(lemma)
-
-    processed_text = ' '.join(processed_words)
-
-    return processed_text
-
 
 tracer = logging.getLogger('elasticsearch') 
 tracer.setLevel(logging.CRITICAL) # supressing INFO messages for elastic-search
@@ -202,7 +175,7 @@ class ElasticSearch(object):
                 "_source": False, # No need to return source objects
                 "query": {
                     "multi_match": { 
-                        "query": preprocess_text(text), # matching query with both text and title fields
+                        "query": text, # matching query with both text and title fields
                         "type": "best_fields",
                         "fields": [self.title_key, self.text_key],
                         "tie_breaker": 0.5

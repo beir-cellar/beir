@@ -105,7 +105,7 @@ class HFDataLoader:
         queries_ds = next(iter(queries_ds.values())) # get first split
         queries_ds = queries_ds.cast_column('_id', Value('string'))
         queries_ds = queries_ds.rename_column('_id', 'id')
-        queries_ds = queries_ds.remove_columns([col for col in queries_ds.column_names if col not in ['id', 'text']])
+        queries_ds = queries_ds.remove_columns([col for col in queries_ds.column_names if col not in ['id', 'text', 'processed_text']])
         self.queries = queries_ds
         
     def _load_qrels(self, split):

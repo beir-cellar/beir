@@ -75,8 +75,8 @@ class ElasticSearch(object):
                 mapping = {
                     "mappings": {
                         "properties": {
-                            self.title_key: {"type": "processed_text"},
-                            self.text_key: {"type": "processed_text"}
+                            self.title_key: {"type": "processed_text", "analyzer": self.language},
+                            self.text_key: {"type": "processed_text", "analyzer": self.language}
                         }}}
             else:
                 mapping = {
@@ -85,8 +85,8 @@ class ElasticSearch(object):
                     },
                     "mappings": {
                         "properties": {
-                            self.title_key: {"type": "processed_text"},
-                            self.text_key: {"type": "processed_text"}
+                            self.title_key: {"type": "processed_text", "analyzer": self.language},
+                            self.text_key: {"type": "processed_text",  "analyzer": self.language}
                         }}}
 
             self.es.indices.create(index=self.index_name, body=mapping,

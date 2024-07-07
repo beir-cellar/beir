@@ -26,7 +26,7 @@ def preprocess_text(text):
     return processed_text
 
 
-file_path = "/Users/kaengreg/Documents/Работа /НИВЦ/rus-mmarco-mini/corpus.jsonl"
+file_path = "/Users/kaengreg/Documents/Работа /НИВЦ/rus-mmarco-mini/queries.jsonl"
 corpus = {}
 with open(file_path, 'r') as file:
     for line in file:
@@ -34,9 +34,8 @@ with open(file_path, 'r') as file:
         record['processed_text'] = preprocess_text(record['text'])
         corpus[record['_id']] = record
 
+with open(file_path, 'w', encoding='utf-8') as c_outfile:
+    for cid in corpus.keys():
+      c_outfile.write(json.dumps(corpus[cid], ensure_ascii=False) + '\n')
 
-es = Elasticsearch()
-text_to_analyze = corpus['0']['processed_text']
-analyze_response = es.indices.analyze(body={'text': text_to_analyze, 'analyzer': 'russian'})
 
-print(json.dumps(analyze_response, indent=2, ensure_ascii=False))

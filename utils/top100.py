@@ -4,7 +4,7 @@ import json
 tsv_file = '/Users/kaengreg/Documents/Работа /НИВЦ/rus-mmarco/qrels/train.tsv'
 df = pd.read_csv(tsv_file, sep='\t', nrows=100)
 
-top100_tsv_file = '/Users/kaengreg/Documents/Работа /НИВЦ/rus-mmarco-mini/qrels/top100.tsv'
+top100_tsv_file = '/Users/kaengreg/Documents/Работа /НИВЦ/rus-mmarco-mini/qrels/train.tsv'
 df.to_csv(top100_tsv_file, sep='\t', index=False)
 
 query_ids = df['query-id'].tolist()
@@ -24,8 +24,8 @@ corpus_file = '/Users/kaengreg/Documents/Работа /НИВЦ/rus-mmarco/corpu
 queries_data = load_jsonl(queries_file, '_id')
 corpus_data = load_jsonl(corpus_file, '_id')
 
-queries_output_file = '/Users/kaengreg/Documents/Работа /НИВЦ/rus-mmarco-mini/queries_100.jsonl'
-corpus_output_file = '/Users/kaengreg/Documents/Работа /НИВЦ/rus-mmarco-mini/corpus_100.jsonl'
+queries_output_file = '/Users/kaengreg/Documents/Работа /НИВЦ/rus-mmarco-mini/queries.jsonl'
+corpus_output_file = '/Users/kaengreg/Documents/Работа /НИВЦ/rus-mmarco-mini/corpus.jsonl'
 
 with open(queries_output_file, 'w', encoding='utf-8') as q_outfile, \
         open(corpus_output_file, 'w', encoding='utf-8') as c_outfile:

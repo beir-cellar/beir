@@ -96,17 +96,8 @@ class HFDataLoader:
         corpus_ds = corpus_ds.rename_column('_id', 'id')
         corpus_ds = corpus_ds.remove_columns([col for col in corpus_ds.column_names if col not in ['id', 'text', 'title', 'processed_text']])
 
-        def resturcutre(dataset):
-            result = {}
-            for record in dataset:
-                result[record['id']] = {
-                    'text': record['text'],
-                    'title': record['title'],
-                    'processed_text': record['processed_text']}
-            return result
 
-        corpus_dict = resturcutre(corpus_ds)
-        self.corpus = corpus_dict
+        self.corpus = corpus_ds
     
     def _load_queries(self):
         if self.hf_repo:

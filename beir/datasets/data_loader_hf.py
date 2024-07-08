@@ -69,7 +69,9 @@ class HFDataLoader:
             qrels_dict[row['query-id']][row['corpus-id']] = int(row['score'])
         self.qrels.map(qrels_dict_init)
         self.qrels = qrels_dict
-        self.queries = self.queries.filter(lambda x: x['id'] in self.qrels)
+        #self.queries = self.queries.filter(lambda x: x['id'] in self.qrels)
+        filtered_queries = {k: v for k, v in self.queries.items() if k in self.qrels}
+        self.queries = filtered_queries
         logger.info("Loaded %d %s Queries.", len(self.queries), split.upper())
         first_que_id = next(iter(self.queries))
         logger.info("Query Example: %s", self.queries[first_que_id])

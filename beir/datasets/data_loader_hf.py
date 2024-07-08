@@ -120,7 +120,7 @@ class HFDataLoader:
 
         queries_dict = {}
         for record in queries_ds:
-            queries_dict[record['id']] = record['proccessed_text']
+            queries_dict[record['id']] = record['processed_text']
 
         self.queries = queries_dict
         

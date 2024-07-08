@@ -117,7 +117,12 @@ class HFDataLoader:
         queries_ds = queries_ds.cast_column('_id', Value('string'))
         queries_ds = queries_ds.rename_column('_id', 'id')
         queries_ds = queries_ds.remove_columns([col for col in queries_ds.column_names if col not in ['id', 'text', 'processed_text']])
-        self.queries = queries_ds
+
+        queries_dict = {}
+        for record in queries_ds:
+            queries_dict[record['id']] = record['proccessed_text']
+
+        self.queries = queries_dict
         
     def _load_qrels(self, split):
         if self.hf_repo:

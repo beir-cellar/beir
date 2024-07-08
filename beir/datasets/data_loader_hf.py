@@ -54,8 +54,9 @@ class HFDataLoader:
             logger.info("Loading Corpus...")
             self._load_corpus()
             logger.info("Loaded %d %s Documents.", len(self.corpus), split.upper())
-            logger.info("Doc Example: %s", self.corpus[0])
-        
+            first_doc_id = next(iter(self.corpus))
+            logger.info("Doc Example: %s", self.corpus[first_doc_id])
+
         if not len(self.queries):
             logger.info("Loading Queries...")
             self._load_queries()
@@ -70,8 +71,9 @@ class HFDataLoader:
         self.qrels = qrels_dict
         self.queries = self.queries.filter(lambda x: x['id'] in self.qrels)
         logger.info("Loaded %d %s Queries.", len(self.queries), split.upper())
-        logger.info("Query Example: %s", self.queries[0])
-        
+        first_que_id = next(iter(self.queries))
+        logger.info("Query Example: %s", self.queries[first_que_id])
+
         return self.corpus, self.queries, self.qrels
     
     def load_corpus(self) -> Dict[str, Dict[str, str]]:

@@ -105,8 +105,8 @@ class HFDataLoader:
                     'processed_text': record['processed_text']}
             return result
 
-        corpus_ds = resturcutre(corpus_ds)
-        self.corpus = corpus_ds
+        corpus_dict = resturcutre(corpus_ds)
+        self.corpus = corpus_dict
     
     def _load_queries(self):
         if self.hf_repo:

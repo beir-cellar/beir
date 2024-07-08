@@ -104,7 +104,6 @@ class HFDataLoader:
                 'title': record['title'],
                 'processed_text': record['processed_text']
             }
-            print(corpus_dict[record['id']])
         self.corpus = corpus_dict
     
     def _load_queries(self):

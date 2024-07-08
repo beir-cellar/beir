@@ -99,7 +99,7 @@ class HFDataLoader:
         def resturcutre(dataset):
             result = {}
             for record in dataset:
-                result[record['id']] = {'text': record['text'], 'title': record['title'],
+                result[str(record['id'])] = {'text': record['text'], 'title': record['title'],
                                          'processed_text': record['processed_text']}
             return result
 

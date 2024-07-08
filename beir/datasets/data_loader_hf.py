@@ -82,7 +82,8 @@ class HFDataLoader:
             logger.info("Loading Corpus...")
             self._load_corpus()
             logger.info("Loaded %d %s Documents.", len(self.corpus))
-            logger.info("Doc Example: %s", self.corpus[0])
+            first_doc_id = next(iter(self.corpus))
+            logger.info("Doc Example: %s", self.corpus[first_doc_id])
 
         return self.corpus
     

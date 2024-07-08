@@ -99,11 +99,13 @@ class HFDataLoader:
         def resturcutre(dataset):
             result = {}
             for record in dataset:
-                result[str(record['id'])] = {'text': record['text'], 'title': record['title'],
-                                         'processed_text': record['processed_text']}
+                result[record['id']] = {
+                    'text': record['text'],
+                    'title': record['title'],
+                    'processed_text': record['processed_text']}
             return result
 
-        corpus_ds = corpus_ds.map(resturcutre)
+        corpus_ds = resturcutre(corpus_ds)
         self.corpus = corpus_ds
     
     def _load_queries(self):

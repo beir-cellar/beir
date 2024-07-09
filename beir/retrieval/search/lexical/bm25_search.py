@@ -9,7 +9,7 @@ def sleep(seconds):
 
 class BM25Search(BaseSearch):
     def __init__(self, index_name: str, hostname: str = "localhost", keys: Dict[str, str] = {"title": "title", "body": "txt"}, language: str = "english",
-                 batch_size: int = 128, timeout: int = 10000, retry_on_timeout: bool = True, maxsize: int = 24, number_of_shards: int = "default",
+                 batch_size: int = 128, timeout: int = 1000, retry_on_timeout: bool = True, maxsize: int = 24, number_of_shards: int = "default",
                  initialize: bool = True, sleep_for: int = 2):
         self.results = {}
         self.batch_size = batch_size

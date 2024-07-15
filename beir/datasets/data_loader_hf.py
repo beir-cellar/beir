@@ -106,7 +106,7 @@ class HFDataLoader:
             corpus_dict[record['id']] = {
                 'text': record['text'],
                 'title': record['title'],
-                'processed_text': record['processed_text']
+                #'processed_text': record['processed_text']
             }
         self.corpus = corpus_dict
     
@@ -122,7 +122,9 @@ class HFDataLoader:
 
         queries_dict = {}
         for record in queries_ds:
-            queries_dict[record['id']] = record['processed_text']
+            #queries_dict[record['id']] = record['processed_text']
+            queries_dict[record['id']] = record['text']
+
 
         self.queries = queries_dict
         

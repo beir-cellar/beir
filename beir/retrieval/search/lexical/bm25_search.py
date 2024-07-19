@@ -11,8 +11,8 @@ class BM25Search(BaseSearch):
     def __init__(self, index_name: str, hostname: str = "localhost", keys: Dict[str, str] = {"title": "title", "body": "txt"}, language: str = "english",
                  batch_size: int = 128, timeout: int = 1000, retry_on_timeout: bool = True, maxsize: int = 24, number_of_shards: int = "default",
                  initialize: bool = True, sleep_for: int = 2):
-        #keys["body"] = "processed_text"
-        keys["body"] = "text"
+        keys["body"] = "processed_text"
+        #keys["body"] = "text"
         self.results = {}
         self.batch_size = batch_size
         self.initialize = initialize
@@ -67,10 +67,10 @@ class BM25Search(BaseSearch):
     
     def index(self, corpus: Dict[str, Dict[str, str]]):
         progress = tqdm.tqdm(unit="docs", total=len(corpus))
-        # dictionary structure = {_id: {title_key: title, text_key: text}}l
+        # dictionary structure = {_id: {title_key: title, text_key: text}}
         dictionary = {idx: {
             self.config["keys"]["title"]: corpus[idx].get("title", None), 
-            self.config["keys"]["body"]: corpus[idx].get("text", None)
+            self.config["keys"]["body"]: corpus[idx].get("processed_text", None)
             } for idx in list(corpus.keys())
         }
         self.es.bulk_add_to_index(

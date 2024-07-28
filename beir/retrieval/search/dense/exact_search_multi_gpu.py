@@ -162,7 +162,7 @@ class DenseRetrievalParallelExactSearch(BaseSearch):
             query_id = query_ids[query_itr]
             for i in range(len(cos_scores_top_k_values)):
                 sub_corpus_id = cos_scores_top_k_idx[i][query_itr]
-                score = cos_scores_top_k_values[i][query_itr].item() # convert np.float to float
+                score = cos_scores_top_k_values[i][query_itr].item() # convert np.float64 to float
                 corpus_id = corpus_ids[sub_corpus_id]
                 if corpus_id != query_id:
                     self.results[query_id][corpus_id] = score

@@ -19,7 +19,7 @@ class UniCOIL:
         self.model.eval()
     
     def encode_query(self, query: str, batch_size: int = 16, **kwargs):
-        embedding = np.zeros(self.bert_input_emb, dtype=np.float)
+        embedding = np.zeros(self.bert_input_emb, dtype=np.float64)
         input_ids = self.tokenizer(query, max_length=self.query_max_length, padding='longest',
                                         truncation=True, add_special_tokens=True,
                                         return_tensors='pt').to(self.device)["input_ids"]
@@ -59,9 +59,9 @@ class UniCOIL:
                 non_zero_tokens += len(token_ids_and_embs)
                 passage_embs.append(token_ids_and_embs)
             
-        col = np.zeros(non_zero_tokens, dtype=np.int)
-        row = np.zeros(non_zero_tokens, dtype=np.int)
-        values = np.zeros(non_zero_tokens, dtype=np.float)
+        col = np.zeros(non_zero_tokens, dtype=np.int64)
+        row = np.zeros(non_zero_tokens, dtype=np.int64)
+        values = np.zeros(non_zero_tokens, dtype=np.float64)
         sparse_idx = 0    
         
         for pid, emb in enumerate(passage_embs):
@@ -71,7 +71,7 @@ class UniCOIL:
                 values[sparse_idx] = score
                 sparse_idx += 1
 
-        return csr_matrix((values, (col, row)), shape=(len(sentences), self.bert_input_emb), dtype=np.float)
+        return csr_matrix((values, (col, row)), shape=(len(sentences), self.bert_input_emb), dtype=np.float64)
 
 # class UniCOIL:
 #     def __init__(self, model_path: Union[str, Tuple] = None, sep: str = " ", **kwargs):
@@ -98,7 +98,7 @@ class UniCOIL:
 #         batch_size: int = 32,
 #         max_length: int = 512) -> np.ndarray:
 
-#         embeddings = np.zeros((len(sentences), self.sparse_vector_dim), dtype=np.float)
+#         embeddings = np.zeros((len(sentences), self.sparse_vector_dim), dtype=np.float64)
         
 #         for start_idx in trange(0, len(sentences), batch_size, desc="docs"):
 #             documents = sentences[start_idx: start_idx + batch_size]
@@ -114,7 +114,7 @@ class UniCOIL:
 #                 np.put(embeddings[start_idx + idx], batch_token_ids[idx], batch_weights[idx].flatten())
 
 #         return embeddings
-#         # return csr_matrix((values, (row, col)), shape=(len(sentences), self.sparse_vector_dim), dtype=np.float).toarray()
+#         # return csr_matrix((values, (row, col)), shape=(len(sentences), self.sparse_vector_dim), dtype=np.float64).toarray()
 
 
 # Chunks of this code has been taken from: https://github.com/castorini/pyserini/blob/master/pyserini/encode/_unicoil.py

@@ -147,7 +147,7 @@ class FaissBinaryIndex(FaissIndex):
         if self._passage_ids is not None:
             ids_arr = self._passage_ids[ids_arr.reshape(-1)].reshape(num_queries, -1)
         else:
-            ids_arr = np.array([self.index.id_map.at(int(id_)) for id_ in ids_arr.reshape(-1)], dtype=np.int)
+            ids_arr = np.array([self.index.id_map.at(int(id_)) for id_ in ids_arr.reshape(-1)], dtype=np.int64)
             ids_arr = ids_arr.reshape(num_queries, -1)
 
         scores_arr = scores_arr[np.arange(num_queries)[:, None], sorted_indices]

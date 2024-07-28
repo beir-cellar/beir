@@ -61,9 +61,9 @@ class SPARTA:
         sentences = [(doc["title"] + self.sep + doc["text"]).strip() for doc in corpus]
         sparse_idx = 0
         num_elements = len(sentences) * self.sparse_vector_dim
-        col = np.zeros(num_elements, dtype=np.int)
-        row = np.zeros(num_elements, dtype=np.int)
-        values = np.zeros(num_elements, dtype=np.float)
+        col = np.zeros(num_elements, dtype=np.int64)
+        row = np.zeros(num_elements, dtype=np.int64)
+        values = np.zeros(num_elements, dtype=np.float64)
         
         for start_idx in trange(0, len(sentences), batch_size, desc="docs"):
             doc_embs = self._compute_sparse_embeddings(sentences[start_idx: start_idx + batch_size])
@@ -74,4 +74,4 @@ class SPARTA:
                     values[sparse_idx] = score
                     sparse_idx += 1
                     
-        return csr_matrix((values, (row, col)), shape=(len(self.bert_input_embeddings), len(sentences)), dtype=np.float)
+        return csr_matrix((values, (row, col)), shape=(len(self.bert_input_embeddings), len(sentences)), dtype=np.float64)

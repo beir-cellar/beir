@@ -1,11 +1,12 @@
+from .. import BaseSearch
 from tqdm.autonotebook import trange
-from typing import List, Dict, Union, Tuple
+from typing import Dict
 import logging
 import numpy as np
 
 logger = logging.getLogger(__name__)
 
-class SparseSearch:
+class SparseSearch(BaseSearch):
     
     def __init__(self, model, batch_size: int = 16, **kwargs):
         self.model = model

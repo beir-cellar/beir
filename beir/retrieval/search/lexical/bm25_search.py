@@ -1,3 +1,4 @@
+from .. import BaseSearch
 from .elastic_search import ElasticSearch
 import tqdm
 import time
@@ -6,7 +7,7 @@ from typing import List, Dict
 def sleep(seconds):
     if seconds: time.sleep(seconds) 
 
-class BM25Search:
+class BM25Search(BaseSearch):
     def __init__(self, index_name: str, hostname: str = "localhost", keys: Dict[str, str] = {"title": "title", "body": "txt"}, language: str = "english",
                  batch_size: int = 128, timeout: int = 100, retry_on_timeout: bool = True, maxsize: int = 24, number_of_shards: int = "default", 
                  initialize: bool = True, sleep_for: int = 2):

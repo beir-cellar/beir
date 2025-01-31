@@ -1,12 +1,12 @@
+from .. import BaseSearch
 from .util import cos_sim, dot_score
 from sentence_transformers import SentenceTransformer
 from torch.utils.data import DataLoader
-from datasets import Features, Value, Sequence
+from datasets import Features, Value
 from datasets.utils.filelock import FileLock
 from datasets import Array2D, Dataset
 from tqdm.autonotebook import tqdm
-from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import logging
 import torch
@@ -53,7 +53,7 @@ if importlib.util.find_spec("evaluate") is not None:
             self.add_batch(cos_scores_top_k_values=torch.ones((1, 1, self.len_queries), dtype=torch.float32), cos_scores_top_k_idx=torch.ones((1, 1, self.len_queries), dtype=torch.int32), batch_index=-torch.ones(1, dtype=torch.int32))
 
 #Parent class for any dense model
-class DenseRetrievalParallelExactSearch:
+class DenseRetrievalParallelExactSearch(BaseSearch):
     
     def __init__(self, model, batch_size: int = 128, corpus_chunk_size: int = None, target_devices: List[str] = None, **kwargs):
         #model is class that provides encode_corpus() and encode_queries()
@@ -69,8 +69,8 @@ class DenseRetrievalParallelExactSearch:
         self.score_functions = {'cos_sim': cos_sim, 'dot': dot_score}
         self.score_function_desc = {'cos_sim': "Cosine Similarity", 'dot': "Dot Product"}
         self.corpus_chunk_size = corpus_chunk_size
-        self.show_progress_bar = True #TODO: implement no progress bar if false
-        self.convert_to_tensor = True
+        self.show_progress_bar = kwargs.get("show_progress_bar", True)
+        self.convert_to_tensor = kwargs.get("convert_to_tensor", True)
         self.results = {}
 
         self.query_embeddings = {}
@@ -82,7 +82,7 @@ class DenseRetrievalParallelExactSearch:
     def search(self, 
                corpus: Dataset, 
                queries: Dataset, 
-               top_k: List[int], 
+               top_k: int, 
                score_function: str,
                **kwargs) -> Dict[str, Dict[str, float]]:
         #Create embeddings for all queries using model.encode_queries()

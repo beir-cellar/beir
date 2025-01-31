@@ -1,17 +1,14 @@
 import pytrec_eval
 import logging
-from typing import Type, List, Dict, Union, Tuple
-from .search.dense import DenseRetrievalExactSearch as DRES
-from .search.dense import DenseRetrievalFaissSearch as DRFS
-from .search.lexical import BM25Search as BM25
-from .search.sparse import SparseSearch as SS
+from typing import List, Dict, Tuple
+from .search.base import BaseSearch
 from .custom_metrics import mrr, recall_cap, hole, top_k_accuracy
 
 logger = logging.getLogger(__name__)
 
 class EvaluateRetrieval:
     
-    def __init__(self, retriever: Union[Type[DRES], Type[DRFS], Type[BM25], Type[SS]] = None, k_values: List[int] = [1,3,5,10,100,1000], score_function: str = "cos_sim"):
+    def __init__(self, retriever: BaseSearch = None, k_values: List[int] = [1,3,5,10,100,1000], score_function: str = "cos_sim"):
         self.k_values = k_values
         self.top_k = max(k_values)
         self.retriever = retriever
@@ -47,7 +44,7 @@ class EvaluateRetrieval:
                  ignore_identical_ids: bool=True) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, float], Dict[str, float]]:
         
         if ignore_identical_ids:
-            logging.info('For evaluation, we ignore identical query and document ids (default), please explicitly set ``ignore_identical_ids=False`` to ignore this.')
+            logger.info('For evaluation, we ignore identical query and document ids (default), please explicitly set ``ignore_identical_ids=False`` to ignore this.')
             popped = []
             for qid, rels in results.items():
                 for pid in list(rels):
@@ -87,9 +84,9 @@ class EvaluateRetrieval:
             precision[f"P@{k}"] = round(precision[f"P@{k}"]/len(scores), 5)
         
         for eval in [ndcg, _map, recall, precision]:
-            logging.info("\n")
+            logger.info("\n")
             for k in eval.keys():
-                logging.info("{}: {:.4f}".format(k, eval[k]))
+                logger.info("{}: {:.4f}".format(k, eval[k]))
 
         return ndcg, _map, recall, precision
     

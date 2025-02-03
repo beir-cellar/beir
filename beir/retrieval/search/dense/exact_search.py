@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import heapq
 import logging
-from typing import dict
 
 import torch
 

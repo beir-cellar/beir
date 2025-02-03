@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import dict
 
 import faiss
 import numpy as np

@@ -1,28 +1,36 @@
+from __future__ import annotations
+
+import numpy as np
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
-from typing import List, Dict, Union, Tuple
-import numpy as np
+
 
 class BinarySentenceBERT:
-    def __init__(self, model_path: Union[str, Tuple] = None, sep: str = " ", threshold: Union[float, Tensor] = 0, **kwargs):
+    def __init__(
+        self,
+        model_path: str | tuple = None,
+        sep: str = " ",
+        threshold: float | Tensor = 0,
+        **kwargs,
+    ):
         self.sep = sep
         self.threshold = threshold
-        
+
         if isinstance(model_path, str):
             self.q_model = SentenceTransformer(model_path)
             self.doc_model = self.q_model
-        
+
         elif isinstance(model_path, tuple):
             self.q_model = SentenceTransformer(model_path[0])
             self.doc_model = SentenceTransformer(model_path[1])
-    
-    def _convert_embedding_to_binary_code(self, embeddings: List[Tensor]) -> List[Tensor]:
+
+    def _convert_embedding_to_binary_code(self, embeddings: list[Tensor]) -> list[Tensor]:
         return embeddings.new_ones(embeddings.size()).masked_fill_(embeddings < self.threshold, -1.0)
-    
-    def encode_queries(self, queries: List[str], batch_size: int = 16, **kwargs) -> Union[List[Tensor], np.ndarray, Tensor]:
+
+    def encode_queries(self, queries: list[str], batch_size: int = 16, **kwargs) -> list[Tensor] | np.ndarray | Tensor:
         return self.q_model.encode(queries, batch_size=batch_size, **kwargs)
-    
-    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int = 8, **kwargs) -> np.ndarray:
+
+    def encode_corpus(self, corpus: list[dict[str, str]], batch_size: int = 8, **kwargs) -> np.ndarray:
         sentences = [(doc["title"] + self.sep + doc["text"]).strip() for doc in corpus]
         embs = self.doc_model.encode(sentences, batch_size=batch_size, convert_to_tensor=True, **kwargs)
         embs = self._convert_embedding_to_binary_code(embs).cpu().numpy()

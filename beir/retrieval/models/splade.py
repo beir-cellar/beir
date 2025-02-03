@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import logging
-from typing import List, Dict, Union
+
 import numpy as np
 import torch
 from numpy import ndarray
+from sentence_transformers.util import batch_to_device
 from torch import Tensor
 from tqdm.autonotebook import trange
 from transformers import AutoModelForMaskedLM, AutoTokenizer
-from sentence_transformers.util import batch_to_device
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +21,12 @@ class SPLADE:
         self.model.eval()
 
     # Write your own encoding query function (Returns: Query embeddings as numpy array)
-    def encode_queries(self, queries: List[str], batch_size: int, **kwargs) -> np.ndarray:
+    def encode_queries(self, queries: list[str], batch_size: int, **kwargs) -> np.ndarray:
         return self.model.encode_sentence_bert(self.tokenizer, queries, is_q=True, maxlen=self.max_length)
 
     # Write your own encoding corpus function (Returns: Document embeddings as numpy array)  out_features
-    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int, **kwargs) -> np.ndarray:
-        sentences = [(doc["title"] + ' ' + doc["text"]).strip() for doc in corpus]
+    def encode_corpus(self, corpus: list[dict[str, str]], batch_size: int, **kwargs) -> np.ndarray:
+        sentences = [(doc["title"] + " " + doc["text"]).strip() for doc in corpus]
         return self.model.encode_sentence_bert(self.tokenizer, sentences, maxlen=self.max_length)
 
 
@@ -37,9 +39,12 @@ class SpladeNaver(torch.nn.Module):
 
     def forward(self, **kwargs):
         out = self.transformer(**kwargs)["logits"]  # output (logits) of MLM head, shape (bs, pad_len, voc_size)
-        return torch.max(torch.log(1 + torch.relu(out)) * kwargs["attention_mask"].unsqueeze(-1), dim=1).values
+        return torch.max(
+            torch.log(1 + torch.relu(out)) * kwargs["attention_mask"].unsqueeze(-1),
+            dim=1,
+        ).values
 
-    def _text_length(self, text: Union[List[int], List[List[int]]]):
+    def _text_length(self, text: list[int] | list[list[int]]) -> int:
         """helper function to get the length for the input text. Text can be either
         a list of ints (which means a single text as input), or a tuple of list of ints
         (representing several text inputs to the model).
@@ -47,23 +52,27 @@ class SpladeNaver(torch.nn.Module):
 
         if isinstance(text, dict):  # {key: value} case
             return len(next(iter(text.values())))
-        elif not hasattr(text, '__len__'):  # Object has no len() method
+        elif not hasattr(text, "__len__"):  # Object has no len() method
             return 1
         elif len(text) == 0 or isinstance(text[0], int):  # Empty string or list of ints
             return len(text)
         else:
             return sum([len(t) for t in text])  # Sum of length of individual strings
 
-    def encode_sentence_bert(self, tokenizer, sentences: Union[str, List[str], List[int]],
-                             batch_size: int = 32,
-                             show_progress_bar: bool = None,
-                             output_value: str = 'sentence_embedding',
-                             convert_to_numpy: bool = True,
-                             convert_to_tensor: bool = False,
-                             device: str = None,
-                             normalize_embeddings: bool = False,
-                             maxlen: int = 512,
-                             is_q: bool = False) -> Union[List[Tensor], ndarray, Tensor]:
+    def encode_sentence_bert(
+        self,
+        tokenizer,
+        sentences: str | list[str] | list[int],
+        batch_size: int = 32,
+        show_progress_bar: bool = None,
+        output_value: str = "sentence_embedding",
+        convert_to_numpy: bool = True,
+        convert_to_tensor: bool = False,
+        device: str = None,
+        normalize_embeddings: bool = False,
+        maxlen: int = 512,
+        is_q: bool = False,
+    ) -> list[Tensor] | ndarray | Tensor:
         """
         Computes sentence embeddings
         :param sentences: the sentences to embed
@@ -84,12 +93,12 @@ class SpladeNaver(torch.nn.Module):
         if convert_to_tensor:
             convert_to_numpy = False
 
-        if output_value == 'token_embeddings':
+        if output_value == "token_embeddings":
             convert_to_tensor = False
             convert_to_numpy = False
 
         input_was_string = False
-        if isinstance(sentences, str) or not hasattr(sentences, '__len__'):
+        if isinstance(sentences, str) or not hasattr(sentences, "__len__"):
             # Cast an individual sentence to a list with length 1
             sentences = [sentences]
             input_was_string = True
@@ -104,28 +113,30 @@ class SpladeNaver(torch.nn.Module):
         sentences_sorted = [sentences[idx] for idx in length_sorted_idx]
 
         for start_index in trange(0, len(sentences), batch_size, desc="Batches", disable=not show_progress_bar):
-            sentences_batch = sentences_sorted[start_index:start_index + batch_size]
+            sentences_batch = sentences_sorted[start_index : start_index + batch_size]
             # features = tokenizer(sentences_batch)
             # print(sentences_batch)
-            features = tokenizer(sentences_batch,
-                                 add_special_tokens=True,
-                                 padding="longest",  # pad to max sequence length in batch
-                                 truncation="only_first",  # truncates to self.max_length
-                                 max_length=maxlen,
-                                 return_attention_mask=True,
-                                 return_tensors="pt")
+            features = tokenizer(
+                sentences_batch,
+                add_special_tokens=True,
+                padding="longest",  # pad to max sequence length in batch
+                truncation="only_first",  # truncates to self.max_length
+                max_length=maxlen,
+                return_attention_mask=True,
+                return_tensors="pt",
+            )
             # print(features)
             features = batch_to_device(features, device)
 
             with torch.no_grad():
                 out_features = self.forward(**features)
-                if output_value == 'token_embeddings':
+                if output_value == "token_embeddings":
                     embeddings = []
-                    for token_emb, attention in zip(out_features[output_value], out_features['attention_mask']):
+                    for token_emb, attention in zip(out_features[output_value], out_features["attention_mask"]):
                         last_mask_id = len(attention) - 1
                         while last_mask_id > 0 and attention[last_mask_id].item() == 0:
                             last_mask_id -= 1
-                        embeddings.append(token_emb[0:last_mask_id + 1])
+                        embeddings.append(token_emb[0 : last_mask_id + 1])
                 else:  # Sentence embeddings
                     # embeddings = out_features[output_value]
                     embeddings = out_features

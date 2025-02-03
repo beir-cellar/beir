@@ -36,7 +36,6 @@ classifiers = [
 dependencies = [
     "sentence-transformers",
     "pytrec-eval-terrier",
-    "faiss_cpu",
     "datasets"
 ]
 
@@ -45,6 +44,7 @@ tf = ["tensorflow>=2.2.0", "tensorflow-text", "tensorflow-hub"]
 elasticsearch = ["elasticsearch==7.9.1"]
 peft = ["peft"]
 dev = ["pytest", "pytest-cov", "pre-commit"]
+faiss = ["faiss-cpu"]
 
 [project.urls]
 Homepage = "https://github.com/beir-cellar/beir"

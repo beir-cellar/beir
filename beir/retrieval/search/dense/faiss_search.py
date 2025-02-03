@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import importlib.util
 import logging
 import os
 
-import faiss
+if importlib.util.find_spec("faiss") is not None:
+    import faiss
+
 import numpy as np
 from tqdm.autonotebook import tqdm
 

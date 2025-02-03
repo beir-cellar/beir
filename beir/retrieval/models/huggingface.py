@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import importlib.util
 import logging
+
+if importlib.util.find_spec("peft") is not None:
+    from peft import PeftConfig, PeftModel
 
 import numpy as np
 import torch
 import torch.nn.functional as F
-from peft import PeftConfig, PeftModel
 from torch import Tensor
 from tqdm.autonotebook import trange
 from transformers import AutoModel, AutoTokenizer

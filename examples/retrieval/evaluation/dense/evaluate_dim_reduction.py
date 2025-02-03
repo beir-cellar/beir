@@ -12,38 +12,42 @@ us much information as possible with only 128 dimensions.
 PCA gives us a matrix that down-projects vectors to 128 dimensions. We use this matrix
 and extend our original SentenceTransformer model with this linear downproject. Hence,
 the new SentenceTransformer model will produce directly embeddings with 128 dimensions
-without further changes needed. 
+without further changes needed.
 
 Usage: python evaluate_dim_reduction.py
 """
 
-from beir import util, LoggingHandler
-from beir.retrieval import models
+import logging
+import os
+import pathlib
+import random
+
+import faiss
+
+from beir import LoggingHandler, util
 from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval import models
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import PCAFaissSearch
 
-import logging
-import pathlib, os
-import random
-import faiss
-
 #### Just some code to print debug information to stdout
-logging.basicConfig(format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.INFO,
-                    handlers=[LoggingHandler()])
+logging.basicConfig(
+    format="%(asctime)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+    handlers=[LoggingHandler()],
+)
 #### /print debug information to stdout
 
 dataset = "scifact"
 
 #### Download nfcorpus.zip dataset and unzip the dataset
-url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
 #### Provide the data path where nfcorpus has been downloaded and unzipped to the data loader
-# data folder would contain these files: 
+# data folder would contain these files:
 # (1) nfcorpus/corpus.jsonl  (format: jsonlines)
 # (2) nfcorpus/queries.jsonl (format: jsonlines)
 # (3) nfcorpus/qrels/test.tsv (format: tsv ("\t"))
@@ -63,10 +67,7 @@ model = models.SentenceBERT(model_path)
 
 output_dimension = 128
 base_index = faiss.IndexFlatIP(output_dimension)
-faiss_search = PCAFaissSearch(model,
-                              base_index=base_index,
-                              output_dimension=output_dimension,
-                              batch_size=128)
+faiss_search = PCAFaissSearch(model, base_index=base_index, output_dimension=output_dimension, batch_size=128)
 
 #######################################################################
 #### PCA: Principal Component Analysis (with Product Quantization) ####
@@ -78,7 +79,7 @@ faiss_search = PCAFaissSearch(model,
 #                              96,                           # number of centroids
 #                              8,                            # code size
 #                              faiss.METRIC_INNER_PRODUCT)   # similarity function
-                            
+
 # faiss_search = PCAFaissSearch(model,
 #                               base_index=base_index,
 #                               output_dimension=output_dimension,
@@ -89,16 +90,16 @@ faiss_search = PCAFaissSearch(model,
 # 1. input_dir/{prefix}.{ext}.faiss => which loads the faiss index.
 # 2. input_dir/{prefix}.{ext}.faiss => which loads mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
 
-prefix = "my-index"       # (default value)
-ext = "pca"               # extension
+prefix = "my-index"  # (default value)
+ext = "pca"  # extension
 
 input_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
 
-if os.path.exists(os.path.join(input_dir, "{}.{}.faiss".format(prefix, ext))):
+if os.path.exists(os.path.join(input_dir, f"{prefix}.{ext}.faiss")):
     faiss_search.load(input_dir=input_dir, prefix=prefix, ext=ext)
 
 #### Retrieve dense results (format of results is identical to qrels)
-retriever = EvaluateRetrieval(faiss_search, score_function="dot") # or "cos_sim"
+retriever = EvaluateRetrieval(faiss_search, score_function="dot")  # or "cos_sim"
 results = retriever.retrieve(corpus, queries)
 
 ### Save faiss index into file or disk ####
@@ -106,18 +107,18 @@ results = retriever.retrieve(corpus, queries)
 # 1. output_dir/{prefix}.{ext}.faiss => which saves the faiss index.
 # 2. output_dir/{prefix}.{ext}.faiss => which saves mapping of ids i.e. (beir-doc-id \t faiss-doc-id).
 
-prefix = "my-index"     # (default value)
-ext = "pca"             # extension
+prefix = "my-index"  # (default value)
+ext = "pca"  # extension
 
 output_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "faiss-index")
 os.makedirs(output_dir, exist_ok=True)
 
-if not os.path.exists(os.path.join(output_dir, "{}.{}.faiss".format(prefix, ext))):
+if not os.path.exists(os.path.join(output_dir, f"{prefix}.{ext}.faiss")):
     faiss_search.save(output_dir=output_dir, prefix=prefix, ext=ext)
 
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 
-logging.info("Retriever evaluation for k in: {}".format(retriever.k_values))
+logging.info(f"Retriever evaluation for k in: {retriever.k_values}")
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
 
 mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
@@ -129,9 +130,9 @@ top_k = 10
 
 query_id, ranking_scores = random.choice(list(results.items()))
 scores_sorted = sorted(ranking_scores.items(), key=lambda item: item[1], reverse=True)
-logging.info("Query : %s\n" % queries[query_id])
+logging.info(f"Query : {queries[query_id]}\n")
 
 for rank in range(top_k):
     doc_id = scores_sorted[rank][0]
     # Format: Rank x: ID [Title] Body
-    logging.info("Rank %d: %s [%s] - %s\n" % (rank+1, doc_id, corpus[doc_id].get("title"), corpus[doc_id].get("text")))
+    logging.info(f"Rank {rank + 1}: {doc_id} [{corpus[doc_id].get('title')}] - {corpus[doc_id].get('text')}\n")

@@ -1,4 +1,4 @@
 ## Deep Dive into Evaluation of Retrieval Models
 
-### Leaderboard Overall 
+### Leaderboard Overall
 

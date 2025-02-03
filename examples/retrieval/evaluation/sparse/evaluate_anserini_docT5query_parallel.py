@@ -25,31 +25,34 @@ import logging
 import os
 import pathlib
 import random
+
 import requests
 import torch
 import torch.multiprocessing as mp
-
 from tqdm import tqdm
 
-from beir import util, LoggingHandler
+from beir import LoggingHandler, util
 from beir.datasets.data_loader import GenericDataLoader
-from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.generation.models import QGenModel
+from beir.retrieval.evaluation import EvaluateRetrieval
 
 CHUNK_SIZE_MP = 100
 CHUNK_SIZE_GPU = 64  # memory-bound, this should work for most GPUs
-DEVICE_CPU = 'cpu'
-DEVICE_GPU = 'cuda'
+DEVICE_CPU = "cpu"
+DEVICE_GPU = "cuda"
 NUM_QUERIES_PER_PASSAGE = 5
 PYSERINI_URL = "http://127.0.0.1:8000"
 
-DEFAULT_MODEL_ID = 'BeIR/query-gen-msmarco-t5-base-v1' # https://huggingface.co/BeIR/query-gen-msmarco-t5-base-v1
+DEFAULT_MODEL_ID = "BeIR/query-gen-msmarco-t5-base-v1"  # https://huggingface.co/BeIR/query-gen-msmarco-t5-base-v1
 DEFAULT_DEVICE = DEVICE_GPU
 
 # noinspection PyArgumentList
-logging.basicConfig(format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.INFO, handlers=[LoggingHandler()])
+logging.basicConfig(
+    format="%(asctime)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+    handlers=[LoggingHandler()],
+)
 
 
 def init_process(device, model_id):
@@ -61,8 +64,8 @@ def init_process(device, model_id):
         # Assign the GPU process ID to bind this process to a specific GPU
         # This is a bit fragile and relies on CUDA ordinals being the same
         # See: https://stackoverflow.com/questions/63564028/multiprocess-pool-initialization-with-sequential-initializer-argument
-        proc_id = int(mp.current_process().name.split('-')[1]) - 1
-        device = f'{DEVICE_GPU}:{proc_id}'
+        proc_id = int(mp.current_process().name.split("-")[1]) - 1
+        device = f"{DEVICE_GPU}:{proc_id}"
 
     model = QGenModel(model_id, use_fast=True, device=device)
 
@@ -75,7 +78,7 @@ def _decide_device(cpu_procs):
     else:
         assert torch.cuda.is_available(), "No GPUs available. Please set --cpu-procs or make GPUs available"
         try:
-            mp.set_start_method('spawn')
+            mp.set_start_method("spawn")
         except RuntimeError:
             pass
         return DEVICE_GPU, torch.cuda.device_count()
@@ -84,8 +87,8 @@ def _decide_device(cpu_procs):
 def _download_dataset(dataset):
     """Downloads a dataset and unpacks it on disk."""
 
-    url = 'https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip'.format(dataset)
-    out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), 'datasets')
+    url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
+    out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
     return util.download_and_unzip(url, out_dir)
 
 
@@ -93,11 +96,13 @@ def _generate_query(corpus_list):
     """Generates a set of queries for a given document."""
 
     documents = [document for _, document in corpus_list]
-    generated_queries = model.generate(corpus=documents,
-                                       ques_per_passage=NUM_QUERIES_PER_PASSAGE,
-                                       max_length=64,
-                                       temperature=1,
-                                       top_k=10)
+    generated_queries = model.generate(
+        corpus=documents,
+        ques_per_passage=NUM_QUERIES_PER_PASSAGE,
+        max_length=64,
+        temperature=1,
+        top_k=10,
+    )
 
     for i, (_, document) in enumerate(corpus_list):
         start_index = i * NUM_QUERIES_PER_PASSAGE
@@ -112,10 +117,13 @@ def _add_generated_queries_to_corpus(num_procs, device, model_id, corpus):
 
     # Chunk input so we can maximize the use of our GPUs
     corpus_list = list(corpus.items())
-    chunked_corpus = [corpus_list[pos:pos + CHUNK_SIZE_GPU] for pos in range(0, len(corpus_list), CHUNK_SIZE_GPU)]
+    chunked_corpus = [corpus_list[pos : pos + CHUNK_SIZE_GPU] for pos in range(0, len(corpus_list), CHUNK_SIZE_GPU)]
 
     pool = mp.Pool(num_procs, initializer=init_process, initargs=(device, model_id))
-    for partial_corpus in tqdm(pool.imap_unordered(_generate_query, chunked_corpus, chunksize=CHUNK_SIZE_MP), total=len(chunked_corpus)):
+    for partial_corpus in tqdm(
+        pool.imap_unordered(_generate_query, chunked_corpus, chunksize=CHUNK_SIZE_MP),
+        total=len(chunked_corpus),
+    ):
         corpus.update(partial_corpus)
 
     return corpus
@@ -124,25 +132,25 @@ def _add_generated_queries_to_corpus(num_procs, device, model_id, corpus):
 def _write_pyserini_corpus(pyserini_index_file, corpus):
     """Writes the in-memory corpus to disk in the Pyserini format."""
 
-    with open(pyserini_index_file, 'w', encoding='utf-8') as fOut:
+    with open(pyserini_index_file, "w", encoding="utf-8") as fOut:
         for doc_id, document in corpus.items():
             data = {
-                'id': doc_id,
-                'title': document.get('title', ''),
-                'contents': document.get('text', ''),
-                'queries': ' '.join(document.get('queries', '')),
+                "id": doc_id,
+                "title": document.get("title", ""),
+                "contents": document.get("text", ""),
+                "queries": " ".join(document.get("queries", "")),
             }
             json.dump(data, fOut)
-            fOut.write('\n')
+            fOut.write("\n")
 
 
 def _index_pyserini(pyserini_index_file, dataset):
     """Uploads a Pyserini index file and indexes it into Lucene."""
 
-    with open(pyserini_index_file, 'rb') as fIn:
-        r = requests.post(f'{PYSERINI_URL}/upload/', files={'file': fIn}, verify=False)
+    with open(pyserini_index_file, "rb") as fIn:
+        _ = requests.post(f"{PYSERINI_URL}/upload/", files={"file": fIn}, verify=False)
 
-    r = requests.get(f'{PYSERINI_URL}/index/', params={'index_name': f'beir/{dataset}'})
+    _ = requests.get(f"{PYSERINI_URL}/index/", params={"index_name": f"beir/{dataset}"})
 
 
 def _search_pyserini(queries, k):
@@ -151,14 +159,14 @@ def _search_pyserini(queries, k):
     qids = list(queries)
     query_texts = [queries[qid] for qid in qids]
     payload = {
-        'queries': query_texts,
-        'qids': qids,
-        'k': k,
-        'fields': {'contents': 1.0, 'title': 1.0, 'queries': 1.0},
+        "queries": query_texts,
+        "qids": qids,
+        "k": k,
+        "fields": {"contents": 1.0, "title": 1.0, "queries": 1.0},
     }
 
-    r = requests.post(f'{PYSERINI_URL}/lexical/batch_search/', json=payload)
-    return json.loads(r.text)['results']
+    r = requests.post(f"{PYSERINI_URL}/lexical/batch_search/", json=payload)
+    return json.loads(r.text)["results"]
 
 
 def _print_retrieval_examples(corpus, queries, results):
@@ -170,26 +178,32 @@ def _print_retrieval_examples(corpus, queries, results):
     scores = sorted(scores_dict.items(), key=lambda item: item[1], reverse=True)
     for rank in range(10):
         doc_id = scores[rank][0]
-        logging.info(
-            "Doc %d: %s [%s] - %s\n" % (rank + 1, doc_id, corpus[doc_id].get('title'), corpus[doc_id].get('text')))
+        logging.info(f"Rank {rank + 1}: {doc_id} [{corpus[doc_id].get('title')}] - {corpus[doc_id].get('text')}\n")
 
 
 def main():
-    parser = argparse.ArgumentParser(prog='evaluate_anserini_docT5query_parallel')
-    parser.add_argument('--dataset', required=True, help=f"The dataset to use. Example: scifact")
-    parser.add_argument('--model-id',
-                        default=DEFAULT_MODEL_ID, help=f"The model ID to use. Default: {DEFAULT_MODEL_ID}")
-    parser.add_argument('--cpu-procs', default=None, type=int,
-                        help=f"Use CPUs instead of GPUs and use this number of cores. Leaving this unset (default) "
-                             "will use all available GPUs. Default: None")
+    parser = argparse.ArgumentParser(prog="evaluate_anserini_docT5query_parallel")
+    parser.add_argument("--dataset", required=True, help="The dataset to use. Example: scifact")
+    parser.add_argument(
+        "--model-id",
+        default=DEFAULT_MODEL_ID,
+        help=f"The model ID to use. Default: {DEFAULT_MODEL_ID}",
+    )
+    parser.add_argument(
+        "--cpu-procs",
+        default=None,
+        type=int,
+        help="Use CPUs instead of GPUs and use this number of cores. Leaving this unset (default) "
+        "will use all available GPUs. Default: None",
+    )
     args = parser.parse_args()
 
     device, num_procs = _decide_device(args.cpu_procs)
 
     # Download and load the dataset into memory
     data_path = _download_dataset(args.dataset)
-    pyserini_index_file = os.path.join(data_path, 'pyserini.jsonl')
-    corpus, queries, qrels = GenericDataLoader(data_path).load(split='test')
+    pyserini_index_file = os.path.join(data_path, "pyserini.jsonl")
+    corpus, queries, qrels = GenericDataLoader(data_path).load(split="test")
 
     # Generate queries per document and create Pyserini index file if does not exist yet
     if not os.path.isfile(pyserini_index_file):

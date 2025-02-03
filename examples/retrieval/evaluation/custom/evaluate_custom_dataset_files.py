@@ -1,24 +1,25 @@
+import logging
+
 from beir import LoggingHandler
-from beir.retrieval import models
 from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval import models
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
-import pathlib, os
-import logging
-
 #### Just some code to print debug information to stdout
-logging.basicConfig(format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.INFO,
-                    handlers=[LoggingHandler()])
+logging.basicConfig(
+    format="%(asctime)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+    handlers=[LoggingHandler()],
+)
 #### /print debug information to stdout
 
 #### METHOD 2 ####
 
 # Provide the path to your CORPUS file, it should be jsonlines format (ref: https://jsonlines.org/)
 # Saved corpus file must have .jsonl extension (for eg: your_corpus_file.jsonl)
-# Corpus file structure: 
+# Corpus file structure:
 # [
 #   {"_id": "doc1", "title": "Albert Einstein", "text": "Albert Einstein was a German-born...."},
 #   {"_id": "doc2", "title": "", "text": "Wheat beer is a top-fermented beer...."}},
@@ -28,7 +29,7 @@ corpus_path = "/home/thakur/your-custom-dataset/your_corpus_file.jsonl"
 
 # Provide the path to your QUERY file, it should be jsonlines format (ref: https://jsonlines.org/)
 # Saved query file must have .jsonl extension (for eg: your_query_file.jsonl)
-# Query file structure: 
+# Query file structure:
 # [
 #   {"_id": "q1", "text": "Who developed the mass-energy equivalence formula?"},
 #   {"_id": "q2", "text": "Which beer is brewed with a large proportion of wheat?"},
@@ -47,9 +48,8 @@ qrels_path = "/home/thakur/your-custom-dataset/your_qrels_file.tsv"
 
 # Load using load_custom function in GenericDataLoader
 corpus, queries, qrels = GenericDataLoader(
-    corpus_file=corpus_path,
-    query_file=query_path,
-    qrels_file=qrels_path).load_custom()
+    corpus_file=corpus_path, query_file=query_path, qrels_file=qrels_path
+).load_custom()
 
 #### Sentence-Transformer ####
 #### Provide any pretrained sentence-transformers model path

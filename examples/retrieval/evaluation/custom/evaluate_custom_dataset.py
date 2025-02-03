@@ -15,7 +15,7 @@ logging.basicConfig(
 #### /print debug information to stdout
 
 #### Corpus ####
-# Load the corpus in this format of Dict[str, Dict[str, str]]
+# Load the corpus in this format of dict[str, dict[str, str]]
 # Keep the title key and mention an empty string
 
 corpus = {
@@ -37,7 +37,7 @@ corpus = {
 }
 
 #### Queries ####
-# Load the queries in this format of Dict[str, str]
+# Load the queries in this format of dict[str, str]
 
 queries = {
     "q1": "Who developed the mass-energy equivalence formula?",
@@ -45,7 +45,7 @@ queries = {
 }
 
 #### Qrels ####
-# Load the Qrels in this format of Dict[str, Dict[str, int]]
+# Load the Qrels in this format of dict[str, dict[str, int]]
 # First query_id and then dict with doc_id with gold score (int)
 
 qrels = {

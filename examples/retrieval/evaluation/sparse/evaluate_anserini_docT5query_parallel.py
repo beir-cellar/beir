@@ -46,7 +46,7 @@ PYSERINI_URL = "http://127.0.0.1:8000"
 DEFAULT_MODEL_ID = "BeIR/query-gen-msmarco-t5-base-v1"  # https://huggingface.co/BeIR/query-gen-msmarco-t5-base-v1
 DEFAULT_DEVICE = DEVICE_GPU
 
-# noinspection PyArgumentList
+# noinspection PyArgumentlist
 logging.basicConfig(
     format="%(asctime)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",

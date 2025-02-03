@@ -1,24 +1,28 @@
-from beir import util, LoggingHandler
+import logging
+import os
+import pathlib
+
+from sentence_transformers import SentenceTransformer, losses, models
+
+from beir import LoggingHandler, util
 from beir.datasets.data_loader import GenericDataLoader
 from beir.generation import QueryGenerator as QGen
 from beir.generation.models import QGenModel
 from beir.retrieval.train import TrainRetriever
-from sentence_transformers import SentenceTransformer, losses, models
-
-import pathlib, os
-import logging
 
 #### Just some code to print debug information to stdout
-logging.basicConfig(format='%(asctime)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.INFO,
-                    handlers=[LoggingHandler()])
+logging.basicConfig(
+    format="%(asctime)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+    handlers=[LoggingHandler()],
+)
 #### /print debug information to stdout
 
 #### Download nfcorpus.zip dataset and unzip the dataset
 dataset = "nfcorpus"
 
-url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
@@ -30,7 +34,7 @@ corpus = GenericDataLoader(data_path).load_corpus()
 #### 1. Query-Generation  ####
 ##############################
 
-#### question-generation model loading 
+#### question-generation model loading
 model_path = "BeIR/query-gen-msmarco-t5-base-v1"
 generator = QGen(model=QGenModel(model_path))
 
@@ -39,7 +43,7 @@ generator = QGen(model=QGenModel(model_path))
 #### Prefix is required to seperate out synthetic queries and qrels from original
 prefix = "gen"
 
-#### Generating 3 questions per passage. 
+#### Generating 3 questions per passage.
 #### Reminder the higher value might produce lots of duplicates
 ques_per_passage = 3
 
@@ -57,7 +61,7 @@ corpus, gen_queries, gen_qrels = GenericDataLoader(data_path, prefix=prefix).loa
 dev_corpus, dev_queries, dev_qrels = GenericDataLoader(data_path).load(split="dev")
 
 #### Provide any HuggingFace model and fine-tune from scratch
-model_name = "distilbert-base-uncased" 
+model_name = "distilbert-base-uncased"
 word_embedding_model = models.Transformer(model_name, max_seq_length=350)
 pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension())
 model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
@@ -66,7 +70,7 @@ model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
 # model = SentenceTransformer("msmarco-distilbert-base-v3")
 
 #### Provide any sentence-transformers model path
-model_path = "bert-base-uncased" # or "msmarco-distilbert-base-v3"
+model_path = "bert-base-uncased"  # or "msmarco-distilbert-base-v3"
 retriever = TrainRetriever(model=model, batch_size=64)
 
 #### Prepare training samples
@@ -81,7 +85,11 @@ ir_evaluator = retriever.load_ir_evaluator(dev_corpus, dev_queries, dev_qrels)
 # ir_evaluator = retriever.load_dummy_evaluator()
 
 #### Provide model save path
-model_save_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", "{}-GenQ-nfcorpus".format(model_path))
+model_save_path = os.path.join(
+    pathlib.Path(__file__).parent.absolute(),
+    "output",
+    f"{model_path}-GenQ-nfcorpus",
+)
 os.makedirs(model_save_path, exist_ok=True)
 
 #### Configure Train params
@@ -89,10 +97,12 @@ num_epochs = 1
 evaluation_steps = 5000
 warmup_steps = int(len(train_samples) * num_epochs / retriever.batch_size * 0.1)
 
-retriever.fit(train_objectives=[(train_dataloader, train_loss)], 
-                evaluator=ir_evaluator, 
-                epochs=num_epochs,
-                output_path=model_save_path,
-                warmup_steps=warmup_steps,
-                evaluation_steps=evaluation_stepmodel_paths,
-                use_amp=True)
+retriever.fit(
+    train_objectives=[(train_dataloader, train_loss)],
+    evaluator=ir_evaluator,
+    epochs=num_epochs,
+    output_path=model_save_path,
+    warmup_steps=warmup_steps,
+    evaluation_steps=evaluation_steps,
+    use_amp=True,
+)

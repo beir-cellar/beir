@@ -14,6 +14,7 @@ from tqdm.autonotebook import trange
 from transformers import AutoModel, AutoTokenizer
 
 from .pooling import cls_pooling, eos_pooling, mean_pooling
+from .util import extract_corpus_sentences
 
 logger = logging.getLogger(__name__)
 
@@ -114,23 +115,7 @@ class HuggingFace:
         self, corpus: list[dict[str, str]] | dict[str, list] | list[str], batch_size: int = 8, **kwargs
     ) -> list[Tensor] | np.ndarray | Tensor:
         corpus_embeddings = []
-
-        if isinstance(corpus, dict):
-            sentences = [
-                (corpus["title"][i] + self.sep + corpus["text"][i]).strip()
-                if "title" in corpus
-                else corpus["text"][i].strip()
-                for i in range(len(corpus["text"]))
-            ]
-
-        elif isinstance(corpus, list):
-            if isinstance(corpus[0], str):  # if corpus is a list of strings
-                sentences = corpus
-            else:
-                sentences = [
-                    (doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip()
-                    for doc in corpus
-                ]
+        sentences = extract_corpus_sentences(corpus=corpus, sep=self.sep)
 
         with torch.no_grad():
             for start_idx in trange(0, len(sentences), batch_size):

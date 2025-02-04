@@ -8,6 +8,8 @@ from datasets import Dataset
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
 
+from .util import extract_corpus_sentences
+
 logger = logging.getLogger(__name__)
 
 
@@ -83,21 +85,7 @@ class SentenceBERT:
         batch_size: int = 8,
         **kwargs,
     ) -> list[Tensor] | np.ndarray | Tensor:
-        if isinstance(corpus, dict):
-            sentences = [
-                (corpus["title"][i] + self.sep + corpus["text"][i]).strip()
-                if "title" in corpus
-                else corpus["text"][i].strip()
-                for i in range(len(corpus["text"]))
-            ]
-        elif isinstance(corpus, list):
-            if isinstance(corpus[0], str):  # if corpus is a list of strings
-                sentences = corpus
-            else:
-                sentences = [
-                    (doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip()
-                    for doc in corpus
-                ]
+        sentences = extract_corpus_sentences(corpus=corpus, sep=self.sep)
         return self.doc_model.encode(
             [self.doc_prefix + sentence for sentence in sentences],
             batch_size=batch_size,
@@ -113,22 +101,7 @@ class SentenceBERT:
         chunk_id: int = None,
         **kwargs,
     ):
-        if isinstance(corpus, dict):
-            sentences = [
-                (corpus["title"][i] + self.sep + corpus["text"][i]).strip()
-                if "title" in corpus
-                else corpus["text"][i].strip()
-                for i in range(len(corpus["text"]))
-            ]
-        else:
-            if isinstance(corpus[0], str):
-                sentences = corpus
-            else:
-                sentences = [
-                    (doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip()
-                    for doc in corpus
-                ]
-
+        sentences = extract_corpus_sentences(corpus=corpus, sep=self.sep)
         if chunk_id is not None and chunk_id >= len(pool["processes"]):
             output_queue = pool["output"]
             output_queue.get()

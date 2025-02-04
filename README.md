@@ -139,7 +139,7 @@ os.makedirs(results_dir, exist_ok=True)
 
 #### Save the evaluation runfile & results
 util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
-util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
+util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision)
 ```
 
 ## :beers: Available Datasets

@@ -7,7 +7,6 @@ from .sparta import SPARTA
 from .splade import SPLADE
 from .tldr import TLDR
 from .unicoil import UniCOIL
-from .use_qa import UseQA
 
 __all__ = [
     "BinarySentenceBERT",
@@ -17,5 +16,4 @@ __all__ = [
     "SPLADE",
     "TLDR",
     "UniCOIL",
-    "UseQA",
 ]

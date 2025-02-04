@@ -7,6 +7,8 @@ import torch
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
 
+from .util import extract_corpus_sentences
+
 if importlib.util.find_spec("tldr") is not None:
     from tldr import TLDR as NaverTLDR
 
@@ -47,7 +49,7 @@ class TLDR:
 
     def fit(
         self,
-        corpus: list[dict[str, str]],
+        corpus: list[dict[str, str]] | dict[str, list] | list[str],
         batch_size: int = 8,
         epochs: int = 100,
         warmup_epochs: int = 10,
@@ -55,10 +57,7 @@ class TLDR:
         print_every: int = 100,
         **kwargs,
     ):
-        sentences = [
-            (doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip()
-            for doc in corpus
-        ]
+        sentences = extract_corpus_sentences(corpus=corpus, sep=self.sep)
         self.model.fit(
             self.encoder_model.encode(sentences, batch_size=batch_size, **kwargs),
             epochs=epochs,
@@ -84,12 +83,9 @@ class TLDR:
         )
 
     def encode_corpus(
-        self, corpus: list[dict[str, str]], batch_size: int = 8, **kwargs
+        self, corpus: list[dict[str, str]] | dict[str, list] | list[str], batch_size: int = 8, **kwargs
     ) -> list[Tensor] | np.ndarray | Tensor:
-        sentences = [
-            (doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip()
-            for doc in corpus
-        ]
+        sentences = extract_corpus_sentences(corpus=corpus, sep=self.sep)
         return self.model.transform(
             self.encoder_model.encode(sentences, batch_size=batch_size, **kwargs),
             l2_norm=True,

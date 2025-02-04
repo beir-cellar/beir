@@ -7,19 +7,19 @@
         <img alt="GitHub release" src="https://img.shields.io/github/release/beir-cellar/beir.svg">
     </a>
     <a href="https://www.python.org/">
-            <img alt="Build" src="https://img.shields.io/badge/Made%20with-Python-1f425f.svg?color=purple">
+            <img alt="Build" src="https://img.shields.io/pypi/pyversions/beir?logo=pypi&style=flat&color=blue">
     </a>
     <a href="https://github.com/beir-cellar/beir/blob/master/LICENSE">
-        <img alt="License" src="https://img.shields.io/github/license/beir-cellar/beir.svg?color=green">
+        <img alt="License" src="https://img.shields.io/github/license/beir-cellar/beir?logo=github&style=flat&color=green">
     </a>
     <a href="https://colab.research.google.com/drive/1HfutiEhHMJLXiWGT8pcipxT5L2TpYEdt?usp=sharing">
         <img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg">
     </a>
     <a href="https://pepy.tech/project/beir">
-        <img alt="Downloads" src="https://static.pepy.tech/personalized-badge/beir?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads">
+        <img alt="Downloads" src="https://img.shields.io/pypi/dm/beir?logo=pypi&style=flat&color=orange">
     </a>
     <a href="https://github.com/beir-cellar/beir/">
-        <img alt="Downloads" src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103">
+        <img alt="Open Source" src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103">
     </a>
 </p>
 
@@ -59,7 +59,7 @@ For **Leaderboard**, checkout out **Eval AI** page: [https://eval.ai/web/challen
 For more information, checkout out our publications:
 
 - [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://openreview.net/forum?id=wCu6T5xFjeJ) (NeurIPS 2021, Datasets and Benchmarks Track)
-- [Resources for Brewing BEIR: Reproducible Reference Models and an Official Leaderboard](https://arxiv.org/abs/2306.07471) (Arxiv 2023)
+- [Resources for Brewing BEIR: Reproducible Reference Models and an Official Leaderboard](https://dl.acm.org/doi/10.1145/3626772.3657862) (SIGIR 2024 Resource Track)
 
 ## :beers: Installation
 
@@ -77,7 +77,7 @@ $ cd beir
 $ pip install -e .
 ```
 
-Tested with python versions 3.6 and 3.7
+Tested with python versions 3.9+
 
 ## :beers: Features
 
@@ -109,7 +109,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 
 #### Download scifact.zip dataset and unzip the dataset
 dataset = "scifact"
-url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
 out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
 data_path = util.download_and_unzip(url, out_dir)
 
@@ -117,12 +117,29 @@ data_path = util.download_and_unzip(url, out_dir)
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
 #### Load the SBERT model and retrieve using cosine-similarity
-model = DRES(models.SentenceBERT("msmarco-distilbert-base-tas-b"), batch_size=16)
-retriever = EvaluateRetrieval(model, score_function="dot") # or "cos_sim" for cosine similarity
+model = DRES(models.SentenceBERT("Alibaba-NLP/gte-modernbert-base"), batch_size=16)
+
+### Or load models directly from HuggingFace
+# model = DRES(models.HuggingFace(
+#     "intfloat/e5-large-unsupervised",
+#     max_length=512,
+#     pooling="mean",
+#     normalize=True,
+#     prompts={"query": "query: ", "passage": "passage: "}), batch_size=16)
+
+retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for dot product
 results = retriever.retrieve(corpus, queries)
 
 #### Evaluate your model with NDCG@k, MAP@K, Recall@K and Precision@K  where k = [1,3,5,10,100,1000]
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+
+### If you want to save your results and runfile (useful for reranking)
+results_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "results")
+os.makedirs(results_dir, exist_ok=True)
+
+#### Save the evaluation runfile & results
+util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
+util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
 ```
 
 ## :beers: Available Datasets

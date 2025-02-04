@@ -88,7 +88,7 @@ if __name__ == "__main__":
     query_id, ranking_scores = random.choice(list(results.items()))
     scores_sorted = sorted(ranking_scores.items(), key=lambda item: item[1], reverse=True)
     query = queries.filter(lambda x: x["id"] == query_id)[0]["text"]
-    logging.info(f"Query : {query}\n")
+    logging.info(f"Query : {query}\n" % query)
 
     for rank in range(top_k):
         doc_id = scores_sorted[rank][0]

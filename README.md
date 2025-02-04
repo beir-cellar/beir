@@ -79,7 +79,7 @@ $ pip install -e .
 
 Tested with python versions 3.6 and 3.7
 
-## :beers: Features 
+## :beers: Features
 
 - Preprocess your own IR dataset or use one of the already-preprocessed 17 benchmark datasets
 - Wide settings included, covers diverse benchmarks useful for both academia and industry
@@ -88,7 +88,7 @@ Tested with python versions 3.6 and 3.7
 
 ## :beers: Quick Example
 
-For other example codes, please refer to our **[Examples and Tutorials](https://github.com/beir-cellar/beir/wiki/Examples-and-tutorials)** Wiki page. 
+For other example codes, please refer to our **[Examples and Tutorials](https://github.com/beir-cellar/beir/wiki/Examples-and-tutorials)** Wiki page.
 
 ```python
 from beir import util, LoggingHandler
@@ -121,7 +121,7 @@ model = DRES(models.SentenceBERT("msmarco-distilbert-base-tas-b"), batch_size=16
 retriever = EvaluateRetrieval(model, score_function="dot") # or "cos_sim" for cosine similarity
 results = retriever.retrieve(corpus, queries)
 
-#### Evaluate your model with NDCG@k, MAP@K, Recall@K and Precision@K  where k = [1,3,5,10,100,1000] 
+#### Evaluate your model with NDCG@k, MAP@K, Recall@K and Precision@K  where k = [1,3,5,10,100,1000]
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
 ```
 
@@ -157,7 +157,7 @@ You can view all datasets available **[here](https://public.ukp.informatik.tu-da
 
 ## :beers: Additional Information
 
-We also provide a variety of additional information in our **[Wiki](https://github.com/beir-cellar/beir/wiki)** page. 
+We also provide a variety of additional information in our **[Wiki](https://github.com/beir-cellar/beir/wiki)** page.
 Please refer to these pages for the following:
 
 
@@ -172,7 +172,7 @@ Please refer to these pages for the following:
 - [Multilingual Datasets](https://github.com/beir-cellar/beir/wiki/Multilingual-datasets)
 - [Load your Custom Dataset](https://github.com/beir-cellar/beir/wiki/Load-your-custom-dataset)
 
-### Models 
+### Models
 - [Models Available](https://github.com/beir-cellar/beir/wiki/Models-available)
 - [Evaluate your Custom Model](https://github.com/beir-cellar/beir/wiki/Evaluate-your-custom-model)
 
@@ -211,7 +211,7 @@ If you find this repository helpful, feel free to cite our publication [BEIR: A 
 If you use any baseline score from the BEIR leaderboard, feel free to cite our publication [Resources for Brewing BEIR: Reproducible Reference Models and an Official Leaderboard](https://arxiv.org/abs/2306.07471)
 ```
 @misc{kamalloo2023resources,
-      title={Resources for Brewing BEIR: Reproducible Reference Models and an Official Leaderboard}, 
+      title={Resources for Brewing BEIR: Reproducible Reference Models and an Official Leaderboard},
       author={Ehsan Kamalloo and Nandan Thakur and Carlos Lassance and Xueguang Ma and Jheng-Hong Yang and Jimmy Lin},
       year={2023},
       eprint={2306.07471},

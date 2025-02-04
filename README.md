@@ -238,7 +238,7 @@ If you use any baseline score from the BEIR leaderboard, feel free to cite our p
 ```
 
 The main contributors of this repository are:
-- [Nandan Thakur](https://github.com/Nthakur20), Personal Website: [nandan-thakur.com](https://nandan-thakur.com)
+- [Nandan Thakur](https://github.com/Nthakur20), Personal Website: [thakur-nandan.gitub.io](https://thakur-nandan.github.io)
 
 Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)
 

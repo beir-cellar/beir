@@ -6,6 +6,8 @@ from scipy.sparse import csr_matrix
 from tqdm.autonotebook import trange
 from transformers import AutoModel, AutoTokenizer
 
+from .util import extract_corpus_sentences
+
 
 class SPARTA:
     def __init__(
@@ -72,8 +74,10 @@ class SPARTA:
     def encode_query(self, query: str, **kwargs):
         return self.tokenizer(query, add_special_tokens=False)["input_ids"]
 
-    def encode_corpus(self, corpus: list[dict[str, str]], batch_size: int = 16, **kwargs):
-        sentences = [(doc["title"] + self.sep + doc["text"]).strip() for doc in corpus]
+    def encode_corpus(
+        self, corpus: list[dict[str, str]] | dict[str, list] | list[str], batch_size: int = 16, **kwargs
+    ):
+        sentences = extract_corpus_sentences(corpus=corpus, sep=self.sep)
         sparse_idx = 0
         num_elements = len(sentences) * self.sparse_vector_dim
         col = np.zeros(num_elements, dtype=np.int)

@@ -34,30 +34,30 @@ data_path = util.download_and_unzip(url, out_dir)
 
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
-#### Dense Retrieval using SBERT (Sentence-BERT) ####
-#### Provide any pretrained sentence-transformers model
-#### The model was fine-tuned using cosine-similarity.
-#### Complete list - https://www.sbert.net/docs/pretrained_models.html
+#### Dense Retrieval using nvidia/NV-Embed-v2 ####
+#### Provide nvidia/NV-Embed-v2 model: https://huggingface.co/nvidia/NV-Embed-v2
+#### The model was fine-tuned using normalization & cosine-similarity.
 
-# DistilBERT (TAS-B) (old)
-# dense_model = models.SentenceBERT("msmarco-distilbert-base-tas-b")
-# Stella (En) models using Sentence-BERT
-model_name_or_path = "NovaSearch/stella_en_1.5B_v5"
+## Parameters
+model_name_or_path = "nvidia/NV-Embed-v2"
 max_length = 512
-query_prompt_name = "s2p_query"
+pooling = "mean"
+normalize = True
 
-dense_model = models.SentenceBERT(
+# Checkout prompts for NV-Embed-v2 model inside `instructions.json`.
+# https://huggingface.co/nvidia/NV-Embed-v2/blob/main/instructions.json
+trec_covid_prompt = "Given a query on COVID-19, retrieve documents that answer the query"
+
+#### Load the Dense Retriever model (NVEmbed)
+dense_model = models.NVEmbed(
     model_name_or_path,
     max_length=max_length,
-    prompt_names={"query": query_prompt_name, "passage": None},
-    trust_remote_code=True,
+    pooling=pooling,
+    normalize=normalize,
+    prompts={"query": trec_covid_prompt, "passage": ""},
 )
 
-model = DRES(
-    dense_model,
-    batch_size=128,
-    corpus_chunk_size=50000,
-)
+model = DRES(dense_model, batch_size=128)
 retriever = EvaluateRetrieval(model, score_function="cos_sim")
 
 #### Retrieve dense results (format of results is identical to qrels)

@@ -6,6 +6,8 @@ from scipy.sparse import csr_matrix
 from tqdm.autonotebook import trange
 from transformers import BertConfig, BertModel, BertTokenizer, PreTrainedModel
 
+from .util import extract_corpus_sentences
+
 
 class UniCOIL:
     def __init__(
@@ -44,11 +46,8 @@ class UniCOIL:
 
         return embedding
 
-    def encode_corpus(self, corpus: list[dict[str, str]], batch_size: int = 8, **kwargs):
-        sentences = [
-            (doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip()
-            for doc in corpus
-        ]
+    def encode_corpus(self, corpus: list[dict[str, str]] | dict[str, list] | list[str], batch_size: int = 8, **kwargs):
+        sentences = extract_corpus_sentences(corpus=corpus, sep=self.sep)
         return self.encode(sentences, batch_size=batch_size, max_length=self.doc_max_length)
 
     def encode(

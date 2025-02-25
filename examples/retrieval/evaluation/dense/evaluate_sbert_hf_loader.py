@@ -8,7 +8,7 @@ from beir import util
 from beir.datasets.data_loader_hf import HFDataLoader
 from beir.retrieval import models
 from beir.retrieval.evaluation import EvaluateRetrieval
-from beir.retrieval.search.dense import DenseRetrievalParallelExactSearch as DRPES
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
 #### Just some code to print debug information to stdout
 logging.basicConfig(level=logging.INFO)
@@ -40,10 +40,15 @@ if __name__ == "__main__":
     #### Provide any pretrained sentence-transformers model
     #### The model was fine-tuned using cosine-similarity.
     #### Complete list - https://www.sbert.net/docs/pretrained_models.html
-    beir_model = models.SentenceBERT("msmarco-distilbert-base-tas-b")
+    beir_model = models.SentenceBERT(
+        "NovaSearch/stella_en_400M_v5",
+        max_length=512,
+        prompt_names={"query": "s2p_query", "passage": None},
+        trust_remote_code=True,
+    )
 
     #### Start with Parallel search and evaluation
-    model = DRPES(beir_model, batch_size=512, target_devices=None, corpus_chunk_size=512 * 2)
+    model = DRES(beir_model, batch_size=128)
     retriever = EvaluateRetrieval(model, score_function="dot")
 
     #### Retrieve dense results (format of results is identical to qrels)
@@ -52,17 +57,19 @@ if __name__ == "__main__":
     end_time = time.time()
     print(f"Time taken to retrieve: {end_time - start_time:.2f} seconds")
 
-    #### Optional: Stop the proccesses in the pool
-    # beir_model.doc_model.stop_multi_process_pool(pool)
-
     #### Evaluate your retrieval using NDCG@k, MAP@K ...
 
     logging.info(f"Retriever evaluation for k in: {retriever.k_values}")
     ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
-
     mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
-    recall_cap = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="r_cap")
-    hole = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="hole")
+
+    ### If you want to save your results and runfile (useful for reranking)
+    results_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "results")
+    os.makedirs(results_dir, exist_ok=True)
+
+    #### Save the evaluation runfile & results
+    util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
+    util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
 
     #### Print top-k documents retrieved ####
     top_k = 10

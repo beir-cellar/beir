@@ -15,7 +15,7 @@ class EvaluateRetrieval:
         self,
         retriever: BaseSearch = None,
         k_values: list[int] = [1, 3, 5, 10, 100, 1000],
-        score_function: str = "cos_sim",
+        score_function: str | None = "cos_sim",
     ):
         self.k_values = k_values
         self.top_k = max(k_values)
@@ -28,25 +28,6 @@ class EvaluateRetrieval:
         if not self.retriever:
             raise ValueError("Model/Technique has not been provided!")
         return self.retriever.search(corpus, queries, self.top_k, self.score_function, **kwargs)
-
-    def rerank(
-        self,
-        corpus: dict[str, dict[str, str]],
-        queries: dict[str, str],
-        results: dict[str, dict[str, float]],
-        top_k: int,
-    ) -> dict[str, dict[str, float]]:
-        new_corpus = {}
-
-        for query_id in results:
-            if len(results[query_id]) > top_k:
-                for doc_id, _ in sorted(results[query_id].items(), key=lambda item: item[1], reverse=True)[:top_k]:
-                    new_corpus[doc_id] = corpus[doc_id]
-            else:
-                for doc_id in results[query_id]:
-                    new_corpus[doc_id] = corpus[doc_id]
-
-        return self.retriever.search(new_corpus, queries, top_k, self.score_function)
 
     @staticmethod
     def evaluate(

@@ -19,6 +19,7 @@ keywords = [
     "Transformer Networks",
     "Large Language Models", 
     "PyTorch", 
+    "RAG",
     "IR", 
     "NLP", 
     "Deep Learning"
@@ -43,6 +44,7 @@ dependencies = [
 tf = ["tensorflow>=2.2.0", "tensorflow-text", "tensorflow-hub"]
 elasticsearch = ["elasticsearch==7.9.1"]
 peft = ["peft"]
+llm2vec = ["llm2vec"]
 dev = ["pytest", "pytest-cov", "pre-commit"]
 faiss = ["faiss-cpu"]
 

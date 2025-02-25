@@ -9,17 +9,19 @@ IMPORTANT: The following code will not run with Python 3.6!
 You are good to go!
 
 To run this code, you preferably need access to mutliple GPUs. Faster than running on single GPU.
-CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 examples/retrieval/evaluation/dense/evaluate_sbert_multi_gpu.py
+CUDA_VISIBLE_DEVICES=1,2,3,4 torchrun --nproc_per_node=4 evaluate_sbert_multi_gpu.py
 """
 
 import logging
 import os
+import pathlib
 import random
 import time
 
 import torch
 from torch import distributed as dist
 
+from beir import util
 from beir.datasets.data_loader_hf import HFDataLoader
 from beir.retrieval import models
 from beir.retrieval.evaluation import EvaluateRetrieval
@@ -45,7 +47,6 @@ if __name__ == "__main__":
     streaming = False
     corpus_chunk_size = 2048
     batch_size = 256  # sentence bert model batch size
-    model_name = "msmarco-distilbert-base-tas-b"
     ignore_identical_ids = True
 
     corpus, queries, qrels = HFDataLoader(
@@ -56,10 +57,20 @@ if __name__ == "__main__":
     #### Provide any pretrained sentence-transformers model
     #### The model was fine-tuned using cosine-similarity.
     #### Complete list - https://www.sbert.net/docs/pretrained_models.html
-    beir_model = models.SentenceBERT(model_name)
+    model_name_or_path = "NovaSearch/stella_en_1.5B_v5"
+    max_length = 512
+    query_prompt_name = "s2p_query"
+
+    dense_model = models.SentenceBERT(
+        model_name_or_path,
+        max_length=max_length,
+        prompt_names={"query": query_prompt_name, "passage": None},
+        trust_remote_code=True,
+        cache_folder="/mnt/users/n3thakur/cache",
+    )
 
     #### Start with Parallel search and evaluation
-    model = DRPES(beir_model, batch_size=batch_size, corpus_chunk_size=corpus_chunk_size)
+    model = DRPES(dense_model, batch_size=batch_size, corpus_chunk_size=corpus_chunk_size)
     retriever = EvaluateRetrieval(model, score_function="dot")
 
     #### Retrieve dense results (format of results is identical to qrels)
@@ -74,10 +85,15 @@ if __name__ == "__main__":
     ndcg, _map, recall, precision = retriever.evaluate(
         qrels, results, retriever.k_values, ignore_identical_ids=ignore_identical_ids
     )
-
     mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
-    recall_cap = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="r_cap")
-    hole = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="hole")
+
+    ### If you want to save your results and runfile (useful for reranking)
+    results_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "results")
+    os.makedirs(results_dir, exist_ok=True)
+
+    #### Save the evaluation runfile & results
+    util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
+    util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
 
     tock = time.time()
     print(f"--- Total time taken: {tock - tick:.2f} seconds ---")

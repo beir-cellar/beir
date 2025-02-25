@@ -10,6 +10,8 @@ from torch import Tensor
 from tqdm.autonotebook import trange
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 
+from .util import extract_corpus_sentences
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,6 +20,7 @@ class SPLADE:
         self.max_length = max_length
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         self.model = SpladeNaver(model_path)
+        self.sep = sep
         self.model.eval()
 
     # Write your own encoding query function (Returns: Query embeddings as numpy array)
@@ -25,8 +28,10 @@ class SPLADE:
         return self.model.encode_sentence_bert(self.tokenizer, queries, is_q=True, maxlen=self.max_length)
 
     # Write your own encoding corpus function (Returns: Document embeddings as numpy array)  out_features
-    def encode_corpus(self, corpus: list[dict[str, str]], batch_size: int, **kwargs) -> np.ndarray:
-        sentences = [(doc["title"] + " " + doc["text"]).strip() for doc in corpus]
+    def encode_corpus(
+        self, corpus: list[dict[str, str]] | dict[str, list] | list[str], batch_size: int, **kwargs
+    ) -> np.ndarray:
+        sentences = extract_corpus_sentences(corpus=corpus, sep=self.sep)
         return self.model.encode_sentence_bert(self.tokenizer, sentences, maxlen=self.max_length)
 
 

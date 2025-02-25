@@ -83,7 +83,7 @@ Tested with python versions 3.9+
 
 - Preprocess your own IR dataset or use one of the already-preprocessed 17 benchmark datasets
 - Wide settings included, covers diverse benchmarks useful for both academia and industry
-- Includes well-known retrieval architectures (lexical, dense, sparse and reranking-based)
+- Evaluates well-known retrieval architectures (lexical, dense, sparse and reranking-based)
 - Add and evaluate your own model in a easy framework using different state-of-the-art evaluation metrics
 
 ## :beers: Quick Example
@@ -132,6 +132,7 @@ results = retriever.retrieve(corpus, queries)
 
 #### Evaluate your model with NDCG@k, MAP@K, Recall@K and Precision@K  where k = [1,3,5,10,100,1000]
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
 
 ### If you want to save your results and runfile (useful for reranking)
 results_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "results")
@@ -227,18 +228,27 @@ If you find this repository helpful, feel free to cite our publication [BEIR: A 
 
 If you use any baseline score from the BEIR leaderboard, feel free to cite our publication [Resources for Brewing BEIR: Reproducible Reference Models and an Official Leaderboard](https://arxiv.org/abs/2306.07471)
 ```
-@misc{kamalloo2023resources,
-      title={Resources for Brewing BEIR: Reproducible Reference Models and an Official Leaderboard},
-      author={Ehsan Kamalloo and Nandan Thakur and Carlos Lassance and Xueguang Ma and Jheng-Hong Yang and Jimmy Lin},
-      year={2023},
-      eprint={2306.07471},
-      archivePrefix={arXiv},
-      primaryClass={cs.IR}
+@inproceedings{kamalloo:2024,
+    author = {Kamalloo, Ehsan and Thakur, Nandan and Lassance, Carlos and Ma, Xueguang and Yang, Jheng-Hong and Lin, Jimmy},
+    title = {Resources for Brewing BEIR: Reproducible Reference Models and Statistical Analyses},
+    year = {2024},
+    isbn = {9798400704314},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3626772.3657862},
+    doi = {10.1145/3626772.3657862},
+    abstract = {BEIR is a benchmark dataset originally designed for zero-shot evaluation of retrieval models across 18 different domain/task combinations. In recent years, we have witnessed the growing popularity of models based on representation learning, which naturally begs the question: How effective are these models when presented with queries and documents that differ from the training data? While BEIR was designed to answer this question, our work addresses two shortcomings that prevent the benchmark from achieving its full potential: First, the sophistication of modern neural methods and the complexity of current software infrastructure create barriers to entry for newcomers. To this end, we provide reproducible reference implementations that cover learned dense and sparse models. Second, comparisons on BEIR are performed by reducing scores from heterogeneous datasets into a single average that is difficult to interpret. To remedy this, we present meta-analyses focusing on effect sizes across datasets that are able to accurately quantify model differences. By addressing both shortcomings, our work facilitates future explorations in a range of interesting research questions.},
+    booktitle = {Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval},
+    pages = {1431–1440},
+    numpages = {10},
+    keywords = {domain generalization, evaluation, reproducibility},
+    location = {Washington DC, USA},
+    series = {SIGIR '24}
 }
 ```
 
 The main contributors of this repository are:
-- [Nandan Thakur](https://github.com/Nthakur20), Personal Website: [nandan-thakur.com](https://nandan-thakur.com)
+- [Nandan Thakur](https://github.com/Nthakur20), Personal Website: [thakur-nandan.gitub.io](https://thakur-nandan.github.io)
 
 Contact person: Nandan Thakur, [nandant@gmail.com](mailto:nandant@gmail.com)
 

@@ -125,55 +125,24 @@ faiss_search.save(output_dir=output_dir, prefix=prefix, ext=ext)
 
 logging.info(f"Retriever evaluation for k in: {retriever.k_values}")
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
-
 mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
-recall_cap = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="r_cap")
-hole = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="hole")
+
+### If you want to save your results and runfile (useful for reranking)
+results_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "results")
+os.makedirs(results_dir, exist_ok=True)
+
+#### Save the evaluation runfile & results
+util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
+util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
 
 #### Print top-k documents retrieved ####
 top_k = 10
 
-out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "output", dataset)
-os.makedirs(out_dir, exist_ok=True)
+query_id, ranking_scores = random.choice(list(results.items()))
+scores_sorted = sorted(ranking_scores.items(), key=lambda item: item[1], reverse=True)
+logging.info(f"Query : {queries[query_id]}\n")
 
-with open(os.path.join(out_dir, model_name.replace("/", "_") + "_results.txt"), "w+") as fOut:
-    fOut.write("\nNDCG@K\n")
-    fOut.write("--------\n")
-    for top_k in ndcg:
-        fOut.write(top_k + ":\t" + str(ndcg[top_k]) + "\n")
-
-    fOut.write("\nMAP@K\n")
-    fOut.write("--------\n")
-    for top_k in _map:
-        fOut.write(top_k + ":\t" + str(_map[top_k]) + "\n")
-
-    fOut.write("\nRecall@K\n")
-    fOut.write("--------\n")
-    for top_k in recall:
-        fOut.write(top_k + ":\t" + str(recall[top_k]) + "\n")
-
-    fOut.write("\nPrecision@K\n")
-    fOut.write("--------\n")
-    for top_k in precision:
-        fOut.write(top_k + ":\t" + str(precision[top_k]) + "\n")
-
-    fOut.write("\nMRR@k\n")
-    fOut.write("--------\n")
-    for top_k in mrr:
-        fOut.write(top_k + ":\t" + str(mrr[top_k]) + "\n")
-
-    fOut.write("\nR_cap@k\n")
-    fOut.write("--------\n")
-    for top_k in recall_cap:
-        fOut.write(top_k + ":\t" + str(recall_cap[top_k]) + "\n")
-
-    query_id, ranking_scores = random.choice(list(results.items()))
-    scores_sorted = sorted(ranking_scores.items(), key=lambda item: item[1], reverse=True)
-    logging.info(f"Query : {queries[query_id]}\n")
-    fOut.write(f"\n\nQuery : {queries[query_id]}\n")
-
-    for rank in range(10):
-        doc_id = scores_sorted[rank][0]
-        # Format: Rank x: ID [Title] Body
-        fOut.write(f"Rank {rank + 1}: {doc_id} [{corpus[doc_id].get('title')}] - {corpus[doc_id].get('text')}\n")
-        logging.info(f"Rank {rank + 1}: {doc_id} [{corpus[doc_id].get('title')}] - {corpus[doc_id].get('text')}\n")
+for rank in range(top_k):
+    doc_id = scores_sorted[rank][0]
+    # Format: Rank x: ID [Title] Body
+    logging.info(f"Rank {rank + 1}: {doc_id} [{corpus[doc_id].get('title')}] - {corpus[doc_id].get('text')}\n")

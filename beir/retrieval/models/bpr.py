@@ -4,6 +4,8 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
 
+from .util import extract_corpus_sentences
+
 
 class BinarySentenceBERT:
     def __init__(
@@ -30,8 +32,10 @@ class BinarySentenceBERT:
     def encode_queries(self, queries: list[str], batch_size: int = 16, **kwargs) -> list[Tensor] | np.ndarray | Tensor:
         return self.q_model.encode(queries, batch_size=batch_size, **kwargs)
 
-    def encode_corpus(self, corpus: list[dict[str, str]], batch_size: int = 8, **kwargs) -> np.ndarray:
-        sentences = [(doc["title"] + self.sep + doc["text"]).strip() for doc in corpus]
+    def encode_corpus(
+        self, corpus: list[dict[str, str]] | dict[str, list] | list[str], batch_size: int = 8, **kwargs
+    ) -> np.ndarray:
+        sentences = extract_corpus_sentences(corpus=corpus, sep=self.sep)
         embs = self.doc_model.encode(sentences, batch_size=batch_size, convert_to_tensor=True, **kwargs)
         embs = self._convert_embedding_to_binary_code(embs).cpu().numpy()
         embs = np.where(embs == -1, 0, embs).astype(np.bool)

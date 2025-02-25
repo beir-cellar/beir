@@ -82,6 +82,15 @@ results = retriever.retrieve(corpus, queries)
 
 logging.info(f"Retriever evaluation for k in: {retriever.k_values}")
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
+
+### If you want to save your results and runfile (useful for reranking)
+results_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "results")
+os.makedirs(results_dir, exist_ok=True)
+
+#### Save the evaluation runfile & results
+util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
+util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
 
 #### Print top-k documents retrieved ####
 top_k = 10

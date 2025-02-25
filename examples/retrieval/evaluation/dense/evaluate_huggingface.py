@@ -34,30 +34,49 @@ data_path = util.download_and_unzip(url, out_dir)
 
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
-#### Dense Retrieval using SBERT (Sentence-BERT) ####
-#### Provide any pretrained sentence-transformers model
-#### The model was fine-tuned using cosine-similarity.
-#### Complete list - https://www.sbert.net/docs/pretrained_models.html
+#### Dense Retrieval using E5 or Tevatron with Hugging Face ####
+#### Provide any pretrained E5 or Tevatron fine-tuned model
+#### The model was fine-tuned using normalization & cosine-similarity.
 
-# DistilBERT (TAS-B) (old)
-# dense_model = models.SentenceBERT("msmarco-distilbert-base-tas-b")
-# Stella (En) models using Sentence-BERT
-model_name_or_path = "NovaSearch/stella_en_1.5B_v5"
+## Parameters
+model_name_or_path = "meta-llama/Llama-2-7b-hf"
+peft_model_name_or_path = "castorini/repllama-v1-7b-lora-passage"
 max_length = 512
-query_prompt_name = "s2p_query"
+pooling = "mean"
+normalize = True
+append_eos_token = True
+query_prompt = "query: "
+passage_prompt = "passage: "
 
-dense_model = models.SentenceBERT(
-    model_name_or_path,
+#### Load the Dense Retriever model (LLM2Vec)
+dense_model = models.HuggingFace(
+    model=model_name_or_path,
+    peft_model_path=peft_model_name_or_path,
     max_length=max_length,
-    prompt_names={"query": query_prompt_name, "passage": None},
-    trust_remote_code=True,
+    append_eos_token=append_eos_token,  # add [EOS] token to the end of the input
+    pooling=pooling,
+    normalize=normalize,
+    prompts={"query": query_prompt, "passage": passage_prompt},
+    attn_implementation="flash_attention_2",
+    torch_dtype="bfloat16",
 )
 
-model = DRES(
-    dense_model,
-    batch_size=128,
-    corpus_chunk_size=50000,
-)
+#### Configuration for E5 model (large, base, small) and E5-Mistral
+# Check prompts: https://github.com/microsoft/unilm/blob/9c0f1ff7ca53431fe47d2637dfe253643d94185b/e5/utils.py
+# query_prompt = "Given a query on COVID-19, retrieve documents that answer the query"
+# passage_prompt = ""
+# dense_model = models.HuggingFace(
+#         model="intfloat/e5-mistral-7b-instruct",
+#         max_length=max_length,
+#         append_eos_token=append_eos_token, # add [EOS] token to the end of the input
+#         pooling=pooling,
+#         normalize=normalize,
+#         prompts={"query": query_prompt, "passage": passage_prompt},
+#         attn_implementation="flash_attention_2",
+#         torch_dtype="bfloat16"
+#     )
+
+model = DRES(dense_model, batch_size=128)
 retriever = EvaluateRetrieval(model, score_function="cos_sim")
 
 #### Retrieve dense results (format of results is identical to qrels)

@@ -21,12 +21,21 @@ logger = logging.getLogger(__name__)
 POOL_FUNC = {"cls": cls_pooling, "mean": mean_pooling, "eos": eos_pooling}
 
 
-def get_peft_model(peft_model_name: str) -> PeftModel:
+def get_peft_model(peft_model_name: str, **kwargs) -> tuple[PeftModel, str]:
     config = PeftConfig.from_pretrained(peft_model_name)
-    base_model = AutoModel.from_pretrained(config.base_model_name_or_path)
+    logger.info(f"Loading Auto Model from {config.base_model_name_or_path} for PEFT model")
+    base_model = AutoModel.from_pretrained(
+        config.base_model_name_or_path,
+        device_map="auto",
+        attn_implementation=kwargs.get("attn_implementation", "eager"),
+        torch_dtype=kwargs.get("torch_dtype", "auto"),
+        trust_remote_code=True,
+        cache_dir=kwargs.get("cache_dir", None),
+    )
+    logger.info(f"Loading PEFT model from {peft_model_name}")
     model = PeftModel.from_pretrained(base_model, peft_model_name)
     model = model.merge_and_unload()
-    return model
+    return model, config.base_model_name_or_path
 
 
 class HuggingFace:
@@ -43,18 +52,23 @@ class HuggingFace:
         **kwargs,
     ):
         self.sep = sep
-        self.tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=True)
+        if peft_model_path:
+            self.model, base_model_path = get_peft_model(peft_model_path, **kwargs)
+            self.tokenizer = AutoTokenizer.from_pretrained(base_model_path, use_fast=True)
+        else:
+            self.model = AutoModel.from_pretrained(
+                model_path,
+                device_map="auto",
+                torch_dtype=kwargs.get("torch_dtype", "auto"),
+                trust_remote_code=True,
+                attn_implementation=kwargs.get("attn_implementation", "default"),
+                cache_dir=kwargs.get("cache_dir", None),
+            )
+            self.tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=True)
+        self.model.eval()
         if self.tokenizer.pad_token_id is None:
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         self.tokenizer.padding_side = "right"
-
-        if peft_model_path:
-            self.model = get_peft_model(peft_model_path)
-        else:
-            self.model = AutoModel.from_pretrained(
-                model_path, device_map="auto", torch_dtype=kwargs.get("torch_dtype", "auto"), trust_remote_code=True
-            )
-        self.model.eval()
         self.max_length = max_length if max_length else self.tokenizer.model_max_length
         self.normalize = normalize  # Normalize the embeddings
         self.append_eos_token = append_eos_token  # Add eos token to the input

@@ -7,7 +7,7 @@ import random
 from beir import LoggingHandler, util
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
-from beir.retrieval.search.opensearch.dense import NeuralSearch as Neural
+from beir.retrieval.search.opensearch.hybrid import HybridSearch as Hybrid
 
 random.seed(42)
 
@@ -42,7 +42,7 @@ corpus_new = {corpus_id: corpus[corpus_id] for corpus_id in corpus_set}
 
 #### Remove already seen k relevant documents and sample (100 - k) docs randomly
 remaining_corpus = list(set(corpus_ids) - corpus_set)
-target_size = 1000000  # Total corpus size of 100 documents
+target_size = 100  # Total corpus size of 100 documents
 sample = target_size - len(corpus_set)
 
 for corpus_id in random.sample(remaining_corpus, sample):
@@ -51,12 +51,12 @@ for corpus_id in random.sample(remaining_corpus, sample):
 #### Provide parameters for OpenSearch
 hostname = "localhost:9200"
 index_name = dataset
-model = Neural(index_name=index_name, hostname=hostname)
-neural = EvaluateRetrieval(model)
+model = Hybrid(index_name=index_name, hostname=hostname)
+hybrid = EvaluateRetrieval(model)
 
 #### Index 1M passages into the index (separately)
 #neural.retriever.index(corpus_new)
 
 #### Saving benchmark times
-neural.evaluate(qrels=qrels, results=neural.retrieve(corpus=corpus_new, queries=queries), k_values=[1, 3, 5, 10, 100])
-neural.retriever.cleanup()
+hybrid.evaluate(qrels=qrels, results=hybrid.retrieve(corpus=corpus_new, queries=queries), k_values=[1, 3, 5, 10, 100])
+hybrid.retriever.cleanup()

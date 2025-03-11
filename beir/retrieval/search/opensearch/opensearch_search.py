@@ -441,6 +441,51 @@ class OpenSearchEngine:
         except Exception as e:
             logging.error(f"Unable to create Index in OpenSearch. Reason: {e}")
 
+    def create_search_pipeline(
+        self,
+        pipeline_id: str = "nlp-search-pipeline",
+        weights: list[float] = [0.3, 0.7],
+        normalization: str = "min_max",
+        combination: str = "arithmetic_mean"
+    ) -> None:
+        """Create a search pipeline for hybrid search post-processing.
+        
+        Args:
+            pipeline_id: ID of the pipeline (default: "nlp-search-pipeline")
+            weights: List of weights for combining scores (default: [0.3, 0.7])
+            normalization: Score normalization technique (default: "min_max")
+            combination: Score combination technique (default: "arithmetic_mean")
+        """
+        logging.info(f"Creating Search Pipeline for Hybrid Search: {pipeline_id}")
+        try:
+            pipeline_config = {
+                "description": "Post processor for hybrid search",
+                "phase_results_processors": [
+                    {
+                        "normalization-processor": {
+                            "normalization": {
+                                "technique": normalization
+                            },
+                            "combination": {
+                                "technique": combination,
+                                "parameters": {
+                                    "weights": weights
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+            
+            self.os.transport.perform_request(
+                method="PUT",
+                url=f"/_search/pipeline/{pipeline_id}",
+                body=pipeline_config
+            )
+        except Exception as e:
+            logging.error(f"Unable to create Search Pipeline in OpenSearch. Reason: {e}")
+            raise
+
     def neural_search(
         self, 
         text: str, 
@@ -537,6 +582,152 @@ class OpenSearchEngine:
         
         except Exception as e:
             logging.error(f"Batch neural search failed. Reason: {e}")
+            raise
+
+    def hybrid_search(
+        self,
+        text: str,
+        model_id: str,
+        top_hits: int = 5,
+        pipeline_id: str = "nlp-search-pipeline",
+        exclude_embeddings: bool = True
+    ) -> dict[str, object]:
+        """Perform hybrid search combining lexical and neural search.
+        
+        Args:
+            text: Query text to search for
+            model_id: ID of the model to use for neural embedding
+            top_hits: Number of top results to return (default: 5)
+            pipeline_id: ID of the search pipeline to use (default: "nlp-search-pipeline")
+            exclude_embeddings: Whether to exclude embeddings from response (default: True)
+        
+        Returns:
+            dict: Search results containing hits and metadata
+        """
+        logging.info(f"Performing hybrid search for: {text}")
+        try:
+            body = {
+                "_source": {
+                    "excludes": [self.embedding_key] if exclude_embeddings else []
+                },
+                "query": {
+                    "hybrid": {
+                        "queries": [
+                            {
+                                "match": {
+                                    self.text_key: {
+                                        "query": text
+                                    }
+                                }
+                            },
+                            {
+                                "neural": {
+                                    self.embedding_key: {
+                                        "query_text": text,
+                                        "model_id": model_id,
+                                        "k": top_hits
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+
+            response = self.os.search(
+                index=self.index_name,
+                body=body,
+                params={"search_pipeline": pipeline_id}
+            )
+            
+            hits = [(hit["_id"], hit["_score"]) for hit in response["hits"]["hits"]]
+            return self.hit_template(os_res=response, hits=hits)
+        
+        except Exception as e:
+            logging.error(f"Hybrid search failed. Reason: {e}")
+            raise
+
+    def hybrid_multisearch(
+        self,
+        texts: list[str],
+        model_id: str,
+        top_hits: int = 5,
+        pipeline_id: str = "nlp-search-pipeline",
+        exclude_embeddings: bool = True
+    ) -> list[dict[str, object]]:
+        """Perform hybrid search for multiple queries in batch.
+        
+        Args:
+            texts: List of query texts to search for
+            model_id: ID of the model to use for embedding
+            top_hits: Number of top results to return per query
+            pipeline_id: ID of the search pipeline to use
+            exclude_embeddings: Whether to exclude embeddings from response
+        
+        Returns:
+            list: List of search results, one per query
+        """
+        logging.info(f"Performing batch hybrid search for {len(texts)} queries")
+        try:
+            results = []
+            for text in texts:
+                body = {
+                    "_source": {
+                        "excludes": [self.embedding_key] if exclude_embeddings else []
+                    },
+                    "query": {
+                        "hybrid": {
+                            "queries": [
+                                {
+                                    "match": {
+                                        self.text_key: {
+                                            "query": text
+                                        }
+                                    }
+                                },
+                                {
+                                    "neural": {
+                                        self.embedding_key: {
+                                            "query_text": text,
+                                            "model_id": model_id,
+                                            "k": top_hits
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+
+                response = self.os.search(
+                    index=self.index_name,
+                    body=body,
+                    params={"search_pipeline": pipeline_id}
+                )
+                
+                hits = [(hit["_id"], hit["_score"]) for hit in response["hits"]["hits"]]
+                results.append(self.hit_template(os_res=response, hits=hits))
+                
+            return results
+        
+        except Exception as e:
+            logging.error(f"Batch hybrid search failed. Reason: {e}")
+            raise
+
+    def delete_search_pipeline(self, pipeline_id: str = "nlp-search-pipeline") -> None:
+        """Delete a search pipeline.
+
+        Args:
+            pipeline_id: ID of the pipeline to delete (default: "nlp-search-pipeline")
+        """
+        logging.info(f"Deleting Search Pipeline: {pipeline_id}")
+        try:
+            self.os.transport.perform_request(
+                method="DELETE",
+                url=f"/_search/pipeline/{pipeline_id}"
+            )
+        except Exception as e:
+            logging.error(f"Unable to delete Search Pipeline in OpenSearch. Reason: {e}")
             raise
 
     def delete_ingest_pipeline(self):

@@ -82,7 +82,8 @@ class BM25Search(BaseSearch):
                 for corpus_id, score in hit["hits"]:
                     if corpus_id != query_id:  # query doesnt return in results
                         scores[corpus_id] = score
-                    self.results[query_id] = scores
+                
+                self.results[query_id] = scores
 
         return self.results
 

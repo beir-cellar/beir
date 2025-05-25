@@ -5,6 +5,9 @@ examples/**/DeepCT/
 examples/**/models/
 examples/**/faiss-index/
 outputs/
+dev.py
+dev_2.ipynb
+dev.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

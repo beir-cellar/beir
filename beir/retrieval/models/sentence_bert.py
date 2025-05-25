@@ -50,6 +50,8 @@ class SentenceBERT:
             self.query_prompt_name = prompt_names["query"]
             self.doc_prompt_name = prompt_names["passage"]
 
+        self.doc_model = self.doc_model.half()
+
         logger.info(f"Query prompt: {self.query_prefix}, Passage prompt: {self.doc_prefix}")
         logger.info(f"Query prompt name: {self.query_prompt_name}, Passage prompt name: {self.doc_prompt_name}")
 

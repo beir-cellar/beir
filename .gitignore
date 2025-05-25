@@ -4,6 +4,7 @@ examples/**/output/
 examples/**/DeepCT/
 examples/**/models/
 examples/**/faiss-index/
+outputs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

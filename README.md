@@ -13,7 +13,7 @@ Ignore the files containing `dev` -- they are my experiment files.
 ## Environment setup
 ```
 git clone https://github.com/richard-guyunqi/RAG-RL.git
-cd beir
+cd RAG-RL
 pip install -e .
 pip install sentence_transformers datasets pytrec_eval faiss-cpu
 ```

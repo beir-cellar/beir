@@ -8,6 +8,8 @@ outputs/
 dev.py
 dev_2.ipynb
 dev.ipynb
+results/
+wandb/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

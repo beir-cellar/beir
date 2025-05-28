@@ -4,7 +4,7 @@ import timm
 import argparse
 import json
 from tqdm import tqdm
-from re_utils import MSMARCO_dataset
+from re_utils import MSMARCO_dataset, msmarco_collate_fn
 # from torchmetrics import MatthewsCorrCoef, F1Score
 from sentence_transformers import SentenceTransformer
 
@@ -33,7 +33,7 @@ parser.add_argument('--lr_scheduler', default=None, help='lr scheduler', type=st
 parser.add_argument('--epochs', default=30, help='Training epochs', type=int)
 parser.add_argument('--wandb_project', default='RAG', help='Wandb project name', type=str)
 parser.add_argument('--wandb_run_name', default=None, help='Wandb run name', type=str)
-parser.add_argument('--batch_size', default=16, help='Batch size for one GPU', type=int)
+parser.add_argument('--batch_size', default=8, help='Batch size for one GPU', type=int)
 
 
 if __name__=='__main__':
@@ -43,10 +43,10 @@ if __name__=='__main__':
 
     # Load the dataset and create dataloader
     train_dataset = MSMARCO_dataset(split='train') 
-    val_dataset = MSMARCO_dataset(split='val')
+    val_dataset = MSMARCO_dataset(split='test')
         
-    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=16, pin_memory=True, prefetch_factor=2)
-    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=16, pin_memory=True, prefetch_factor=2)
+    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=16, pin_memory=True, prefetch_factor=2, collate_fn=msmarco_collate_fn)
+    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=16, pin_memory=True, prefetch_factor=2, collate_fn=msmarco_collate_fn)
     
     print('----------------- Data loaded -----------------')
 
@@ -95,26 +95,30 @@ if __name__=='__main__':
     )
 
     # Start epochs
+    model.train()
     for epoch in range(args.epochs):
 
         pbar = tqdm(enumerate(train_dataloader), total=len(train_dataloader), desc='Train', leave=True)
     
         # Training Loop
-        for batch_idx, (queries, paragraphs, scores) in enumerate(train_dataloader):
+        for batch_idx, (queries, paragraphs, scores) in pbar:
 
             step_idx = batch_idx + epoch*steps_per_epoch
 
             # Forward pass
-            # Encode the queries
-            queries_emb = model.encode(queries) 
+            flat_passages    = [p['text'] for doc_list in paragraphs for p in doc_list]
 
-            flat_passages    = [p for doc_list in paragraphs for p in doc_list]
             unique_passages  = list(dict.fromkeys(flat_passages))  # preserves first‐seen order
             passage_to_idx   = {p: i for i, p in enumerate(unique_passages)}    # passage to index
 
-            # 3. encode all queries at once → (B x D)
-            E_q        = model.encode(queries, convert_to_tensor=True)          # (B, D)
-            E_p_unique = model.encode(unique_passages, convert_to_tensor=True)  # (M, D)
+            # 3. encode all queries at once → (B x D)            
+            queries_tokenized = model.tokenize(queries)
+            queries_tokenized = {k: v.to(accelerator.device) for k, v in queries_tokenized.items()}
+            E_q = model(queries_tokenized)['sentence_embedding'] 
+
+            unique_passages_tokenized = model.tokenize(unique_passages)
+            unique_passages_tokenized = {k: v.to(accelerator.device) for k, v in unique_passages_tokenized.items()}
+            E_p_unique = model(unique_passages_tokenized)['sentence_embedding'] 
 
             # --- 2. Predicted sim-matrix (cosine) ------------------------------------
             E_q_norm = torch.nn.functional.normalize(E_q,        p=2, dim=1)    # (B, D)
@@ -128,7 +132,7 @@ if __name__=='__main__':
                 # `pass_list`  : List[str] passages for this query
                 # `score_list` : List[int]  relevance labels (0/1/2) aligned to pass_list
                 for p, s in zip(pass_list, score_list):
-                    col = passage_to_idx[p]                 # lookup column in 0..M-1
+                    col = passage_to_idx[p['text']]                 # lookup column in 0..M-1
                     gt_matrix[q_idx, col] = float(s)
 
             loss = torch.nn.functional.mse_loss(gt_matrix, sim_matrix) 
@@ -163,6 +167,17 @@ if __name__=='__main__':
             torch.cuda.empty_cache()               # frees *cached* blocks so other code can reuse the memory
             # Validates the result on val set 10 times every epoch
             # print(step_idx, steps_per_epoch)
+
+            if accelerator.is_main_process:
+                if (step_idx + 1) % steps_per_epoch == 0:
+                    # Make a dir for ckpt saving 
+                    ckpt_dir = os.path.join(args.save_model_ckpt, date_time)
+                    os.makedirs(ckpt_dir, exist_ok=True)
+
+                    print(f'Saving checkpoint on epoch {epoch} step index {step_idx}')
+                    ckpt_path = os.path.join(ckpt_dir, f'model_step_{step_idx}.pth')
+                    accelerator.save(accelerator.unwrap_model(model).state_dict(), ckpt_path)
+
             if (step_idx + 1) % steps_per_epoch == 0:
             # if (batch_idx + 1) % 20 == 0:
                 print(f'Start eval on epoch {epoch} batch index {batch_idx} ')
@@ -173,13 +188,11 @@ if __name__=='__main__':
                 if accelerator.is_main_process:
                     val_loss_cur = []
                     
-                for batch_idx, (queries, paragraphs, scores) in enumerate(train_dataloader):
+                for batch_idx, (queries, paragraphs, scores) in pbar:
                     with torch.no_grad():
                         # Forward pass
-                        # Encode the queries
-                        queries_emb = model.encode(queries) 
 
-                        flat_passages    = [p for doc_list in paragraphs for p in doc_list]
+                        flat_passages    = [p['text'] for doc_list in paragraphs for p in doc_list]
                         unique_passages  = list(dict.fromkeys(flat_passages))  # preserves first‐seen order
                         passage_to_idx   = {p: i for i, p in enumerate(unique_passages)}    # passage to index
 
@@ -199,7 +212,7 @@ if __name__=='__main__':
                             # `pass_list`  : List[str] passages for this query
                             # `score_list` : List[int]  relevance labels (0/1/2) aligned to pass_list
                             for p, s in zip(pass_list, score_list):
-                                col = passage_to_idx[p]                 # lookup column in 0..M-1
+                                col = passage_to_idx[p['text']]                 # lookup column in 0..M-1
                                 gt_matrix[q_idx, col] = float(s)
 
                         loss = torch.nn.functional.mse_loss(gt_matrix, sim_matrix) 
@@ -224,15 +237,7 @@ if __name__=='__main__':
 
                 model.train() 
 
-            if accelerator.is_main_process:
-                if (batch_idx + 1) % (steps_per_epoch) == 0:
-                    # Make a dir for ckpt saving 
-                    ckpt_dir = os.path.join(args.save_model_ckpt, date_time)
-                    os.makedirs(ckpt_dir, exist_ok=True)
-
-                    print(f'Saving checkpoint on epoch {epoch} step index {step_idx}')
-                    ckpt_path = os.path.join(ckpt_dir, f'model_step_{step_idx}.pth')
-                    accelerator.save(accelerator.unwrap_model(model).state_dict(), ckpt_path)
+            
 
 
 

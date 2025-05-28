@@ -37,7 +37,6 @@ model = DRES(models.SentenceBERT('sentence-transformers/gtr-t5-xl'))
 #     normalize=True,
 #     prompts={"query": "query: ", "passage": "passage: "}), batch_size=16)
 
-# model = SentenceTransformer('sentence-transformers/gtr-t5-xl')      # gtr-t5-xl
 
 retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for dot product
 results = retriever.retrieve(corpus, queries)

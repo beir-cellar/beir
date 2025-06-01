@@ -7,6 +7,7 @@ import torch.multiprocessing as mp
 from datasets import Dataset
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
+import torch
 
 from .util import extract_corpus_sentences
 
@@ -21,6 +22,7 @@ class SentenceBERT:
         sep: str = " ",
         prompts: dict[str, str] = None,
         prompt_names: dict[str, str] = None,
+        ckpt: str = None,
         **kwargs,
     ):
         self.sep = sep
@@ -28,10 +30,16 @@ class SentenceBERT:
 
         if isinstance(model_path, str):
             self.q_model = SentenceTransformer(model_path, **kwargs)
+            if ckpt:
+                self.q_model.load_state_dict(torch.load(ckpt))
+                print(f'Checkpoint {ckpt} is loaded.')
             self.doc_model = self.q_model
 
         elif isinstance(model_path, tuple):
             self.q_model = SentenceTransformer(model_path[0], **kwargs)
+            if ckpt:
+                self.q_model.load_state_dict(torch.load(ckpt))
+                print(f'Checkpoint {ckpt} is loaded.')
             self.doc_model = SentenceTransformer(model_path[1], **kwargs)
 
         if self.max_length:

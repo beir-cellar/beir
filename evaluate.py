@@ -26,8 +26,8 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="de
 
 #### Load the SBERT model and retrieve using cosine-similarity
 # model = DRES(models.SentenceBERT("Alibaba-NLP/gte-modernbert-base"), batch_size=16)
-model = DRES(models.SentenceBERT("BAAI/bge-large-en-v1.5"))
-# model = DRES(models.SentenceBERT('sentence-transformers/gtr-t5-xl'))
+# model = DRES(models.SentenceBERT("BAAI/bge-large-en-v1.5"))
+model = DRES(models.SentenceBERT('sentence-transformers/gtr-t5-xl', ckpt='/data/richard/taggerv2/test/test6/beir/outputs/ckpts/2025_05_30_21h52m36s/model_step_251471.pth'))
 
 #### Or load models directly from HuggingFace
 # model = DRES(models.HuggingFace(

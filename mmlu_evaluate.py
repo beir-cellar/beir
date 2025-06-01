@@ -5,9 +5,10 @@ from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 from sentence_transformers import SentenceTransformer
 from datasets import load_dataset
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, AutoModelForCausalLM
 from tqdm import tqdm
 
+from collections import defaultdict
 import logging
 import pathlib, os
 
@@ -19,24 +20,30 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 #### /print debug information to stdout
 
 # Download MMLU dataset
-mmlu_dataset = load_dataset("cais/mmlu", "all")
+mmlu_dataset = load_dataset("cais/mmlu", "test")
 
 # Load MSMARCO corpus
 msmarco_data_path = './beir/datasets/msmarco'
 corpus, msmarco_queries, qrels = GenericDataLoader(data_folder=msmarco_data_path).load(split="dev")
 
+device = 'cuda:0'
+
 # Get queries and answers from MMLU
 mmlu_queries = {}
 mmlu_choices = {}
 mmlu_answers = {}
-for i,data in enumerate(mmlu_dataset['dev']):
+mmlu_subjects = {}
+
+for i, data in enumerate(mmlu_dataset['test']):
     mmlu_queries[i] = data['question']
     mmlu_choices[i] = data['choices']
+    mmlu_subjects[i] = data['subjects']
     mmlu_answers[i] = data['choices'][data['answer']]
 
 #### Load the SBERT model
 # model = DRES(models.SentenceBERT("Alibaba-NLP/gte-modernbert-base"), batch_size=16)
-model = DRES(models.SentenceBERT("BAAI/bge-large-en-v1.5"))
+# model = DRES(models.SentenceBERT("BAAI/bge-large-en-v1.5"))
+model = DRES(models.SentenceBERT('BAAI/llm-embedder'))
 # model = DRES(models.SentenceBERT('sentence-transformers/gtr-t5-xl'))
 # model = SentenceTransformer('sentence-transformers/gtr-t5-xl')      # gtr-t5-xl
 
@@ -45,13 +52,16 @@ retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for do
 results = retriever.retrieve(corpus, mmlu_queries)
 
 # Load LLM model
-llm_model_name = "google/flan-t5-xl"
+# llm_model_name = "google/flan-t5-xl"
+llm_model_name = "meta-llama/Llama-2-7b-chat-hf"
 tokenizer = AutoTokenizer.from_pretrained(llm_model_name)
-llm_model = AutoModelForSeq2SeqLM.from_pretrained(llm_model_name)
+llm_model = AutoModelForCausalLM.from_pretrained(llm_model_name).to(device)
 
 # Evaluate answer performance
-top_k = 5
-correct = 0
+top_k = 3
+all_correct = 0
+subject_correct = defaultdict(int)
+subject_total = defaultdict(int)
 total = 0
 
 for i, question in tqdm(mmlu_queries.items(), desc="Evaluating Answers"):
@@ -60,19 +70,43 @@ for i, question in tqdm(mmlu_queries.items(), desc="Evaluating Answers"):
     top_passages = sorted(results[i].items(), key=lambda x: x[1], reverse=True)[:top_k]
     passage_texts = [corpus[doc_id] for doc_id, _ in top_passages]
     context = "\n\n".join(passage_texts)
+    subject = mmlu_subjects[i]
     
-    prompt = f"Answer with just the text of the correct answer choice \n\n question: {question} \n choices:{choices} \n context: {context}"
-    # prompt = f"Given the following context:\n\n{context}\n\n{question}"
-    inputs = tokenizer(prompt, return_tensors="pt")
-    outputs = llm_model.generate(**inputs, max_new_tokens=50)
+    prompt = f'''
+        Knowledge:\n
+        {context}\n
+
+        The following is a multiple choice question about: {subject}\n
+        {question}\n
+
+        {choices}\n
+
+    Answer with just the text of the all_correct answer choice. Answer:  
+    
+    '''
+    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+    outputs = llm_model.generate(**inputs, max_new_tokens=100)
     predicted_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-    if predicted_answer == ground_truth_answer:
-        correct += 1
+    normalized_pred = predicted_answer.strip().lower().split()[0]  # take first token, lowercase
+    normalized_true = ground_truth_answer.strip().lower()
+
+    if normalized_pred == normalized_true:
+        all_correct += 1
+        subject_correct[subject] += 1
     else:
+        # DEBUG
         print(f"Ground truth: {ground_truth_answer}")
         print(f"Predicted: {predicted_answer}")
-    total += 1
 
-accuracy = correct / total
-print(f"Accuracy: {accuracy}")
+    total += 1
+    subject_total[subject] += 1
+
+accuracy = all_correct / total
+print(f"All Accuracy: {accuracy}")
+
+for subject, correct in subject_correct.items():
+    print(f'{subject} Accuracy: {correct / subject_total[subject]}')
+
+
+

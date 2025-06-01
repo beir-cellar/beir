@@ -24,6 +24,7 @@ parser = argparse.ArgumentParser()
 # Model parameters
 parser.add_argument('--load_model_ckpt', default=None, help='Path to the model ckpt', type=str)
 parser.add_argument('--save_model_ckpt', default='/data/richard/taggerv2/test/test6/beir/outputs/ckpts', help='Path to save model ckpts', type=str)
+parser.add_argument('--base_model', default='sentence-transformers/gtr-t5-xl', help='Base model type', type=str)
 
 # Data specs
 
@@ -55,7 +56,7 @@ if __name__=='__main__':
     total_steps = steps_per_epoch * args.epochs 
 
     # Encoder loading
-    model = SentenceTransformer('sentence-transformers/gtr-t5-xl', device='cuda:0')      # gtr-t5-xl
+    model = SentenceTransformer(args.base_model, device='cuda:0')      # gtr-t5-xl
 
     # model ckpt loading
     if args.load_model_ckpt is not None:

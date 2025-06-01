@@ -29,14 +29,14 @@ class SentenceBERT:
         self.max_length = max_length
 
         if isinstance(model_path, str):
-            self.q_model = SentenceTransformer(model_path, **kwargs)
+            self.q_model = SentenceTransformer(model_path, **kwargs).to('cuda:0')
             if ckpt:
                 self.q_model.load_state_dict(torch.load(ckpt))
                 print(f'Checkpoint {ckpt} is loaded.')
             self.doc_model = self.q_model
 
         elif isinstance(model_path, tuple):
-            self.q_model = SentenceTransformer(model_path[0], **kwargs)
+            self.q_model = SentenceTransformer(model_path[0], **kwargs).to('cuda:0')
             if ckpt:
                 self.q_model.load_state_dict(torch.load(ckpt))
                 print(f'Checkpoint {ckpt} is loaded.')

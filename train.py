@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 import wandb
 import timm
 import argparse
@@ -27,6 +28,8 @@ parser.add_argument('--save_model_ckpt', default='/data/richard/taggerv2/test/te
 parser.add_argument('--base_model', default='sentence-transformers/gtr-t5-xl', help='Base model type', type=str)
 
 # Data specs
+parser.add_argument('--train_data_split', default=None, help='Split of the train dataset', type=str)
+parser.add_argument('--val_data_split', default=None, help='Split of the val dataset', type=str)
 
 # Training specs
 parser.add_argument('--lr', default=1e-5, help='Standard learning rate for training', type=float)
@@ -34,7 +37,8 @@ parser.add_argument('--lr_scheduler', default=None, help='lr scheduler', type=st
 parser.add_argument('--epochs', default=30, help='Training epochs', type=int)
 parser.add_argument('--wandb_project', default='RAG', help='Wandb project name', type=str)
 parser.add_argument('--wandb_run_name', default=None, help='Wandb run name', type=str)
-parser.add_argument('--batch_size', default=8, help='Batch size for one GPU', type=int)
+parser.add_argument('--batch_size', default=64, help='Batch size for one GPU', type=int)
+parser.add_argument('--retrieve_top_k', default=3, help='Batch size for one GPU', type=int)
 
 
 if __name__=='__main__':
@@ -43,8 +47,8 @@ if __name__=='__main__':
     print(f'Running args: {args}')
 
     # Load the dataset and create dataloader
-    train_dataset = MSMARCO_dataset(split='train') 
-    val_dataset = MSMARCO_dataset(split='test')
+    train_dataset = MSMARCO_dataset(split=args.train_data_split) 
+    val_dataset = MSMARCO_dataset(split=args.val_data_split)
         
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=16, pin_memory=True, prefetch_factor=2, collate_fn=msmarco_collate_fn)
     val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=16, pin_memory=True, prefetch_factor=2, collate_fn=msmarco_collate_fn)
@@ -56,7 +60,7 @@ if __name__=='__main__':
     total_steps = steps_per_epoch * args.epochs 
 
     # Encoder loading
-    model = SentenceTransformer(args.base_model, device='cuda:0')      # gtr-t5-xl
+    model = SentenceTransformer(args.base_model, device=accelerator.device)      # gtr-t5-xl
 
     # model ckpt loading
     if args.load_model_ckpt is not None:
@@ -96,6 +100,7 @@ if __name__=='__main__':
     )
 
     # Start epochs
+    model = accelerator.unwrap_model(model)
     model.train()
     for epoch in range(args.epochs):
 
@@ -107,7 +112,7 @@ if __name__=='__main__':
             step_idx = batch_idx + epoch*steps_per_epoch
 
             # Forward pass
-            flat_passages    = [p['text'] for doc_list in paragraphs for p in doc_list]
+            flat_passages    = [p_dict['text'] for doc_list in paragraphs for p_dict in doc_list]
 
             unique_passages  = list(dict.fromkeys(flat_passages))  # preserves first‐seen order
             passage_to_idx   = {p: i for i, p in enumerate(unique_passages)}    # passage to index
@@ -125,6 +130,7 @@ if __name__=='__main__':
             E_q_norm = torch.nn.functional.normalize(E_q,        p=2, dim=1)    # (B, D)
             E_p_norm = torch.nn.functional.normalize(E_p_unique, p=2, dim=1)    # (M, D)
             sim_matrix = E_q_norm @ E_p_norm.t()                                # (B, M)
+            softmax_sim_matrix = F.softmax(sim_matrix, dim=1)
 
             # --- 3. Ground-truth matrix ----------------------------------------------
             gt_matrix = torch.zeros_like(sim_matrix)        # (B, M)   ←  all zeros by default
@@ -188,6 +194,7 @@ if __name__=='__main__':
 
                 if accelerator.is_main_process:
                     val_loss_cur = []
+                    recall_ks = []
                     
                 for batch_idx, (queries, paragraphs, scores) in pbar:
                     with torch.no_grad():
@@ -216,13 +223,30 @@ if __name__=='__main__':
                                 col = passage_to_idx[p['text']]                 # lookup column in 0..M-1
                                 gt_matrix[q_idx, col] = float(s)
 
+                        # boolean mask of ground-truth positives (label > 0)
+                        gt_pos_mask   = gt_matrix > 0                        # (B, M)
+                        num_pos_per_q = gt_pos_mask.sum(dim=1)               # (B,)
+
+                        # top-K passage indices per query under current similarity
+                        topk_idx = torch.topk(sim_matrix, args.retrieve_top_k, dim=1).indices  # (B, K)
+
+                        # how many of those K are relevant?
+                        hits = gt_pos_mask.gather(1, topk_idx).sum(dim=1)    # (B,)
+
+                        # avoid div-by-zero for queries with 0 positives
+                        denom = torch.clamp(num_pos_per_q, min=1)
+
+                        recall_per_q = hits.float() / denom                  # (B,)
+                        recall_k     = torch.mean(accelerator.gather(recall_per_q)).item()
+
                         loss = torch.nn.functional.mse_loss(gt_matrix, sim_matrix) 
 
                         val_loss = torch.mean(accelerator.gather(loss)).item()
-                       
+                        
                     if accelerator.is_main_process:
                         # Registering data for this eval
                         val_loss_cur.append(val_loss)
+                        recall_ks.append(recall_k)
 
                 if accelerator.is_main_process:
                     # Register the valing metadata
@@ -231,6 +255,7 @@ if __name__=='__main__':
                     wandb.log(
                         {
                             'val_loss': val_loss,
+                            'recall_ks': recall_ks
                         },
                         step=step_idx+2,
                         commit=True

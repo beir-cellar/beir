@@ -20,11 +20,13 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 #### /print debug information to stdout
 
 # Download MMLU dataset
-mmlu_dataset = load_dataset("cais/mmlu", "test")
+mmlu_dataset = load_dataset("cais/mmlu", "all")
 
 # Load MSMARCO corpus
-msmarco_data_path = './beir/datasets/msmarco'
+msmarco_data_path = './outputs/datasets/msmarco'
 corpus, msmarco_queries, qrels = GenericDataLoader(data_folder=msmarco_data_path).load(split="dev")
+corpus = {key:value for i, (key, value) in enumerate(corpus.items()) if i < 100000}
+
 
 device = 'cuda:0'
 
@@ -37,13 +39,13 @@ mmlu_subjects = {}
 for i, data in enumerate(mmlu_dataset['test']):
     mmlu_queries[i] = data['question']
     mmlu_choices[i] = data['choices']
-    mmlu_subjects[i] = data['subjects']
+    mmlu_subjects[i] = data['subject']
     mmlu_answers[i] = data['choices'][data['answer']]
 
 #### Load the SBERT model
 # model = DRES(models.SentenceBERT("Alibaba-NLP/gte-modernbert-base"), batch_size=16)
-# model = DRES(models.SentenceBERT("BAAI/bge-large-en-v1.5"))
-model = DRES(models.SentenceBERT('BAAI/llm-embedder'))
+model = DRES(models.SentenceBERT("BAAI/bge-large-en-v1.5"))
+# model = DRES(models.SentenceBERT('BAAI/llm-embedder'))
 # model = DRES(models.SentenceBERT('sentence-transformers/gtr-t5-xl'))
 # model = SentenceTransformer('sentence-transformers/gtr-t5-xl')      # gtr-t5-xl
 
@@ -68,7 +70,7 @@ for i, question in tqdm(mmlu_queries.items(), desc="Evaluating Answers"):
     ground_truth_answer = mmlu_answers[i]
     choices = mmlu_choices[i]
     top_passages = sorted(results[i].items(), key=lambda x: x[1], reverse=True)[:top_k]
-    passage_texts = [corpus[doc_id] for doc_id, _ in top_passages]
+    passage_texts = [corpus[doc_id]['text'] for doc_id, _ in top_passages]
     context = "\n\n".join(passage_texts)
     subject = mmlu_subjects[i]
     
@@ -81,7 +83,7 @@ for i, question in tqdm(mmlu_queries.items(), desc="Evaluating Answers"):
 
         {choices}\n
 
-    Answer with just the text of the all_correct answer choice. Answer:  
+    Answer with just the text of the all_correct answer choice. No additional 
     
     '''
     inputs = tokenizer(prompt, return_tensors="pt").to(device)
@@ -94,10 +96,10 @@ for i, question in tqdm(mmlu_queries.items(), desc="Evaluating Answers"):
     if normalized_pred == normalized_true:
         all_correct += 1
         subject_correct[subject] += 1
-    else:
-        # DEBUG
-        print(f"Ground truth: {ground_truth_answer}")
-        print(f"Predicted: {predicted_answer}")
+    # else:
+    #     # DEBUG
+    #     print(f"Ground truth: {ground_truth_answer}")
+    #     print(f"Predicted: {predicted_answer}")
 
     total += 1
     subject_total[subject] += 1

@@ -1,5 +1,7 @@
 # Custom added
 examples/**/datasets/
+examples/**/results/
+examples/**/embeddings/
 examples/**/output/
 examples/**/DeepCT/
 examples/**/models/

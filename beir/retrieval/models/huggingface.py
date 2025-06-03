@@ -119,13 +119,13 @@ class HuggingFace:
 
     @torch.no_grad()
     def encode(
-        self, texts: list[str], batch_size: int = 16, prefix: str = "", **kwargs
+        self, texts: list[str], batch_size: int = 16, prefix: str = "", show_progress_bar: bool = True, **kwargs
     ) -> list[Tensor] | np.ndarray | Tensor:
         if self.num_gpus > 1:
             batch_size *= self.num_gpus
 
         embeddings = []
-        for start_idx in trange(0, len(texts), batch_size):
+        for start_idx in trange(0, len(texts), batch_size, disable=not show_progress_bar):
             sub_texts = [prefix + text for text in texts[start_idx : start_idx + batch_size]]
             if self.append_eos_token:
                 input_texts = self._append_eos_token(sub_texts)

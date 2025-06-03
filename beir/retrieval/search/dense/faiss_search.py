@@ -194,14 +194,17 @@ class PQFaissSearch(DenseRetrievalFaissSearch):
         corpus_chunk_size: int = 50000,
         num_of_centroids: int = 96,
         code_size: int = 8,
-        similarity_metric=faiss.METRIC_INNER_PRODUCT,
+        similarity_metric: int | None = None,
         use_rotation: bool = False,
         **kwargs,
     ):
         super().__init__(model, batch_size, corpus_chunk_size, **kwargs)
         self.num_of_centroids = num_of_centroids
         self.code_size = code_size
-        self.similarity_metric = similarity_metric
+        if similarity_metric is None:
+            self.similarity_metric = faiss.METRIC_INNER_PRODUCT
+        else:
+            self.similarity_metric = similarity_metric
         self.use_rotation = use_rotation
 
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "pq"):
@@ -270,14 +273,17 @@ class HNSWFaissSearch(DenseRetrievalFaissSearch):
         hnsw_store_n: int = 512,
         hnsw_ef_search: int = 128,
         hnsw_ef_construction: int = 200,
-        similarity_metric=faiss.METRIC_INNER_PRODUCT,
+        similarity_metric: int | None = None,
         **kwargs,
     ):
         super().__init__(model, batch_size, corpus_chunk_size, **kwargs)
         self.hnsw_store_n = hnsw_store_n
         self.hnsw_ef_search = hnsw_ef_search
         self.hnsw_ef_construction = hnsw_ef_construction
-        self.similarity_metric = similarity_metric
+        if similarity_metric is None:
+            self.similarity_metric = faiss.METRIC_INNER_PRODUCT
+        else:
+            self.similarity_metric = similarity_metric
 
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "hnsw"):
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)
@@ -333,7 +339,6 @@ class HNSWSQFaissSearch(DenseRetrievalFaissSearch):
         hnsw_store_n: int = 128,
         hnsw_ef_search: int = 128,
         hnsw_ef_construction: int = 200,
-        similarity_metric=faiss.METRIC_INNER_PRODUCT,
         quantizer_type: str = "QT_8bit",
         **kwargs,
     ):
@@ -341,7 +346,6 @@ class HNSWSQFaissSearch(DenseRetrievalFaissSearch):
         self.hnsw_store_n = hnsw_store_n
         self.hnsw_ef_search = hnsw_ef_search
         self.hnsw_ef_construction = hnsw_ef_construction
-        self.similarity_metric = similarity_metric
         self.qname = quantizer_type
 
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "hnsw-sq"):
@@ -492,13 +496,16 @@ class SQFaissSearch(DenseRetrievalFaissSearch):
         model,
         batch_size: int = 128,
         corpus_chunk_size: int = 50000,
-        similarity_metric=faiss.METRIC_INNER_PRODUCT,
         quantizer_type: str = "QT_fp16",
+        similarity_metric: int | None = None,
         **kwargs,
     ):
         super().__init__(model, batch_size, corpus_chunk_size, **kwargs)
-        self.similarity_metric = similarity_metric
         self.qname = quantizer_type
+        if similarity_metric is None:
+            self.similarity_metric = faiss.METRIC_INNER_PRODUCT
+        else:
+            self.similarity_metric = similarity_metric
 
     def load(self, input_dir: str, prefix: str = "my-index", ext: str = "sq"):
         input_faiss_path, passage_ids = super()._load(input_dir, prefix, ext)

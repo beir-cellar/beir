@@ -1,0 +1,105 @@
+"""
+In this example, we evaluate the Embedding API models using Cohere API on the NFCorpus dataset.
+For this you would need to install the cohere client library. You can install it using `pip install cohere`.
+You can sign up for Cohere API at https://cohere.ai/ and get your API key.
+
+Usage:
+export COHERE_API_KEY="your-api-key"
+python evaluate_cohere.py
+"""
+
+import logging
+import os
+import pathlib
+import random
+from time import time
+
+from beir import LoggingHandler, util
+from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval import models
+from beir.retrieval.evaluation import EvaluateRetrieval
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+
+#### Just some code to print debug information to stdout
+logging.basicConfig(
+    format="%(asctime)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+    handlers=[LoggingHandler()],
+)
+#### /print debug information to stdout
+
+dataset = "nfcorpus"
+
+#### Download nfcorpus.zip dataset and unzip the dataset
+url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
+out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
+data_path = util.download_and_unzip(url, out_dir)
+
+#### Provide the data path where nfcorpus has been downloaded and unzipped to the data loader
+# data folder would contain these files:
+# (1) nfcorpus/corpus.jsonl  (format: jsonlines)
+# (2) nfcorpus/queries.jsonl (format: jsonlines)
+# (3) nfcorpus/qrels/test.tsv (format: tsv ("\t"))
+
+corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+
+#### Dense Retrieval using Cohere Embedding Models ####
+#### https://docs.cohere.com/v2/docs/cohere-embed
+## Parameters
+model_name_or_path = "embed-v4.0"
+cohere_api_key = os.getenv("COHERE_API_KEY")  # You can also provide your API key here manually
+normalize = True
+
+#### Load the Dense Retriever model (LLM2Vec)
+model = DRES(
+    models.CohereEmbedAPI(
+        api_key=cohere_api_key, model_path=model_name_or_path, normalize=normalize, torch_dtype="float32"
+    ),
+    batch_size=96,
+)
+
+retriever = EvaluateRetrieval(model, score_function="cos_sim")
+
+#### Retrieve dense results (format of results is identical to qrels)
+save_encodings_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "cohere", "encodings")
+if not os.path.exists(save_encodings_path):
+    os.makedirs(save_encodings_path)
+
+start_time = time()
+results = retriever.encode_and_retrieve(corpus, queries, encode_output_path=save_encodings_path)
+end_time = time()
+logging.info(f"Time taken to encode & retrieve: {end_time - start_time:.2f} seconds")
+#### Evaluate your retrieval using NDCG@k, MAP@K ...
+
+logging.info(f"Retriever evaluation for k in: {retriever.k_values}")
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
+
+### If you want to save your results and runfile (useful for reranking)
+results_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "results")
+os.makedirs(results_dir, exist_ok=True)
+
+#### Save the evaluation runfile & results
+util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
+util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
+
+#### Print top-k documents retrieved ####
+top_k = 10
+
+query_id, ranking_scores = random.choice(list(results.items()))
+scores_sorted = sorted(ranking_scores.items(), key=lambda item: item[1], reverse=True)
+logging.info(f"Query : {queries[query_id]}\n")
+
+for rank in range(top_k):
+    doc_id = scores_sorted[rank][0]
+    # Format: Rank x: ID [Title] Body
+    logging.info(f"Rank {rank + 1}: {doc_id} [{corpus[doc_id].get('title')}] - {corpus[doc_id].get('text')}\n")
+
+#### NDCG@K results should look like this:
+# "NDCG@1": 0.49381,
+# "NDCG@3": 0.44861,
+# "NDCG@5": 0.42965,
+# "NDCG@10": 0.40171,
+# "NDCG@100": 0.36861,
+# "NDCG@1000": 0.45438

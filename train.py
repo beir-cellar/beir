@@ -8,7 +8,7 @@ from tqdm import tqdm
 from re_utils import MSMARCO_dataset, msmarco_collate_fn
 # from torchmetrics import MatthewsCorrCoef, F1Score
 from sentence_transformers import SentenceTransformer
-
+from torch import linalg as LA
 from accelerate import Accelerator
 from datetime import datetime
 import math
@@ -130,7 +130,8 @@ if __name__=='__main__':
             E_q_norm = torch.nn.functional.normalize(E_q,        p=2, dim=1)    # (B, D)
             E_p_norm = torch.nn.functional.normalize(E_p_unique, p=2, dim=1)    # (M, D)
             sim_matrix = E_q_norm @ E_p_norm.t()                                # (B, M)
-            softmax_sim_matrix = F.softmax(sim_matrix, dim=1)
+            sim_matrix_softmax = F.softmax(sim_matrix, dim=-1)      # (B, M)
+            sim_matrix_norm = LA.matrix_norm(sim_matrix).item() / (sim_matrix.shape[0] * sim_matrix.shape[1])
 
             # --- 3. Ground-truth matrix ----------------------------------------------
             gt_matrix = torch.zeros_like(sim_matrix)        # (B, M)   ←  all zeros by default
@@ -142,11 +143,12 @@ if __name__=='__main__':
                     col = passage_to_idx[p['text']]                 # lookup column in 0..M-1
                     gt_matrix[q_idx, col] = float(s)
 
-            loss = torch.nn.functional.mse_loss(gt_matrix, sim_matrix) 
-            train_loss = torch.mean(accelerator.gather(loss)).item()
+            sft_loss = torch.nn.functional.mse_loss(gt_matrix, sim_matrix_softmax)
+            combined_loss = sft_loss - 5000 * sim_matrix_norm
+            train_loss = torch.mean(accelerator.gather(combined_loss)).item()
 
             # Compute grad
-            accelerator.backward(loss)
+            accelerator.backward(combined_loss)
 
             # Grad-norm check
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -159,13 +161,15 @@ if __name__=='__main__':
             optimizer.zero_grad()
 
             if accelerator.is_main_process:
-                pbar.set_postfix(loss=train_loss)
+                pbar.set_postfix(loss=combined_loss)
 
                 wandb.log(
                     {
                         'train_lr': current_lr,
                         'train_loss': train_loss,
+                        'sft_loss': sft_loss,
                         'train_grad_norm': train_grad_norm,
+                        'sim_matrix_norm': sim_matrix_norm,
                     },
                     step=step_idx,
                     commit=True
@@ -195,6 +199,7 @@ if __name__=='__main__':
                 if accelerator.is_main_process:
                     val_loss_cur = []
                     recall_ks = []
+                    sim_matrix_norms = []
                     
                 for batch_idx, (queries, paragraphs, scores) in pbar:
                     with torch.no_grad():
@@ -212,6 +217,8 @@ if __name__=='__main__':
                         E_q_norm = torch.nn.functional.normalize(E_q,        p=2, dim=1)    # (B, D)
                         E_p_norm = torch.nn.functional.normalize(E_p_unique, p=2, dim=1)    # (M, D)
                         sim_matrix = E_q_norm @ E_p_norm.t()                                # (B, M)
+                        sim_matrix_softmax = F.softmax(sim_matrix, dim=-1)      # (B, M)
+                        sim_matrix_norm = LA.matrix_norm(sim_matrix).item() / (sim_matrix.shape[0] * sim_matrix.shape[1])
 
                         # --- 3. Ground-truth matrix ----------------------------------------------
                         gt_matrix = torch.zeros_like(sim_matrix)        # (B, M)   ←  all zeros by default
@@ -239,23 +246,25 @@ if __name__=='__main__':
                         recall_per_q = hits.float() / denom                  # (B,)
                         recall_k     = torch.mean(accelerator.gather(recall_per_q)).item()
 
-                        loss = torch.nn.functional.mse_loss(gt_matrix, sim_matrix) 
+                        sft_loss = torch.nn.functional.mse_loss(gt_matrix, sim_matrix_softmax) 
 
-                        val_loss = torch.mean(accelerator.gather(loss)).item()
+                        val_loss = torch.mean(accelerator.gather(sft_loss)).item()
                         
                     if accelerator.is_main_process:
                         # Registering data for this eval
                         val_loss_cur.append(val_loss)
                         recall_ks.append(recall_k)
+                        sim_matrix_norms.append(sim_matrix_norm)
 
                 if accelerator.is_main_process:
                     # Register the valing metadata
-                    val_loss = sum(val_loss_cur) / len(val_loss_cur)
-                    
+                    val_loss_avg = sum(val_loss_cur) / len(val_loss_cur)
+                    recall_k_avg = sum(recall_ks) / len(recall_ks)
+                    sim_matrix_norm_avg = sum(sim_matrix_norms) / len(sim_matrix_norms)
                     wandb.log(
                         {
-                            'val_loss': val_loss,
-                            'recall_ks': recall_ks
+                            'val_loss': val_loss_avg,
+                            'recall_ks': recall_k_avg
                         },
                         step=step_idx+2,
                         commit=True

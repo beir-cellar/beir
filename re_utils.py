@@ -8,6 +8,11 @@ import torch
 import logging
 import pathlib, os
 
+# critic.py
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
 
 #### Provide the data_path where scifact has been downloaded and unzipped
 
@@ -100,7 +105,7 @@ def llm_output(llm_model, tokenizer, queries, query_facts,
 
     return all_outputs
 
-def reward_computing(actions, gt_answers, gt_paragraphs=None):
+def llm_reward_computing(actions, gt_answers, gt_paragraphs=None):
 
     '''
     Handles reward computing. 
@@ -122,6 +127,82 @@ def reward_computing(actions, gt_answers, gt_paragraphs=None):
             rewards.append(0)
 
     return torch.tensor(rewards)
+
+# def retriever_reward_computing(actions, gt_paragraphs):
+
+#     '''
+#     Handles reward computing. 
+
+#     Inputs:
+#         * actions: B x words, LLM output
+#         * gt_answer: B x words, ground truth output for LLM
+    
+#     Outputs:
+#         * rewards: (B, ) reward derived from measuring whether actions and gt_answer match
+#     '''
+#     rewards = []
+
+#     for action, gt_answer in zip(actions, gt_answers):
+#         gt_parsed = gt_answer.strip().lower()
+#         if action.strip().lower().split()[0] == gt_parsed or action.strip().lower().split()[-1] == gt_parsed:
+#             rewards.append(1)
+#         else:
+#             rewards.append(0)
+
+#     return torch.tensor(rewards)
+
+def retriever_reward_computing(
+        actions: torch.Tensor,          # (B, k) indices selected for each query
+        gt_matrix: torch.Tensor,        # (B, M) graded relevance labels (0/1/2…)
+        metric: str = "ndcg",           # "ndcg" | "precision" | "recall" | "sum"
+) -> torch.Tensor:                      # → (B,) reward for each query
+    """
+    Compute retrieval rewards given selected columns and a ground-truth matrix.
+
+    Parameters
+    ----------
+    actions   : LongTensor (B, k)
+        Per-row indices of the passages picked by the retriever.
+    gt_matrix : FloatTensor (B, M)
+        Ground-truth relevance labels for every passage (same device).
+    metric    : str
+        Which reward to emit.  "ndcg" is the default and recommended.
+
+    Returns
+    -------
+    rewards   : FloatTensor (B,)
+        One reward per query (no grad).
+    """
+    B, k = actions.shape
+    device = gt_matrix.device
+
+    # -------- 1. Relevance scores of the chosen passages --------------------
+    rels_sel = gt_matrix.gather(1, actions)          # (B, k) — graded 0/1/2 …
+
+    # -------- 2. Different reward flavours ----------------------------------
+    if metric == "ndcg":
+        # DCG numerator
+        denom = torch.log2(torch.arange(k, device=device) + 2).unsqueeze(0)  # (1, k)
+        dcg  = (rels_sel / denom).sum(dim=1)                                 # (B,)
+
+        # IDCG (ideal ranking) for normalisation
+        sorted_rels, _ = torch.sort(gt_matrix, descending=True)
+        ideal_topk = sorted_rels[:, :k] / denom
+        idcg = ideal_topk.sum(dim=1)                                         # (B,)
+
+        rewards = torch.where(idcg > 0, dcg / idcg, torch.zeros_like(dcg))
+
+    elif metric == "precision":
+        rewards = (rels_sel > 0).float().sum(dim=1) / k
+
+    elif metric == "recall":
+        positives = (gt_matrix > 0).float().sum(dim=1).clamp(min=1)
+        rewards = (rels_sel > 0).float().sum(dim=1) / positives
+
+    else:  # plain sum of graded relevance
+        rewards = rels_sel.sum(dim=1)
+
+    return rewards.detach()              # reward is treated as a constant
 
 def state_to_action_probs(queries, gt_paragraphs, retrieval_model):
     '''
@@ -166,8 +247,7 @@ def state_to_action_probs(queries, gt_paragraphs, retrieval_model):
     log_prob_sim_matrix = torch.log_softmax(sim_matrix, dim=1)  # shape (B, M)
 
     # Return shape: (B x M), (B x M), list of M passages, (B x D), (M x D)
-
-    return log_prob_sim_matrix, sim_matrix, unique_passages, E_q, E_p_unique
+    return log_prob_sim_matrix, sim_matrix, unique_passages, E_q, E_p_unique, passage_to_idx
 
 def minibatch_indices(N: int, batch_size: int, *, generator: torch.Generator | None = None):
     """
@@ -215,3 +295,63 @@ class MSMARCO_dataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.queries)
+
+# critic.py
+import math
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class CriticNetwork(nn.Module):
+    """
+    Inputs
+    -------
+    query_embed   : (B, D)  – query embeddings from the retriever
+    corpus_embed  : (M, D)  – embeddings of *all* deduplicated passages
+                              in the current batch corpus
+
+    Output
+    ------
+    value_preds   : (B,)    – scalar V(s) for each query
+    """
+    def __init__(self, d_model: int):
+        super().__init__()
+
+        # Two-layer MLP on [q ; context] ∈ ℝ^{2D}
+        self.value_head = nn.Sequential(
+            nn.Linear(2 * d_model, 4 * d_model),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(4 * d_model, 1),
+        )
+
+    def forward(
+        self,
+        query_embed: torch.Tensor,   # (B, D)
+        corpus_embed: torch.Tensor,  # (M, D)
+    ) -> torch.Tensor:
+
+        # detach ⇒ critic cannot back-prop into the retriever (actor)
+        q = query_embed.detach()          # (B, D)
+        c = corpus_embed.detach()         # (M, D)
+
+        # ------------------------------------------------------------------
+        # 1. Query–corpus attention  (soft summary, no top-K)
+        # ------------------------------------------------------------------
+        #   α_bm = softmax( q_b · c_m / √D )
+        #   ctx_b = Σ_m α_bm · c_m
+        # ------------------------------------------------------------------
+        scale = 1.0 / math.sqrt(q.size(-1))
+        attn_logits = torch.matmul(q, c.T) * scale        # (B, M)
+        attn_weights = F.softmax(attn_logits, dim=-1)     # (B, M)
+        context = torch.matmul(attn_weights, c)           # (B, D)
+
+        # ------------------------------------------------------------------
+        # 2. Value head on concatenated state embedding
+        # ------------------------------------------------------------------
+        state_repr = torch.cat([q, context], dim=-1)      # (B, 2D)
+        values = self.value_head(state_repr).squeeze(-1)  # (B,)
+
+        return values
+

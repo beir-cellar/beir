@@ -6,6 +6,8 @@ import argparse
 import json
 from tqdm import tqdm
 from re_utils import MSMARCO_dataset, msmarco_collate_fn
+from torch import linalg as LA
+
 # from torchmetrics import MatthewsCorrCoef, F1Score
 from sentence_transformers import SentenceTransformer
 
@@ -73,6 +75,7 @@ if __name__=='__main__':
     if accelerator.is_main_process:
         val_loss_cur = []
         recall_ks = []
+        sim_matrix_norms = []
         
     for batch_idx, (queries, paragraphs, scores) in pbar:
         with torch.no_grad():
@@ -90,6 +93,7 @@ if __name__=='__main__':
             E_q_norm = torch.nn.functional.normalize(E_q,        p=2, dim=1)    # (B, D)
             E_p_norm = torch.nn.functional.normalize(E_p_unique, p=2, dim=1)    # (M, D)
             sim_matrix = E_q_norm @ E_p_norm.t()                                # (B, M)
+            sim_matrix_norm = LA.matrix_norm(sim_matrix).item()
 
             # --- 3. Ground-truth matrix ----------------------------------------------
             gt_matrix = torch.zeros_like(sim_matrix)        # (B, M)   ←  all zeros by default
@@ -125,12 +129,15 @@ if __name__=='__main__':
             # Registering data for this eval
             val_loss_cur.append(val_loss)
             recall_ks.append(recall_k)
+            sim_matrix_norms.append(sim_matrix_norm)
 
     if accelerator.is_main_process:
         # Register the valing metadata
         val_loss_avg = sum(val_loss_cur) / len(val_loss_cur)
         recall_k_avg = sum(recall_ks) / len(recall_ks)
-        print(f'val_loss_avg: {val_loss_avg}, recall_k_avg: {recall_k_avg}.')
+        sim_matrix_norm_avg = sum(sim_matrix_norms) / len(sim_matrix_norms)
+
+        print(f'val_loss_avg: {val_loss_avg}, recall_k_avg: {recall_k_avg}, sim_matrix_norm_avg:{sim_matrix_norm_avg}.')
 
     
 

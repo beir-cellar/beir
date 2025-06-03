@@ -56,6 +56,9 @@ class DenseRetrievalExactSearch(BaseSearch):
             convert_to_tensor=self.convert_to_tensor,
         )
 
+        print(f'query_embeddings.shape:{query_embeddings.shape}')
+
+
         logger.info("Sorting Corpus by document length (Longest first)...")
 
         corpus_ids = sorted(
@@ -83,9 +86,15 @@ class DenseRetrievalExactSearch(BaseSearch):
                 convert_to_tensor=self.convert_to_tensor,
             )
 
+            # print(f'sub_corpus_embeddings.shape:{sub_corpus_embeddings.shape}')
+
             # Compute similarites using either cosine-similarity or dot product
             cos_scores = self.score_functions[score_function](query_embeddings, sub_corpus_embeddings)
             cos_scores[torch.isnan(cos_scores)] = -1
+
+            # print(f'cos_scores.shape:{cos_scores}')
+            
+            # raise ValueError
 
             # Get top-k values
             cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(

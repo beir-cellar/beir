@@ -7,6 +7,7 @@ import torch.multiprocessing as mp
 from datasets import Dataset
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
+import torch
 
 from .util import extract_corpus_sentences
 
@@ -21,17 +22,24 @@ class SentenceBERT:
         sep: str = " ",
         prompts: dict[str, str] = None,
         prompt_names: dict[str, str] = None,
+        ckpt: str = None,
         **kwargs,
     ):
         self.sep = sep
         self.max_length = max_length
 
         if isinstance(model_path, str):
-            self.q_model = SentenceTransformer(model_path, **kwargs)
+            self.q_model = SentenceTransformer(model_path, **kwargs).to('cuda:0')
+            if ckpt:
+                self.q_model.load_state_dict(torch.load(ckpt))
+                print(f'Checkpoint {ckpt} is loaded.')
             self.doc_model = self.q_model
 
         elif isinstance(model_path, tuple):
-            self.q_model = SentenceTransformer(model_path[0], **kwargs)
+            self.q_model = SentenceTransformer(model_path[0], **kwargs).to('cuda:0')
+            if ckpt:
+                self.q_model.load_state_dict(torch.load(ckpt))
+                print(f'Checkpoint {ckpt} is loaded.')
             self.doc_model = SentenceTransformer(model_path[1], **kwargs)
 
         if self.max_length:
@@ -49,6 +57,8 @@ class SentenceBERT:
         if prompt_names:
             self.query_prompt_name = prompt_names["query"]
             self.doc_prompt_name = prompt_names["passage"]
+
+        self.doc_model = self.doc_model.half()
 
         logger.info(f"Query prompt: {self.query_prefix}, Passage prompt: {self.doc_prefix}")
         logger.info(f"Query prompt name: {self.query_prompt_name}, Passage prompt name: {self.doc_prompt_name}")

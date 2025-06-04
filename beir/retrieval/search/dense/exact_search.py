@@ -131,13 +131,15 @@ class DenseRetrievalExactSearch(BaseSearch):
         queries: dict[str, str],
         encode_output_path: str = "./embeddings/",
         overwrite: bool = False,
+        query_filename: str = "queries.pkl",
+        corpus_filename: str = "corpus.*.pkl",
         **kwargs,
     ):
         logger.info("Encoding Queries...")
         query_ids = list(queries.keys())
         self.results = {qid: {} for qid in query_ids}
         queries = [queries[qid] for qid in queries]
-        query_embeddings_file = os.path.join(encode_output_path, "queries.pkl")
+        query_embeddings_file = os.path.join(encode_output_path, query_filename)
 
         if not os.path.exists(query_embeddings_file) or overwrite:
             query_embeddings = self.model.encode_queries(
@@ -165,7 +167,8 @@ class DenseRetrievalExactSearch(BaseSearch):
         itr = range(0, len(corpus), self.corpus_chunk_size)
 
         for batch_num, corpus_start_idx in enumerate(itr):
-            corpus_embeddings_file = os.path.join(encode_output_path, f"corpus.{batch_num}.pkl")
+            batch_corpus_filename = corpus_filename.replace("*", str(batch_num))
+            corpus_embeddings_file = os.path.join(encode_output_path, batch_corpus_filename)
             if not os.path.exists(corpus_embeddings_file) or overwrite:
                 logger.info(f"Encoding Batch {batch_num + 1}/{len(itr)}...")
                 corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))

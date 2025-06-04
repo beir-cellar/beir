@@ -36,22 +36,33 @@ class EvaluateRetrieval:
         queries: dict[str, str],
         encode_output_path: str = "./embeddings/",
         overwrite: bool = False,
+        query_filename: str = "queries.pkl",
+        corpus_filename: str = "corpus.*.pkl",
         **kwargs,
     ) -> dict[str, dict[str, float]]:
         """Encode the corpus and queries, save them and then retrieve results."""
         if not self.retriever:
             raise ValueError("Model/Technique has not been provided!")
         # Encode corpus and queries using encode function and save them to disk
-        self.retriever.encode(corpus, queries, encode_output_path=encode_output_path, overwrite=overwrite, **kwargs)
+        self.retriever.encode(
+            corpus,
+            queries,
+            encode_output_path=encode_output_path,
+            overwrite=overwrite,
+            query_filename=query_filename,
+            corpus_filename=corpus_filename,
+            **kwargs,
+        )
 
         # Retrieve results using faiss-cpu search function using the saved embeddings
-        query_embeddings_file = f"{encode_output_path}/queries.pkl"
-        corpus_embeddings_files = glob.glob(f"{encode_output_path}/corpus.*.pkl")
+        query_embeddings_file = f"{encode_output_path}/{query_filename}"
+        corpus_embeddings_files = glob.glob(f"{encode_output_path}/{corpus_filename}")
 
         return self.retriever.search_from_files(
             query_embeddings_file=query_embeddings_file,
             corpus_embeddings_files=corpus_embeddings_files,
             top_k=self.top_k,
+            **kwargs,
         )
 
     @staticmethod

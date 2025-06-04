@@ -21,6 +21,8 @@ class BaseSearch(ABC):
         queries: dict[str, str],
         encode_output_path: str = "./embeddings/",
         overwrite: bool = False,
+        query_filename: str = "queries.pkl",
+        corpus_filename: str = "corpus.*.pkl",
         **kwargs,
     ) -> None:
         pass

@@ -51,8 +51,6 @@ max_length = 512
 pooling = "eos"
 normalize = True
 append_eos_token = True
-query_prompt = "query: "
-passage_prompt = "passage: "
 
 #### Configuration for E5-Mistral
 # Check prompts: https://github.com/microsoft/unilm/blob/9c0f1ff7ca53431fe47d2637dfe253643d94185b/e5/utils.py

@@ -1,11 +1,11 @@
 """
-In this example, we evaluate the Embedding API models using Cohere API on the NFCorpus dataset.
-For this you would need to install the cohere client library. You can install it using `pip install cohere`.
-You can sign up for Cohere API at https://cohere.ai/ and get your API key.
+In this example, we evaluate the Voyage API models on the NFCorpus dataset.
+For this you would need to install the voyageai client library. You can install it using `pip install voyageai`.
+You can sign up for Voyage API & checkout documentation here: https://docs.voyageai.com/docs/embeddings.
 
 Usage:
-export COHERE_API_KEY="your-api-key"
-python evaluate_cohere.py
+export VOYAGE_API_KEY="your-api-key"
+python evaluate_voyage.py
 """
 
 import logging
@@ -44,25 +44,23 @@ data_path = util.download_and_unzip(url, out_dir)
 
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
-#### Dense Retrieval using Cohere Embedding Models ####
-#### https://docs.cohere.com/v2/docs/cohere-embed
+#### Dense Retrieval using Voyage Embedding Models ####
+#### https://docs.voyageai.com/docs/embeddings
 ## Parameters
-model_name_or_path = "embed-v4.0"
-cohere_api_key = os.getenv("COHERE_API_KEY")  # You can also provide your API key here manually
+model_name_or_path = "voyage-3.5-lite"
+voyage_api_key = os.getenv("VOYAGE_API_KEY")  # You can also provide your API key here manually
 normalize = True
 
-# Load Cohere API model
+#### Load the Voyage API model
 model = DRES(
-    apis.CohereEmbedAPI(
-        api_key=cohere_api_key, model_path=model_name_or_path, normalize=normalize, torch_dtype="float32"
-    ),
-    batch_size=96,
+    apis.VoyageAPI(api_key=voyage_api_key, model_path=model_name_or_path, normalize=normalize, torch_dtype="float32"),
+    batch_size=128,
 )
 
 retriever = EvaluateRetrieval(model, score_function="cos_sim")
 
 #### Retrieve dense results (format of results is identical to qrels)
-save_encodings_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "cohere", "encodings")
+save_encodings_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "voyage", "encodings")
 if not os.path.exists(save_encodings_path):
     os.makedirs(save_encodings_path)
 
@@ -95,11 +93,3 @@ for rank in range(top_k):
     doc_id = scores_sorted[rank][0]
     # Format: Rank x: ID [Title] Body
     logging.info(f"Rank {rank + 1}: {doc_id} [{corpus[doc_id].get('title')}] - {corpus[doc_id].get('text')}\n")
-
-#### NDCG@K results should look like this:
-# "NDCG@1": 0.49381,
-# "NDCG@3": 0.44861,
-# "NDCG@5": 0.42965,
-# "NDCG@10": 0.40171,
-# "NDCG@100": 0.36861,
-# "NDCG@1000": 0.45438

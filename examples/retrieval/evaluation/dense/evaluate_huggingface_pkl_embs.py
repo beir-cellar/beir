@@ -1,7 +1,6 @@
 """
-This script evaluates the nvidia/NV-Embed-v2 model on the TREC-COVID dataset.
-Important to note that the nvidia/NV-Embed-v2 model does not work on the latest transformers versions (4.49.0): https://huggingface.co/nvidia/NV-Embed-v2/discussions/37.
-So, to be able to run the script you need to install an older version of transformers, e.g.: 4.46.2.
+In this example, we evaluate an embedding model by saving the embeddings as pickle and next dooing search with faiss.
+For this you would need to install the faiss-cpu client library. You can install it using `pip install faiss-cpu`.
 """
 
 import logging
@@ -25,7 +24,7 @@ logging.basicConfig(
 )
 #### /print debug information to stdout
 
-dataset = "trec-covid"
+dataset = "nfcorpus"
 
 #### Download nfcorpus.zip dataset and unzip the dataset
 url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
@@ -40,39 +39,46 @@ data_path = util.download_and_unzip(url, out_dir)
 
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
-#### Dense Retrieval using nvidia/NV-Embed-v2 ####
-#### Provide nvidia/NV-Embed-v2 model: https://huggingface.co/nvidia/NV-Embed-v2
+#### Dense Retrieval using E5 or Tevatron with Hugging Face ####
+#### Provide any pretrained E5 or Tevatron fine-tuned model
 #### The model was fine-tuned using normalization & cosine-similarity.
 
 ## Parameters
-model_name_or_path = "nvidia/NV-Embed-v2"
+model_name_or_path = "rlhn/e5-base-rlhn-680K"
 max_length = 512
 pooling = "mean"
 normalize = True
+query_prompt = "query: "
+passage_prompt = "passage: "
 
-# Checkout prompts for NV-Embed-v2 model inside `instructions.json`.
-# https://huggingface.co/nvidia/NV-Embed-v2/blob/main/instructions.json
-trec_covid_prompt = "Given a query on COVID-19, retrieve documents that answer the query"
-
-#### Load the Dense Retriever model (NVEmbed)
-dense_model = models.NVEmbed(
-    model_name_or_path,
+### BERT-base (E5-base)
+dense_model = models.HuggingFace(
+    model_path=model_name_or_path,
     max_length=max_length,
     pooling=pooling,
     normalize=normalize,
-    prompts={"query": trec_covid_prompt, "passage": ""},
+    prompts={"query": query_prompt, "passage": passage_prompt},
 )
 
 model = DRES(dense_model, batch_size=128)
 retriever = EvaluateRetrieval(model, score_function="cos_sim")
 
-#### Retrieve dense results (format of results is identical to qrels)
-start_time = time()
-results = retriever.retrieve(corpus, queries)
-end_time = time()
-print(f"Time taken to retrieve: {end_time - start_time:.2f} seconds")
-#### Evaluate your retrieval using NDCG@k, MAP@K ...
+#### Save embeddings to disk for later retrieval
+embedding_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "embeddings")
+os.makedirs(embedding_dir, exist_ok=True)
 
+start_time = time()
+### Encode corpus and queries, save them to disk and then retrieve results
+results = retriever.encode_and_retrieve(
+    corpus=corpus,
+    queries=queries,
+    encode_output_path=embedding_dir,
+    overwrite=False,  # Set to True if you want to overwrite existing embeddings
+)
+end_time = time()
+logging.info(f"Time taken to encode & retrieve: {end_time - start_time:.2f} seconds")
+
+#### Evaluate your retrieval using NDCG@k, MAP@K ...
 logging.info(f"Retriever evaluation for k in: {retriever.k_values}")
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
 mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
@@ -96,3 +102,11 @@ for rank in range(top_k):
     doc_id = scores_sorted[rank][0]
     # Format: Rank x: ID [Title] Body
     logging.info(f"Rank {rank + 1}: {doc_id} [{corpus[doc_id].get('title')}] - {corpus[doc_id].get('text')}\n")
+
+#### nDCG@K results should be as follows for the model:
+# NDCG@1: 0.5046
+# NDCG@3: 0.4467
+# NDCG@5: 0.4239
+# NDCG@10: 0.3896
+# NDCG@100: 0.3596
+# NDCG@1000: 0.4441

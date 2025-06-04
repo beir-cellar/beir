@@ -144,6 +144,17 @@ def save_runfile(
                 fOut.write(f"{qid} Q0 {doc_id} 0 {score} {run_name}\n")
 
 
+def load_runfile(input_file: str) -> dict[str, dict[str, float]]:
+    results = {}
+    with open(input_file, encoding="utf-8") as fIn:
+        for line in fIn:
+            qid, _, doc_id, _, score, _ = line.strip().split(" ")
+            if qid not in results:
+                results[qid] = {}
+            results[qid][doc_id] = float(score)
+    return results
+
+
 def save_results(
     output_file: str,
     ndcg: dict[int, float],

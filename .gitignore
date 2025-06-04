@@ -1,8 +1,11 @@
 # Custom added
 examples/**/datasets/
+examples/**/results/
+examples/**/embeddings/
 examples/**/output/
 examples/**/DeepCT/
 examples/**/models/
+examples/**/merged/
 examples/**/faiss-index/
 
 # Byte-compiled / optimized / DLL files

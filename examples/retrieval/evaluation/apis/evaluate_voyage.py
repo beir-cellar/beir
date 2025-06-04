@@ -1,7 +1,11 @@
 """
-This script evaluates the nvidia/NV-Embed-v2 model on the TREC-COVID dataset.
-Important to note that the nvidia/NV-Embed-v2 model does not work on the latest transformers versions (4.49.0): https://huggingface.co/nvidia/NV-Embed-v2/discussions/37.
-So, to be able to run the script you need to install an older version of transformers, e.g.: 4.46.2.
+In this example, we evaluate the Voyage API models on the NFCorpus dataset.
+For this you would need to install the voyageai client library. You can install it using `pip install voyageai`.
+You can sign up for Voyage API & checkout documentation here: https://docs.voyageai.com/docs/embeddings.
+
+Usage:
+export VOYAGE_API_KEY="your-api-key"
+python evaluate_voyage.py
 """
 
 import logging
@@ -12,7 +16,7 @@ from time import time
 
 from beir import LoggingHandler, util
 from beir.datasets.data_loader import GenericDataLoader
-from beir.retrieval import models
+from beir.retrieval import apis
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
@@ -25,7 +29,7 @@ logging.basicConfig(
 )
 #### /print debug information to stdout
 
-dataset = "trec-covid"
+dataset = "nfcorpus"
 
 #### Download nfcorpus.zip dataset and unzip the dataset
 url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
@@ -40,37 +44,30 @@ data_path = util.download_and_unzip(url, out_dir)
 
 corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
 
-#### Dense Retrieval using nvidia/NV-Embed-v2 ####
-#### Provide nvidia/NV-Embed-v2 model: https://huggingface.co/nvidia/NV-Embed-v2
-#### The model was fine-tuned using normalization & cosine-similarity.
-
+#### Dense Retrieval using Voyage Embedding Models ####
+#### https://docs.voyageai.com/docs/embeddings
 ## Parameters
-model_name_or_path = "nvidia/NV-Embed-v2"
-max_length = 512
-pooling = "mean"
+model_name_or_path = "voyage-3.5-lite"
+voyage_api_key = os.getenv("VOYAGE_API_KEY")  # You can also provide your API key here manually
 normalize = True
 
-# Checkout prompts for NV-Embed-v2 model inside `instructions.json`.
-# https://huggingface.co/nvidia/NV-Embed-v2/blob/main/instructions.json
-trec_covid_prompt = "Given a query on COVID-19, retrieve documents that answer the query"
-
-#### Load the Dense Retriever model (NVEmbed)
-dense_model = models.NVEmbed(
-    model_name_or_path,
-    max_length=max_length,
-    pooling=pooling,
-    normalize=normalize,
-    prompts={"query": trec_covid_prompt, "passage": ""},
+#### Load the Voyage API model
+model = DRES(
+    apis.VoyageAPI(api_key=voyage_api_key, model_path=model_name_or_path, normalize=normalize, torch_dtype="float32"),
+    batch_size=128,
 )
 
-model = DRES(dense_model, batch_size=128)
 retriever = EvaluateRetrieval(model, score_function="cos_sim")
 
 #### Retrieve dense results (format of results is identical to qrels)
+save_encodings_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "voyage", "encodings")
+if not os.path.exists(save_encodings_path):
+    os.makedirs(save_encodings_path)
+
 start_time = time()
-results = retriever.retrieve(corpus, queries)
+results = retriever.encode_and_retrieve(corpus, queries, encode_output_path=save_encodings_path)
 end_time = time()
-print(f"Time taken to retrieve: {end_time - start_time:.2f} seconds")
+logging.info(f"Time taken to encode & retrieve: {end_time - start_time:.2f} seconds")
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 
 logging.info(f"Retriever evaluation for k in: {retriever.k_values}")

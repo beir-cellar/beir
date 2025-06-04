@@ -1,3 +1,10 @@
+"""
+Allows for evaluating dense retrievers, i.e., in the tevatron format on BEIR datasets.
+models.HuggingFace allows for multi-gpu inference with DDP.
+
+Example usage: CUDA_VISIBLE_DEVICES=0,1,2,3 python evaluate_huggingface.py (for multi-gpu inference)
+"""
+
 import logging
 import os
 import pathlib
@@ -19,7 +26,7 @@ logging.basicConfig(
 )
 #### /print debug information to stdout
 
-dataset = "trec-covid"
+dataset = "nfcorpus"
 
 #### Download nfcorpus.zip dataset and unzip the dataset
 url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
@@ -39,19 +46,18 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 #### The model was fine-tuned using normalization & cosine-similarity.
 
 ## Parameters
-model_name_or_path = "meta-llama/Llama-2-7b-hf"
-peft_model_name_or_path = "castorini/repllama-v1-7b-lora-passage"
+model_name_or_path = "intfloat/e5-mistral-7b-instruct"
 max_length = 512
-pooling = "mean"
+pooling = "eos"
 normalize = True
 append_eos_token = True
-query_prompt = "query: "
-passage_prompt = "passage: "
 
-#### Load the Dense Retriever model (LLM2Vec)
+#### Configuration for E5-Mistral
+# Check prompts: https://github.com/microsoft/unilm/blob/9c0f1ff7ca53431fe47d2637dfe253643d94185b/e5/utils.py
+query_prompt = "Instruct: Given a question, retrieve relevant documents that best answer the question\nQuery: "
+passage_prompt = ""
 dense_model = models.HuggingFace(
-    model=model_name_or_path,
-    peft_model_path=peft_model_name_or_path,
+    model_path=model_name_or_path,
     max_length=max_length,
     append_eos_token=append_eos_token,  # add [EOS] token to the end of the input
     pooling=pooling,
@@ -60,21 +66,6 @@ dense_model = models.HuggingFace(
     attn_implementation="flash_attention_2",
     torch_dtype="bfloat16",
 )
-
-#### Configuration for E5 model (large, base, small) and E5-Mistral
-# Check prompts: https://github.com/microsoft/unilm/blob/9c0f1ff7ca53431fe47d2637dfe253643d94185b/e5/utils.py
-# query_prompt = "Given a query on COVID-19, retrieve documents that answer the query"
-# passage_prompt = ""
-# dense_model = models.HuggingFace(
-#         model="intfloat/e5-mistral-7b-instruct",
-#         max_length=max_length,
-#         append_eos_token=append_eos_token, # add [EOS] token to the end of the input
-#         pooling=pooling,
-#         normalize=normalize,
-#         prompts={"query": query_prompt, "passage": passage_prompt},
-#         attn_implementation="flash_attention_2",
-#         torch_dtype="bfloat16"
-#     )
 
 model = DRES(dense_model, batch_size=128)
 retriever = EvaluateRetrieval(model, score_function="cos_sim")
@@ -109,3 +100,11 @@ for rank in range(top_k):
     doc_id = scores_sorted[rank][0]
     # Format: Rank x: ID [Title] Body
     logging.info(f"Rank {rank + 1}: {doc_id} [{corpus[doc_id].get('title')}] - {corpus[doc_id].get('text')}\n")
+
+### NDCG@K results should look like this:
+# NDCG@1: 0.4830
+# NDCG@3: 0.4287
+# NDCG@5: 0.4102
+# NDCG@10: 0.3845
+# NDCG@100: 0.3520
+# NDCG@1000: 0.4360

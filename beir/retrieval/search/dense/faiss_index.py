@@ -8,11 +8,41 @@ if importlib.util.find_spec("faiss") is not None:
     import faiss
 
 import numpy as np
+from tqdm import tqdm
 from tqdm.autonotebook import trange
 
 from .util import normalize
 
 logger = logging.getLogger(__name__)
+
+
+### FaissFlatSearcher is taken from tevatron:
+### https://github.com/texttron/tevatron/blob/main/src/tevatron/retriever/searcher.py#L11
+class FaissFlatSearcher:
+    def __init__(self, embeddings: np.ndarray):
+        index = faiss.IndexFlatIP(embeddings.shape[1])
+        self.index = index
+
+    def add(self, passage_embeddings: np.ndarray):
+        self.index.add(passage_embeddings)
+
+    def search(self, query_embeddings: np.ndarray, k: int):
+        return self.index.search(query_embeddings, k)
+
+    def batch_search(
+        self, query_embeddings: np.ndarray, k: int, batch_size: int, quiet: bool = False
+    ) -> tuple[list[float], list[str]]:
+        num_query = query_embeddings.shape[0]
+        all_scores = []
+        all_indices = []
+        for start_idx in tqdm(range(0, num_query, batch_size), disable=quiet):
+            nn_scores, nn_indices = self.search(query_embeddings[start_idx : start_idx + batch_size], k)
+            all_scores.append(nn_scores)
+            all_indices.append(nn_indices)
+        all_scores = np.concatenate(all_scores, axis=0).tolist()
+        all_indices = np.concatenate(all_indices, axis=0).tolist()
+
+        return all_scores, all_indices
 
 
 class FaissIndex:

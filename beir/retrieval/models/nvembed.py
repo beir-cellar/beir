@@ -9,12 +9,9 @@ from torch import Tensor
 from tqdm.autonotebook import trange
 from transformers import AutoModel
 
-from .pooling import cls_pooling, eos_pooling, mean_pooling
 from .util import extract_corpus_sentences
 
 logger = logging.getLogger(__name__)
-
-POOL_FUNC = {"cls": cls_pooling, "mean": mean_pooling, "eos": eos_pooling}
 
 
 class NVEmbed:
@@ -23,22 +20,14 @@ class NVEmbed:
         model_path: str | tuple = None,
         max_length: int = None,
         sep: str = " ",
-        pooling: str = "mean",
         normalize: bool = False,
         prompts: dict[str, str] = None,
         **kwargs,
     ):
         self.sep = sep
-        self.model = AutoModel.from_pretrained(
-            model_path, device_map="auto", torch_dtype=kwargs.get("torch_dtype", "auto"), trust_remote_code=True
-        )
-        # self.model.eval()
+        self.model = AutoModel.from_pretrained(model_path, trust_remote_code=True, **kwargs)
         self.max_length = max_length if max_length else self.tokenizer.model_max_length
         self.normalize = normalize  # Normalize the embeddings
-
-        if pooling not in ["cls", "mean", "eos"]:
-            raise ValueError("Supported Pooling techniques should be either 'cls', 'mean' or 'eos'")
-        self.pooling_func = POOL_FUNC[pooling]
 
         if prompts:
             self.query_prefix = prompts.get("query", "")

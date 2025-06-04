@@ -1,3 +1,9 @@
+"""
+This script evaluates the nvidia/NV-Embed-v2 model on the TREC-COVID dataset.
+Important to note that the nvidia/NV-Embed-v2 model does not work on the latest transformers versions (4.49.0): https://huggingface.co/nvidia/NV-Embed-v2/discussions/37.
+So, to be able to run the script you need to install an older version of transformers, e.g.: 4.46.2.
+"""
+
 import logging
 import os
 import pathlib

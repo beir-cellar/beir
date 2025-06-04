@@ -16,7 +16,7 @@ from time import time
 
 from beir import LoggingHandler, util
 from beir.datasets.data_loader import GenericDataLoader
-from beir.retrieval import models
+from beir.retrieval import apis
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
@@ -53,7 +53,7 @@ normalize = True
 
 #### Load the Dense Retriever model (LLM2Vec)
 model = DRES(
-    models.CohereEmbedAPI(
+    apis.CohereEmbedAPI(
         api_key=cohere_api_key, model_path=model_name_or_path, normalize=normalize, torch_dtype="float32"
     ),
     batch_size=96,

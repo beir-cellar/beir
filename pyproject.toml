@@ -1,6 +1,6 @@
 [project]
 name = "beir"
-version = "2.1.0"
+version = "2.2.0"
 description = "A Heterogeneous Benchmark for Information Retrieval"
 license = { text = "Apache License 2.0" }
 readme = "README.md"
@@ -51,7 +51,7 @@ faiss = ["faiss-cpu"]
 [project.urls]
 Homepage = "https://github.com/beir-cellar/beir"
 Repository = "https://github.com/beir-cellar/beir"
-Download = "https://github.com/beir-cellar/beir/archive/v2.0.0.zip"
+Download = "https://github.com/beir-cellar/beir/archive/v2.2.0.zip"
 
 [build-system]
 requires = ["setuptools>=42", "wheel"]

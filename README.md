@@ -54,8 +54,6 @@ For **an overview**, checkout our **new wiki** page: [https://github.com/beir-ce
 
 For **models and datasets**, checkout out **Hugging Face (HF)** page: [https://huggingface.co/BeIR](https://huggingface.co/BeIR).
 
-For **Leaderboard**, checkout out **Eval AI** page: [https://eval.ai/web/challenges/challenge-page/1897](https://eval.ai/web/challenges/challenge-page/1897).
-
 For more information, checkout out our publications:
 
 - [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://openreview.net/forum?id=wCu6T5xFjeJ) (NeurIPS 2021, Datasets and Benchmarks Track)
@@ -90,6 +88,8 @@ Tested with python versions 3.9+
 
 For other example codes, please refer to our **[Examples and Tutorials](https://github.com/beir-cellar/beir/wiki/Examples-and-tutorials)** Wiki page.
 
+<details><summary><b>Quick Example with Sentence-BERT</b></summary>
+
 ```python
 from beir import util, LoggingHandler
 from beir.retrieval import models
@@ -119,14 +119,6 @@ corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="te
 #### Load the SBERT model and retrieve using cosine-similarity
 model = DRES(models.SentenceBERT("Alibaba-NLP/gte-modernbert-base"), batch_size=16)
 
-### Or load models directly from HuggingFace
-# model = DRES(models.HuggingFace(
-#     "intfloat/e5-large-unsupervised",
-#     max_length=512,
-#     pooling="mean",
-#     normalize=True,
-#     prompts={"query": "query: ", "passage": "passage: "}), batch_size=16)
-
 retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for dot product
 results = retriever.retrieve(corpus, queries)
 
@@ -142,6 +134,199 @@ os.makedirs(results_dir, exist_ok=True)
 util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
 util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
 ```
+</details>
+
+<details><summary><b>Quick Example with LoRA & vLLM</b></summary>
+First install peft, vllm & accelerate using the following installations:
+
+```
+pip install peft
+pip install accelerate
+pip install vllm
+```
+
+```python
+from beir import util, LoggingHandler
+from beir.retrieval import models
+from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval.evaluation import EvaluateRetrieval
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+
+import logging
+import pathlib, os
+
+#### Just some code to print debug information to stdout
+logging.basicConfig(format='%(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO,
+                    handlers=[LoggingHandler()])
+#### /print debug information to stdout
+
+#### Download scifact.zip dataset and unzip the dataset
+dataset = "scifact"
+url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
+out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
+data_path = util.download_and_unzip(url, out_dir)
+
+#### Provide the data_path where scifact has been downloaded and unzipped
+corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+
+#### You can also merge the LoRA model weights into the original base model for faster inference.
+#### Checkout: https://github.com/beir-cellar/beir/blob/main/examples/retrieval/evaluation/dense/evaluate_lora_vllm.py
+
+#### Load the vLLM embed model and retrieve using cosine-similarity
+model = DRES(
+    models.VLLMEmbed(
+        model_path="Qwen/Qwen2.5-7B",
+        lora_name_or_path="rlhn/Qwen2.5-7B-rlhn-400K",
+        max_length=512,
+        lora_r=16,
+        pooling="eos",
+        append_eos_token=True,
+        normalize=True,
+        prompts={"query": "query: ", "passage": "passage: "},
+        convert_to_numpy=True
+    ),
+    batch_size=128,
+)
+
+retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for dot product
+results = retriever.encode_and_retrieve(corpus, queries, encode_output_path="./qwen_embeddings/")
+
+#### Evaluate your model with NDCG@k, MAP@K, Recall@K and Precision@K  where k = [1,3,5,10,100,1000]
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
+
+### If you want to save your results and runfile (useful for reranking)
+results_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "results")
+os.makedirs(results_dir, exist_ok=True)
+
+#### Save the evaluation runfile & results
+util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
+util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
+```
+</details>
+
+<details><summary><b>Quick Example with HuggingFace</b></summary>
+if you use `encode_and_retrieve()` make sure you install faiss with `pip install faiss-cpu`.
+
+```python
+from beir import util, LoggingHandler
+from beir.retrieval import models
+from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval.evaluation import EvaluateRetrieval
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+
+import logging
+import pathlib, os
+
+#### Just some code to print debug information to stdout
+logging.basicConfig(format='%(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO,
+                    handlers=[LoggingHandler()])
+#### /print debug information to stdout
+
+#### Download scifact.zip dataset and unzip the dataset
+dataset = "scifact"
+url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
+out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
+data_path = util.download_and_unzip(url, out_dir)
+
+#### Provide the data_path where scifact has been downloaded and unzipped
+corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+
+#### Load the Huggingface model and retrieve using cosine-similarity
+query_prompt = "Instruct: Given a question, retrieve relevant documents that best answer the question\nQuery: "
+
+model = DRES(
+    models.HuggingFace(
+        model_path="intfloat/e5-mistral-7b-instruct",
+        max_length=512,
+        pooling="eos",
+        append_eos_token=True,
+        normalize=True,
+        prompts={"query": query_prompt, "passage": ""},
+        attn_implementation="flash_attention_2",
+        torch_dtype="bfloat16"
+    ),
+    batch_size=128,
+)
+
+retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for dot product
+results = retriever.encode_and_retrieve(corpus, queries, encode_output_path="./embeddings/")
+
+#### Evaluate your model with NDCG@k, MAP@K, Recall@K and Precision@K  where k = [1,3,5,10,100,1000]
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
+
+### If you want to save your results and runfile (useful for reranking)
+results_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "results")
+os.makedirs(results_dir, exist_ok=True)
+
+#### Save the evaluation runfile & results
+util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
+util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
+```
+</details>
+
+<details><summary><b>Quick Example with APIs, e.g. Cohere</b></summary>
+
+Install Cohere API using `pip install cohere` & if you are using `encode_and_retrieve()` install faiss with `pip install faiss-cpu`.
+```python
+from beir import util, LoggingHandler
+from beir.retrieval import apis
+from beir.datasets.data_loader import GenericDataLoader
+from beir.retrieval.evaluation import EvaluateRetrieval
+from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+
+import logging
+import pathlib, os
+
+#### Just some code to print debug information to stdout
+logging.basicConfig(format='%(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO,
+                    handlers=[LoggingHandler()])
+#### /print debug information to stdout
+
+#### Download scifact.zip dataset and unzip the dataset
+dataset = "scifact"
+url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
+out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
+data_path = util.download_and_unzip(url, out_dir)
+
+#### Provide the data_path where scifact has been downloaded and unzipped
+corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+
+cohere_api_key = os.getenv("COHERE_API_KEY")
+#### Load the Cohere API Embed model and retrieve using cosine-similarity
+model = DRES(
+    apis.CohereEmbedAPI(
+        api_key=cohere_api_key, 
+        model_path="embed-v4.0", 
+        normalize=True, 
+        torch_dtype="float32"
+    ),
+    batch_size=96,
+)
+
+retriever = EvaluateRetrieval(model, score_function="cos_sim") # or "dot" for dot product
+results = retriever.encode_and_retrieve(corpus, queries, encode_output_path="./cohere/embeddings/")
+
+#### Evaluate your model with NDCG@k, MAP@K, Recall@K and Precision@K  where k = [1,3,5,10,100,1000]
+ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
+
+### If you want to save your results and runfile (useful for reranking)
+results_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "results")
+os.makedirs(results_dir, exist_ok=True)
+
+#### Save the evaluation runfile & results
+util.save_runfile(os.path.join(results_dir, f"{dataset}.run.trec"), results)
+util.save_results(os.path.join(results_dir, f"{dataset}.json"), ndcg, _map, recall, precision, mrr)
+```
+</details>
 
 ## :beers: Available Datasets
 

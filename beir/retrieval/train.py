@@ -14,10 +14,9 @@ from sentence_transformers.evaluation import (
 )
 from sentence_transformers.readers import InputExample
 from torch import nn
-from torch.optim import Optimizer
+from torch.optim import Optimizer, AdamW
 from torch.utils.data import DataLoader
 from tqdm.autonotebook import trange
-from transformers import AdamW
 
 logger = logging.getLogger(__name__)
 

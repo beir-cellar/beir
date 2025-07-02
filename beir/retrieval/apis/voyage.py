@@ -14,7 +14,7 @@ import torch.nn.functional as F
 from torch import Tensor
 from tqdm.autonotebook import trange
 
-from .util import extract_corpus_sentences
+from ..models.util import extract_corpus_sentences
 
 logger = logging.getLogger(__name__)
 

@@ -3,22 +3,23 @@ from __future__ import annotations
 import time
 
 import tqdm
+import logging
 
-from .. import BaseSearch
-from .elastic_search import ElasticSearch
-
+from ...base import BaseSearch
+from ..opensearch_search import OpenSearchEngine
+logger = logging.getLogger("NeuralSearch")
 
 def sleep(seconds):
     if seconds:
         time.sleep(seconds)
 
 
-class BM25Search(BaseSearch):
+class NeuralSearch(BaseSearch):
     def __init__(
         self,
         index_name: str,
         hostname: str = "localhost",
-        keys: dict[str, str] = {"title": "title", "body": "txt"},
+        keys: dict[str, str] = {"title": "title", "body": "txt", "embedding": "embedding"},
         language: str = "english",
         batch_size: int = 128,
         timeout: int = 100,
@@ -28,6 +29,7 @@ class BM25Search(BaseSearch):
         initialize: bool = True,
         sleep_for: int = 2
     ):
+        self.model_id = None
         self.results = {}
         self.batch_size = batch_size
         self.initialize = initialize
@@ -42,14 +44,31 @@ class BM25Search(BaseSearch):
             "number_of_shards": number_of_shards,
             "language": language,
         }
-        self.es = ElasticSearch(self.config)
+        # Initialize OpenSearch engine
+        self.os_engine = OpenSearchEngine(self.config)
         if self.initialize:
             self.initialise()
 
     def initialise(self):
-        self.es.delete_index()
-        sleep(self.sleep_for)
-        self.es.create_index()
+        """
+        Initialise OpenSearch for neural search.
+        """
+        # Setup ML infrastructure
+        self.os_engine.configure_ml_settings()
+        # Register model group and get ID
+        model_group_response = self.os_engine.register_model_group()
+        model_group_id = model_group_response["model_group_id"]
+        # Register model using group ID
+        model_register_response = self.os_engine.register_model(model_group_id=model_group_id)
+        logger.info(f"Model registration response: {model_register_response}")
+        self.model_id = self.os_engine.wait_for_model_deployment(task_id=model_register_response["task_id"]) # Use this ID in create_ingest_pipeline
+        logger.info(f"Model ID: {self.model_id}")
+        deploy_task_response = self.os_engine.deploy_model(self.model_id)
+        logger.info(f"Model deployment response: {deploy_task_response}")
+        self.os_engine.wait_for_model_deployment(task_id=deploy_task_response["task_id"])
+        # Create pipeline and index
+        self.os_engine.create_ingest_pipeline(model_id=self.model_id)
+        self.os_engine.create_neural_search_index()
 
     def search(
         self,
@@ -66,14 +85,15 @@ class BM25Search(BaseSearch):
             # Sleep for few seconds so that elastic-search indexes the docs properly
             sleep(self.sleep_for)
 
-        # retrieve results from BM25
+        # retrieve neural search results from OpenSearch
         query_ids = list(queries.keys())
         queries = [queries[qid] for qid in query_ids]
 
         for start_idx in tqdm.trange(0, len(queries), self.batch_size, desc="que"):
             query_ids_batch = query_ids[start_idx : start_idx + self.batch_size]
-            results = self.es.lexical_multisearch(
+            results = self.os_engine.neural_multisearch(
                 texts=queries[start_idx : start_idx + self.batch_size],
+                model_id=self.model_id,
                 top_hits=top_k + 1,
             )  # Add 1 extra if query is present with documents
 
@@ -96,7 +116,13 @@ class BM25Search(BaseSearch):
             }
             for idx in list(corpus.keys())
         }
-        self.es.bulk_add_to_index(
-            generate_actions=self.es.generate_actions(dictionary=dictionary, update=False),
+        self.os_engine.bulk_add_to_index(
+            generate_actions=self.os_engine.generate_actions(dictionary=dictionary, update=False),
             progress=progress,
         )
+
+    def cleanup(self):
+        self.os_engine.delete_index()
+        self.os_engine.delete_ingest_pipeline()
+        self.os_engine.undeploy_model(self.model_id)
+        self.os_engine.delete_model(self.model_id)

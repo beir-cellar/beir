@@ -1,0 +1,6 @@
+sentence-transformers
+pytrec-eval-terrier
+datasets
+elasticsearch
+opensearch-py
+faiss-cpu

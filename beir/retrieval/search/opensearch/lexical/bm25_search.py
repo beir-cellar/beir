@@ -4,8 +4,8 @@ import time
 
 import tqdm
 
-from .. import BaseSearch
-from .elastic_search import ElasticSearch
+from ...base import BaseSearch
+from ..opensearch_search import OpenSearchEngine
 
 
 def sleep(seconds):
@@ -42,7 +42,7 @@ class BM25Search(BaseSearch):
             "number_of_shards": number_of_shards,
             "language": language,
         }
-        self.es = ElasticSearch(self.config)
+        self.es = OpenSearchEngine(self.config)
         if self.initialize:
             self.initialise()
 

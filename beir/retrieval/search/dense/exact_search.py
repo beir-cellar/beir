@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import heapq
-import importlib
+import importlib.util
 import logging
 import os
 

@@ -54,6 +54,8 @@ For **an overview**, checkout our **new wiki** page: [https://github.com/beir-ce
 
 For **models and datasets**, checkout out **Hugging Face (HF)** page: [https://huggingface.co/BeIR](https://huggingface.co/BeIR).
 
+For RAG **debugging and failure modes** when using BEIR in a RAG pipeline, see [RAG debugging checklist: 16 failure modes](docs/rag-debugging-and-failure-modes.md).
+
 For more information, checkout out our publications:
 
 - [BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://openreview.net/forum?id=wCu6T5xFjeJ) (NeurIPS 2021, Datasets and Benchmarks Track)

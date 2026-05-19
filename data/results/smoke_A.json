@@ -1,0 +1,219 @@
+{
+  "level": "A",
+  "dataset": "nfcorpus",
+  "split": "test",
+  "n_docs_in_scope": 418,
+  "n_queries_in_scope": 10,
+  "n_qrels_in_scope": 10,
+  "ingest": {
+    "endpoint": "POST /ingest",
+    "sourceType": "MANUAL",
+    "mode": "commit",
+    "duration_sec": 649.58,
+    "committed_count": 418,
+    "total_kos_created": 4580,
+    "errors": 0
+  },
+  "retrieve": {
+    "endpoint": "POST /retrieve",
+    "top_k": 100,
+    "threshold": 0.0,
+    "duration_sec": 18.59,
+    "queries_with_results": 10,
+    "queries_empty": 0
+  },
+  "metrics": {
+    "MAP@10": 0.023954389869624896,
+    "MAP@100": 0.06682092130376274,
+    "nDCG@10": 0.23148540072132215,
+    "nDCG@100": 0.23812603456455378,
+    "Recall@10": 0.04020894491727486,
+    "Recall@100": 0.3776073968184599,
+    "P@10": 0.21000000000000002,
+    "P@100": 0.10200000000000001
+  },
+  "ingest_log_sample": [
+    {
+      "doc_id": "MED-2928",
+      "committed": true,
+      "kosCreated": 5,
+      "candidatesTotal": 5
+    },
+    {
+      "doc_id": "MED-1711",
+      "committed": true,
+      "kosCreated": 13,
+      "candidatesTotal": 13
+    },
+    {
+      "doc_id": "MED-3148",
+      "committed": true,
+      "kosCreated": 7,
+      "candidatesTotal": 7
+    },
+    {
+      "doc_id": "MED-4544",
+      "committed": true,
+      "kosCreated": 9,
+      "candidatesTotal": 9
+    },
+    {
+      "doc_id": "MED-2989",
+      "committed": true,
+      "kosCreated": 9,
+      "candidatesTotal": 9
+    },
+    {
+      "doc_id": "MED-3089",
+      "committed": true,
+      "kosCreated": 15,
+      "candidatesTotal": 15
+    },
+    {
+      "doc_id": "MED-1587",
+      "committed": true,
+      "kosCreated": 9,
+      "candidatesTotal": 9
+    },
+    {
+      "doc_id": "MED-3783",
+      "committed": true,
+      "kosCreated": 8,
+      "candidatesTotal": 8
+    },
+    {
+      "doc_id": "MED-4619",
+      "committed": true,
+      "kosCreated": 10,
+      "candidatesTotal": 10
+    },
+    {
+      "doc_id": "MED-2573",
+      "committed": true,
+      "kosCreated": 11,
+      "candidatesTotal": 11
+    },
+    {
+      "doc_id": "MED-2581",
+      "committed": true,
+      "kosCreated": 14,
+      "candidatesTotal": 14
+    },
+    {
+      "doc_id": "MED-3550",
+      "committed": true,
+      "kosCreated": 8,
+      "candidatesTotal": 8
+    },
+    {
+      "doc_id": "MED-2211",
+      "committed": true,
+      "kosCreated": 24,
+      "candidatesTotal": 24
+    },
+    {
+      "doc_id": "MED-1104",
+      "committed": true,
+      "kosCreated": 5,
+      "candidatesTotal": 5
+    },
+    {
+      "doc_id": "MED-3878",
+      "committed": true,
+      "kosCreated": 10,
+      "candidatesTotal": 10
+    },
+    {
+      "doc_id": "MED-1115",
+      "committed": true,
+      "kosCreated": 9,
+      "candidatesTotal": 9
+    },
+    {
+      "doc_id": "MED-2212",
+      "committed": true,
+      "kosCreated": 5,
+      "candidatesTotal": 5
+    },
+    {
+      "doc_id": "MED-5323",
+      "committed": true,
+      "kosCreated": 12,
+      "candidatesTotal": 12
+    },
+    {
+      "doc_id": "MED-1111",
+      "committed": true,
+      "kosCreated": 9,
+      "candidatesTotal": 9
+    },
+    {
+      "doc_id": "MED-5329",
+      "committed": true,
+      "kosCreated": 8,
+      "candidatesTotal": 8
+    }
+  ],
+  "retrieve_log_sample": [
+    {
+      "qid": "PLAIN-634",
+      "n_kos_returned": 100,
+      "n_unique_docs": 72,
+      "candidates_considered": 308
+    },
+    {
+      "qid": "PLAIN-133",
+      "n_kos_returned": 100,
+      "n_unique_docs": 82,
+      "candidates_considered": 308
+    },
+    {
+      "qid": "PLAIN-1557",
+      "n_kos_returned": 100,
+      "n_unique_docs": 72,
+      "candidates_considered": 308
+    },
+    {
+      "qid": "PLAIN-1398",
+      "n_kos_returned": 100,
+      "n_unique_docs": 77,
+      "candidates_considered": 308
+    },
+    {
+      "qid": "PLAIN-1275",
+      "n_kos_returned": 100,
+      "n_unique_docs": 81,
+      "candidates_considered": 308
+    },
+    {
+      "qid": "PLAIN-782",
+      "n_kos_returned": 100,
+      "n_unique_docs": 69,
+      "candidates_considered": 308
+    },
+    {
+      "qid": "PLAIN-583",
+      "n_kos_returned": 100,
+      "n_unique_docs": 87,
+      "candidates_considered": 308
+    },
+    {
+      "qid": "PLAIN-3014",
+      "n_kos_returned": 100,
+      "n_unique_docs": 89,
+      "candidates_considered": 308
+    },
+    {
+      "qid": "PLAIN-499",
+      "n_kos_returned": 100,
+      "n_unique_docs": 73,
+      "candidates_considered": 308
+    },
+    {
+      "qid": "PLAIN-3271",
+      "n_kos_returned": 100,
+      "n_unique_docs": 72,
+      "candidates_considered": 308
+    }
+  ]
+}

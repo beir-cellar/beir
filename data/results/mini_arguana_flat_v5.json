@@ -1,0 +1,165 @@
+{
+  "level": "mini",
+  "dataset": "arguana",
+  "split": "test",
+  "n_docs_in_scope": 18,
+  "n_queries_in_scope": 3,
+  "n_qrels_in_scope": 3,
+  "ingest": {
+    "endpoint": "POST /ingest",
+    "sourceType": "MANUAL",
+    "mode": "commit",
+    "duration_sec": 32.89,
+    "committed_count": 18,
+    "total_kos_created": 177,
+    "errors": 0
+  },
+  "retrieve": {
+    "endpoint": "POST /retrieve",
+    "top_k": 100,
+    "threshold": 0.0,
+    "duration_sec": 2.81,
+    "queries_with_results": 3,
+    "queries_empty": 0
+  },
+  "metrics": {
+    "Recall@10": 0.6666666666666666,
+    "Recall@100": 0.6666666666666666,
+    "nDCG@10": 0.5,
+    "nDCG@100": 0.5,
+    "P@10": 0.06666666666666667,
+    "P@100": 0.006666666666666667,
+    "MAP@10": 0.4444444444444444,
+    "MAP@100": 0.4444444444444444
+  },
+  "ingest_log_sample": [
+    {
+      "doc_id": "test-law-hrpepthwuto-pro01a",
+      "committed": true,
+      "kosCreated": 4,
+      "candidatesTotal": 4
+    },
+    {
+      "doc_id": "validation-law-cpphwmpfcp-con01a",
+      "committed": true,
+      "kosCreated": 6,
+      "candidatesTotal": 6
+    },
+    {
+      "doc_id": "training-sport-ehcpssohwpup-pro03a",
+      "committed": true,
+      "kosCreated": 8,
+      "candidatesTotal": 8
+    },
+    {
+      "doc_id": "training-economy-tpvovrsugcsc-con01a",
+      "committed": true,
+      "kosCreated": 10,
+      "candidatesTotal": 10
+    },
+    {
+      "doc_id": "training-international-seighweo-con01a",
+      "committed": true,
+      "kosCreated": 30,
+      "candidatesTotal": 30
+    },
+    {
+      "doc_id": "test-culture-cgeeghwmeo-con03a",
+      "committed": true,
+      "kosCreated": 5,
+      "candidatesTotal": 5
+    },
+    {
+      "doc_id": "training-economy-ecegiehbe-pro01a",
+      "committed": true,
+      "kosCreated": 17,
+      "candidatesTotal": 17
+    },
+    {
+      "doc_id": "test-economy-egppphbcb-con01b",
+      "committed": true,
+      "kosCreated": 6,
+      "candidatesTotal": 6
+    },
+    {
+      "doc_id": "training-free-speech-debate-dmagghwrp-con01b",
+      "committed": true,
+      "kosCreated": 7,
+      "candidatesTotal": 7
+    },
+    {
+      "doc_id": "training-economy-epecfhwie-con01a",
+      "committed": true,
+      "kosCreated": 14,
+      "candidatesTotal": 14
+    },
+    {
+      "doc_id": "training-culture-tpghwam-pro01b",
+      "committed": true,
+      "kosCreated": 4,
+      "candidatesTotal": 4
+    },
+    {
+      "doc_id": "test-economy-epegiahsc-pro01a",
+      "committed": true,
+      "kosCreated": 10,
+      "candidatesTotal": 10
+    },
+    {
+      "doc_id": "test-economy-thsptr-pro05b",
+      "committed": true,
+      "kosCreated": 8,
+      "candidatesTotal": 8
+    },
+    {
+      "doc_id": "test-economy-beplcpdffe-pro02b",
+      "committed": true,
+      "kosCreated": 8,
+      "candidatesTotal": 8
+    },
+    {
+      "doc_id": "test-law-cplgpshwdp-pro01a",
+      "committed": true,
+      "kosCreated": 15,
+      "candidatesTotal": 15
+    },
+    {
+      "doc_id": "test-health-hdond-con04b",
+      "committed": true,
+      "kosCreated": 7,
+      "candidatesTotal": 7
+    },
+    {
+      "doc_id": "test-education-usuprmhbu-pro03b",
+      "committed": true,
+      "kosCreated": 4,
+      "candidatesTotal": 4
+    },
+    {
+      "doc_id": "test-science-cpisydfphwj-con01b",
+      "committed": true,
+      "kosCreated": 14,
+      "candidatesTotal": 14
+    }
+  ],
+  "retrieve_log_sample": [
+    {
+      "qid": "test-science-cpisydfphwj-con01a",
+      "n_kos_returned": 100,
+      "n_unique_docs": 61,
+      "candidates_considered": 411
+    },
+    {
+      "qid": "test-economy-thsptr-pro05a",
+      "n_kos_returned": 100,
+      "n_unique_docs": 38,
+      "candidates_considered": 411
+    },
+    {
+      "qid": "test-health-hdond-con04a",
+      "n_kos_returned": 100,
+      "n_unique_docs": 61,
+      "candidates_considered": 411
+    }
+  ]
+}

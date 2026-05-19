@@ -1,0 +1,178 @@
+{
+  "level": "A",
+  "dataset": "nfcorpus",
+  "split": "test",
+  "n_docs_in_scope": 418,
+  "n_queries_in_scope": 10,
+  "n_qrels_in_scope": 10,
+  "ingest": {
+    "endpoint": "POST /ingest",
+    "sourceType": "MANUAL",
+    "mode": "commit",
+    "duration_sec": 0.0,
+    "committed_count": 0,
+    "total_kos_created": 0,
+    "errors": 0
+  },
+  "retrieve": {
+    "endpoint": "POST /retrieve/full-oida",
+    "top_k": 100,
+    "threshold": 0.0,
+    "duration_sec": 12.64,
+    "queries_with_results": 10,
+    "queries_empty": 0
+  },
+  "metrics": {
+    "P@10": 0.16999999999999998,
+    "P@100": 0.06499999999999999,
+    "nDCG@10": 0.16321698400093934,
+    "nDCG@100": 0.14437465973272928,
+    "Recall@10": 0.03822911218032374,
+    "Recall@100": 0.14355332759306,
+    "MAP@10": 0.014527435401513186,
+    "MAP@100": 0.0391790013024751
+  },
+  "ingest_log_sample": [],
+  "retrieve_log_sample": [
+    {
+      "qid": "PLAIN-634",
+      "n_kos_returned": 50,
+      "n_unique_docs": 37,
+      "n_edges": 0,
+      "stopping_criterion": "fallback_avg_edges_below_tau_fallback",
+      "shells": {
+        "shell_1_count": 0,
+        "shell_2_count": 0
+      },
+      "pruned_count": 0,
+      "route_used": "balanced",
+      "elapsed_ms": 1102
+    },
+    {
+      "qid": "PLAIN-133",
+      "n_kos_returned": 50,
+      "n_unique_docs": 44,
+      "n_edges": 0,
+      "stopping_criterion": "fallback_avg_edges_below_tau_fallback",
+      "shells": {
+        "shell_1_count": 0,
+        "shell_2_count": 0
+      },
+      "pruned_count": 0,
+      "route_used": "balanced",
+      "elapsed_ms": 1001
+    },
+    {
+      "qid": "PLAIN-1557",
+      "n_kos_returned": 50,
+      "n_unique_docs": 37,
+      "n_edges": 0,
+      "stopping_criterion": "fallback_avg_edges_below_tau_fallback",
+      "shells": {
+        "shell_1_count": 0,
+        "shell_2_count": 0
+      },
+      "pruned_count": 0,
+      "route_used": "balanced",
+      "elapsed_ms": 816
+    },
+    {
+      "qid": "PLAIN-1398",
+      "n_kos_returned": 50,
+      "n_unique_docs": 43,
+      "n_edges": 0,
+      "stopping_criterion": "fallback_avg_edges_below_tau_fallback",
+      "shells": {
+        "shell_1_count": 0,
+        "shell_2_count": 0
+      },
+      "pruned_count": 0,
+      "route_used": "balanced",
+      "elapsed_ms": 1389
+    },
+    {
+      "qid": "PLAIN-1275",
+      "n_kos_returned": 50,
+      "n_unique_docs": 41,
+      "n_edges": 0,
+      "stopping_criterion": "fallback_avg_edges_below_tau_fallback",
+      "shells": {
+        "shell_1_count": 0,
+        "shell_2_count": 0
+      },
+      "pruned_count": 0,
+      "route_used": "balanced",
+      "elapsed_ms": 895
+    },
+    {
+      "qid": "PLAIN-782",
+      "n_kos_returned": 50,
+      "n_unique_docs": 37,
+      "n_edges": 0,
+      "stopping_criterion": "fallback_avg_edges_below_tau_fallback",
+      "shells": {
+        "shell_1_count": 0,
+        "shell_2_count": 0
+      },
+      "pruned_count": 0,
+      "route_used": "balanced",
+      "elapsed_ms": 818
+    },
+    {
+      "qid": "PLAIN-583",
+      "n_kos_returned": 50,
+      "n_unique_docs": 44,
+      "n_edges": 0,
+      "stopping_criterion": "fallback_avg_edges_below_tau_fallback",
+      "shells": {
+        "shell_1_count": 0,
+        "shell_2_count": 0
+      },
+      "pruned_count": 0,
+      "route_used": "balanced",
+      "elapsed_ms": 391
+    },
+    {
+      "qid": "PLAIN-3014",
+      "n_kos_returned": 50,
+      "n_unique_docs": 46,
+      "n_edges": 0,
+      "stopping_criterion": "fallback_avg_edges_below_tau_fallback",
+      "shells": {
+        "shell_1_count": 0,
+        "shell_2_count": 0
+      },
+      "pruned_count": 0,
+      "route_used": "balanced",
+      "elapsed_ms": 495
+    },
+    {
+      "qid": "PLAIN-499",
+      "n_kos_returned": 50,
+      "n_unique_docs": 40,
+      "n_edges": 0,
+      "stopping_criterion": "fallback_avg_edges_below_tau_fallback",
+      "shells": {
+        "shell_1_count": 0,
+        "shell_2_count": 0
+      },
+      "pruned_count": 0,
+      "route_used": "balanced",
+      "elapsed_ms": 913
+    },
+    {
+      "qid": "PLAIN-3271",
+      "n_kos_returned": 50,
+      "n_unique_docs": 39,
+      "n_edges": 0,
+      "stopping_criterion": "fallback_avg_edges_below_tau_fallback",
+      "shells": {
+        "shell_1_count": 0,
+        "shell_2_count": 0
+      },
+      "pruned_count": 0,
+      "route_used": "balanced",
+      "elapsed_ms": 512
+    }
+  ]
+}

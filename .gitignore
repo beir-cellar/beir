@@ -1,4 +1,5 @@
 # Custom added
+.DS_Store
 examples/**/datasets/
 examples/**/results/
 examples/**/embeddings/

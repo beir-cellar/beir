@@ -99,7 +99,7 @@ class DenseRetrievalExactSearch(BaseSearch):
             # Get top-k values
             cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(
                 cos_scores,
-                min(top_k + 1, len(cos_scores[1])),
+                min(top_k + 1, cos_scores.shape[1]),
                 dim=1,
                 largest=True,
                 sorted=return_sorted,

@@ -20,6 +20,46 @@ from .util import cos_sim, dot_score, pickle_load, save_embeddings
 logger = logging.getLogger(__name__)
 
 
+def _has_columns(data, columns: set[str]) -> bool:
+    column_names = getattr(data, "column_names", None)
+    return column_names is not None and columns.issubset(column_names)
+
+
+def _prepare_queries(queries):
+    if _has_columns(queries, {"id", "text"}):
+        return [str(query_id) for query_id in queries["id"]], list(queries["text"])
+
+    query_ids = list(queries.keys())
+    return query_ids, [queries[qid] for qid in queries]
+
+
+def _prepare_corpus(corpus):
+    if _has_columns(corpus, {"id", "text"}):
+        def dataset_text_length(index):
+            row = corpus[index]
+            return len((row.get("title") or "") + (row.get("text") or ""))
+
+        row_indices = sorted(range(len(corpus)), key=dataset_text_length, reverse=True)
+        corpus_ids = [str(corpus[index]["id"]) for index in row_indices]
+
+        def dataset_batch(start, end):
+            return [corpus[index] for index in row_indices[start:end]]
+
+        return corpus_ids, dataset_batch
+
+    corpus_ids = sorted(
+        corpus,
+        key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")),
+        reverse=True,
+    )
+    corpus_docs = [corpus[cid] for cid in corpus_ids]
+
+    def dict_batch(start, end):
+        return corpus_docs[start:end]
+
+    return corpus_ids, dict_batch
+
+
 # DenseRetrievalExactSearch is parent class for any dense model that can be used for retrieval
 # Abstract class is BaseSearch
 class DenseRetrievalExactSearch(BaseSearch):
@@ -55,11 +95,10 @@ class DenseRetrievalExactSearch(BaseSearch):
             )
 
         logger.info("Encoding Queries...")
-        query_ids = list(queries.keys())
+        query_ids, query_texts = _prepare_queries(queries)
         self.results = {qid: {} for qid in query_ids}
-        queries = [queries[qid] for qid in queries]
         query_embeddings = self.model.encode_queries(
-            queries,
+            query_texts,
             batch_size=self.batch_size,
             show_progress_bar=self.show_progress_bar,
             convert_to_tensor=self.convert_to_tensor,
@@ -67,26 +106,22 @@ class DenseRetrievalExactSearch(BaseSearch):
 
         logger.info("Sorting Corpus by document length (Longest first)...")
 
-        corpus_ids = sorted(
-            corpus,
-            key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")),
-            reverse=True,
-        )
-        corpus = [corpus[cid] for cid in corpus_ids]
+        corpus_ids, get_corpus_batch = _prepare_corpus(corpus)
 
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
         logger.info(f"Scoring Function: {self.score_function_desc[score_function]} ({score_function})")
 
-        itr = range(0, len(corpus), self.corpus_chunk_size)
+        itr = range(0, len(corpus_ids), self.corpus_chunk_size)
 
         result_heaps = {qid: [] for qid in query_ids}  # Keep only the top-k docs for each query
         for batch_num, corpus_start_idx in enumerate(itr):
             logger.info(f"Encoding Batch {batch_num + 1}/{len(itr)}...")
-            corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))
+            corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus_ids))
 
             # Encode chunk of corpus
+            sub_corpus = get_corpus_batch(corpus_start_idx, corpus_end_idx)
             sub_corpus_embeddings = self.model.encode_corpus(
-                corpus[corpus_start_idx:corpus_end_idx],
+                sub_corpus,
                 batch_size=self.batch_size,
                 show_progress_bar=self.show_progress_bar,
                 convert_to_tensor=self.convert_to_tensor,
@@ -136,14 +171,13 @@ class DenseRetrievalExactSearch(BaseSearch):
         **kwargs,
     ):
         logger.info("Encoding Queries...")
-        query_ids = list(queries.keys())
+        query_ids, query_texts = _prepare_queries(queries)
         self.results = {qid: {} for qid in query_ids}
-        queries = [queries[qid] for qid in queries]
         query_embeddings_file = os.path.join(encode_output_path, query_filename)
 
         if not os.path.exists(query_embeddings_file) or overwrite:
             query_embeddings = self.model.encode_queries(
-                queries,
+                query_texts,
                 batch_size=self.batch_size,
                 show_progress_bar=self.show_progress_bar,
                 convert_to_tensor=self.convert_to_tensor,
@@ -155,27 +189,23 @@ class DenseRetrievalExactSearch(BaseSearch):
 
         logger.info("Sorting Corpus by document length (Longest first)...")
 
-        corpus_ids = sorted(
-            corpus,
-            key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")),
-            reverse=True,
-        )
-        corpus = [corpus[cid] for cid in corpus_ids]
+        corpus_ids, get_corpus_batch = _prepare_corpus(corpus)
 
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
 
-        itr = range(0, len(corpus), self.corpus_chunk_size)
+        itr = range(0, len(corpus_ids), self.corpus_chunk_size)
 
         for batch_num, corpus_start_idx in enumerate(itr):
             batch_corpus_filename = corpus_filename.replace("*", str(batch_num))
             corpus_embeddings_file = os.path.join(encode_output_path, batch_corpus_filename)
             if not os.path.exists(corpus_embeddings_file) or overwrite:
                 logger.info(f"Encoding Batch {batch_num + 1}/{len(itr)}...")
-                corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))
+                corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus_ids))
 
                 # Encode chunk of corpus
+                sub_corpus = get_corpus_batch(corpus_start_idx, corpus_end_idx)
                 sub_corpus_embeddings = self.model.encode_corpus(
-                    corpus[corpus_start_idx:corpus_end_idx],
+                    sub_corpus,
                     batch_size=self.batch_size,
                     show_progress_bar=self.show_progress_bar,
                     convert_to_tensor=self.convert_to_tensor,

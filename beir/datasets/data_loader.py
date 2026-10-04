@@ -23,6 +23,7 @@ class GenericDataLoader:
         self.corpus = {}
         self.queries = {}
         self.qrels = {}
+        self._all_queries = {}
 
         if prefix:
             query_file = prefix + "-" + query_file
@@ -54,13 +55,13 @@ class GenericDataLoader:
             logger.info("Loaded %d Documents.", len(self.corpus))
             logger.info("Doc Example: %s", list(self.corpus.values())[0])
 
-        if not len(self.queries):
+        if not len(self._all_queries):
             logger.info("Loading Queries...")
             self._load_queries()
 
         if os.path.exists(self.qrels_file):
             self._load_qrels()
-            self.queries = {qid: self.queries[qid] for qid in self.qrels}
+            self.queries = {qid: self._all_queries[qid] for qid in self.qrels}
             logger.info("Loaded %d Queries.", len(self.queries))
             logger.info("Query Example: %s", list(self.queries.values())[0])
 
@@ -78,13 +79,13 @@ class GenericDataLoader:
             logger.info("Loaded %d %s Documents.", len(self.corpus), split.upper())
             logger.info("Doc Example: %s", list(self.corpus.values())[0])
 
-        if not len(self.queries):
+        if not len(self._all_queries):
             logger.info("Loading Queries...")
             self._load_queries()
 
         if os.path.exists(self.qrels_file):
             self._load_qrels()
-            self.queries = {qid: self.queries[qid] for qid in self.qrels}
+            self.queries = {qid: self._all_queries[qid] for qid in self.qrels}
             logger.info("Loaded %d %s Queries.", len(self.queries), split.upper())
             logger.info("Query Example: %s", list(self.queries.values())[0])
 
@@ -115,9 +116,10 @@ class GenericDataLoader:
         with open(self.query_file, encoding="utf8") as fIn:
             for line in fIn:
                 line = json.loads(line)
-                self.queries[line.get("_id")] = line.get("text")
+                self._all_queries[line.get("_id")] = line.get("text")
 
     def _load_qrels(self):
+        self.qrels = {}
         reader = csv.reader(
             open(self.qrels_file, encoding="utf-8"),
             delimiter="\t",

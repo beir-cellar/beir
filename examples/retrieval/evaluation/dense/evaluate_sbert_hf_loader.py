@@ -35,6 +35,8 @@ if __name__ == "__main__":
 
     #### You can use our custom hosted BEIR datasets on HuggingFace again to save RAM (streaming=True) ####
     # corpus, queries, qrels = HFDataLoader(hf_repo=f"BeIR/{dataset}", streaming=False, keep_in_memory=False).load(split="test")
+    # To pin Hub datasets, pass revision="<tag-or-commit>" for corpus/queries and
+    # qrels_revision="<tag-or-commit>" for the separate qrels repository.
 
     #### Dense Retrieval using SBERT (Sentence-BERT) ####
     #### Provide any pretrained sentence-transformers model

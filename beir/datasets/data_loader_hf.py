@@ -22,11 +22,15 @@ class HFDataLoader:
         qrels_file: str = "",
         streaming: bool = False,
         keep_in_memory: bool = False,
+        revision: str | None = None,
+        qrels_revision: str | None = None,
     ):
         self.corpus = {}
         self.queries = {}
         self.qrels = {}
         self.hf_repo = hf_repo
+        self.revision = revision
+        self.qrels_revision = qrels_revision
         if hf_repo:
             logger.warn(
                 "A huggingface repository is provided. This will override the data_folder, prefix and *_file arguments."
@@ -107,6 +111,7 @@ class HFDataLoader:
                 "corpus",
                 keep_in_memory=self.keep_in_memory,
                 streaming=self.streaming,
+                revision=self.revision,
             )
         else:
             corpus_ds = load_dataset(
@@ -130,6 +135,7 @@ class HFDataLoader:
                 "queries",
                 keep_in_memory=self.keep_in_memory,
                 streaming=self.streaming,
+                revision=self.revision,
             )
         else:
             queries_ds = load_dataset(
@@ -150,6 +156,7 @@ class HFDataLoader:
                 self.hf_repo_qrels,
                 keep_in_memory=self.keep_in_memory,
                 streaming=self.streaming,
+                revision=self.qrels_revision,
             )[split]
         else:
             qrels_ds = load_dataset(

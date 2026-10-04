@@ -5,7 +5,7 @@ import logging
 
 import pytrec_eval
 
-from .custom_metrics import hole, mrr, recall_cap, top_k_accuracy
+from .custom_metrics import hole, mrr, recall_cap, top_k_accuracy, top_k_success
 from .search.base import BaseSearch
 
 logger = logging.getLogger(__name__)
@@ -136,6 +136,9 @@ class EvaluateRetrieval:
 
         elif metric.lower() in ["hole", "hole@k"]:
             return hole(qrels, results, k_values)
+
+        elif metric.lower() in ["success", "success@k", "top_k_success"]:
+            return top_k_success(qrels, results, k_values)
 
         elif metric.lower() in [
             "acc",

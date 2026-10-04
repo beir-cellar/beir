@@ -97,11 +97,30 @@ def top_k_accuracy(
     qrels: dict[str, dict[str, int]],
     results: dict[str, dict[str, float]],
     k_values: list[int],
-) -> tuple[dict[str, float]]:
-    top_k_acc = {}
+) -> dict[str, float]:
+    """Return the legacy Accuracy@k name for the top-k success rate."""
+    return _top_k_success(qrels, results, k_values, "Accuracy")
+
+
+def top_k_success(
+    qrels: dict[str, dict[str, int]],
+    results: dict[str, dict[str, float]],
+    k_values: list[int],
+) -> dict[str, float]:
+    """Return the fraction of queries with a relevant document in the top k."""
+    return _top_k_success(qrels, results, k_values, "Success")
+
+
+def _top_k_success(
+    qrels: dict[str, dict[str, int]],
+    results: dict[str, dict[str, float]],
+    k_values: list[int],
+    label: str,
+) -> dict[str, float]:
+    success = {}
 
     for k in k_values:
-        top_k_acc[f"Accuracy@{k}"] = 0.0
+        success[f"{label}@{k}"] = 0.0
 
     k_max, top_hits = max(k_values), {}
     logging.info("\n")
@@ -116,11 +135,11 @@ def top_k_accuracy(
         for k in k_values:
             for relevant_doc_id in query_relevant_docs:
                 if relevant_doc_id in top_hits[query_id][0:k]:
-                    top_k_acc[f"Accuracy@{k}"] += 1.0
+                    success[f"{label}@{k}"] += 1.0
                     break
 
     for k in k_values:
-        top_k_acc[f"Accuracy@{k}"] = round(top_k_acc[f"Accuracy@{k}"] / len(qrels), 5)
-        logging.info("Accuracy@{}: {:.4f}".format(k, top_k_acc[f"Accuracy@{k}"]))
+        success[f"{label}@{k}"] = round(success[f"{label}@{k}"] / len(qrels), 5)
+        logging.info("{}@{}: {:.4f}".format(label, k, success[f"{label}@{k}"]))
 
-    return top_k_acc
+    return success

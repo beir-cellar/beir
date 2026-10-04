@@ -72,6 +72,17 @@ class EvaluateRetrieval:
         k_values: list[int],
         ignore_identical_ids: bool = True,
     ) -> tuple[dict[str, float], dict[str, float], dict[str, float], dict[str, float]]:
+        """Average retrieval metrics over all judged queries, counting missing results as zero."""
+        if not qrels:
+            raise ValueError("qrels must contain at least one judged query")
+
+        missing_queries = len(qrels.keys() - results.keys())
+        if missing_queries:
+            logger.warning(
+                "%d judged queries are missing from results; they will be scored as zero in the average.",
+                missing_queries,
+            )
+
         if ignore_identical_ids:
             logger.info(
                 "For evaluation, we ignore identical query and document ids (default), please explicitly set ``ignore_identical_ids=False`` to ignore this."
@@ -109,10 +120,10 @@ class EvaluateRetrieval:
                 precision[f"P@{k}"] += scores[query_id]["P_" + str(k)]
 
         for k in k_values:
-            ndcg[f"NDCG@{k}"] = round(ndcg[f"NDCG@{k}"] / len(scores), 5)
-            _map[f"MAP@{k}"] = round(_map[f"MAP@{k}"] / len(scores), 5)
-            recall[f"Recall@{k}"] = round(recall[f"Recall@{k}"] / len(scores), 5)
-            precision[f"P@{k}"] = round(precision[f"P@{k}"] / len(scores), 5)
+            ndcg[f"NDCG@{k}"] = round(ndcg[f"NDCG@{k}"] / len(qrels), 5)
+            _map[f"MAP@{k}"] = round(_map[f"MAP@{k}"] / len(qrels), 5)
+            recall[f"Recall@{k}"] = round(recall[f"Recall@{k}"] / len(qrels), 5)
+            precision[f"P@{k}"] = round(precision[f"P@{k}"] / len(qrels), 5)
 
         for eval in [ndcg, _map, recall, precision]:
             logger.info("\n")
